@@ -34,14 +34,11 @@
                 <label style="display: block; margin-bottom: 10px; font-weight: 700; font-size: 14px; color: var(--secondary-text); text-transform: uppercase; letter-spacing: 0.5px; padding-left: 5px;">Tên người dùng</label>
                 <div style="position: relative; display: flex; align-items: center;">
                     <span style="position: absolute; left: 16px; color: var(--secondary-text); font-weight: 600; opacity: 0.5;">@</span>
-                    <input type="text" name="username" value="{{ old('username', $user->username) }}" required 
-                        style="width: 100%; padding: 14px 16px 14px 35px; border: 1px solid var(--glass-border); border-radius: 18px; background: rgba(0,0,0,0.02); color: inherit; font-size: 15px; font-weight: 600; outline: none; transition: all 0.2s;"
-                        onfocus="this.parentElement.nextElementSibling?.style.opacity='1'" 
-                        onblur="this.parentElement.nextElementSibling?.style.opacity='0.6'">
+                    <input type="text" value="{{ $user->username }}" readonly 
+                        style="width: 100%; padding: 14px 16px 14px 35px; border: 1px solid var(--glass-border); border-radius: 18px; background: rgba(0,0,0,0.05); color: var(--secondary-text); font-size: 15px; font-weight: 600; outline: none; cursor: not-allowed;"
+                        title="Tên người dùng không thể thay đổi">
                 </div>
-                @error('username')
-                    <div style="color: #ff3b30; font-size: 12px; margin-top: 6px; padding-left: 5px; font-weight: 600;">{{ $message }}</div>
-                @enderror
+                <div style="font-size: 11px; color: var(--secondary-text); margin-top: 6px; padding-left: 5px; opacity: 0.7;">Tên người dùng đã được tạo tự động và không thể thay đổi.</div>
             </div>
 
             <!-- Bio Field -->

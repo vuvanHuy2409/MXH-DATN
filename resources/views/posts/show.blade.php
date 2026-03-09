@@ -29,6 +29,7 @@
             'hideLike' => true,
             'hideRepost' => true,
             'hideShare' => true,
+            'hideReply' => true,
             'isComment' => true,
             'small' => true,
             'class' => 'comment-bubble'
@@ -44,6 +45,7 @@
                 'hideLike' => true,
                 'hideRepost' => true,
                 'hideShare' => true,
+                'hideReply' => true,
                 'isComment' => true,
                 'small' => true,
                 'class' => 'comment-bubble nested'
@@ -135,34 +137,55 @@
     function toggleLike(postId) {
         const btns = document.querySelectorAll(`.like-btn[data-post-id="${postId}"]`);
         const token = '{{ csrf_token() }}';
+        
         btns.forEach(btn => {
             const countSpan = btn.querySelector('.like-count');
             const svg = btn.querySelector('svg');
-            const isLiked = btn.classList.contains('liked');
-            if (isLiked) {
+            const isCurrentlyLiked = btn.classList.contains('liked');
+            let currentCount = parseInt(countSpan.innerText) || 0;
+
+            // 1. UI Update
+            if (isCurrentlyLiked) {
                 btn.classList.remove('liked');
-                btn.style.color = 'inherit';
-                svg.setAttribute('fill', 'none');
-                countSpan.innerText = Math.max(0, parseInt(countSpan.innerText) - 1);
+                countSpan.innerText = Math.max(0, currentCount - 1);
+                if (svg) svg.setAttribute('fill', 'none');
             } else {
                 btn.classList.add('liked');
-                btn.style.color = '#ff3b30';
-                svg.setAttribute('fill', 'currentColor');
-                countSpan.innerText = parseInt(countSpan.innerText) + 1;
+                countSpan.innerText = currentCount + 1;
+                if (svg) svg.setAttribute('fill', 'currentColor');
+                
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle-effect';
+                sparkle.style.left = '50%';
+                sparkle.style.top = '50%';
+                sparkle.style.transform = 'translate(-50%, -50%)';
+                btn.appendChild(sparkle);
+                setTimeout(() => sparkle.remove(), 500);
+            }
+
+            // 2. Animation
+            if (svg) {
+                svg.classList.remove('like-animate');
+                void svg.offsetWidth;
+                svg.classList.add('like-animate');
             }
         });
+
         fetch(`/posts/${postId}/like`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': token,
-                    'Accept': 'application/json'
-                }
-            })
-            .then(res => res.json()).then(data => {
-                btns.forEach(btn => {
-                    if (btn.querySelector('.like-count')) btn.querySelector('.like-count').innerText = data.count;
-                });
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': token,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            btns.forEach(btn => {
+                const span = btn.querySelector('.like-count');
+                if (span) span.innerText = data.count;
             });
+        });
     }
 
     function toggleRepost(postId) {

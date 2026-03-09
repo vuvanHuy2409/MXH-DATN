@@ -43,25 +43,33 @@ class ConversationController extends Controller
         return view('messages.index', compact('conversations', 'friends', 'filter'));
     }
 
-    public function show(Conversation $conversation)
+    public function show(Conversation $conversation, Request $request)
     {
-        if (!$conversation->users()->where('users.id', auth()->id())->exists()) {
+        $user = auth()->user();
+        if (!$conversation->users()->where('users.id', $user->id)->exists()) {
             abort(403);
         }
+
+        $filter = $request->query('filter', 'all');
+        $conversations = $user->conversations()
+            ->with(['lastMessage.sender', 'users' => function ($query) use ($user) {
+                $query->where('users.id', '!=', $user->id);
+            }])
+            ->orderBy('updated_at', 'desc')
+            ->get();
 
         // Kiểm tra xem có còn là bạn bè không nếu là chat 1-1
         $isFriend = true;
         $otherUser = null;
         if ($conversation->type === 'direct') {
-            $otherUser = $conversation->users()->where('users.id', '!=', auth()->id())->first();
+            $otherUser = $conversation->users()->where('users.id', '!=', $user->id)->first();
             if ($otherUser) {
-                $me = auth()->user();
-                $isFriend = $me->following()->where('users.id', $otherUser->id)->exists() && 
-                           $me->followers()->where('users.id', $otherUser->id)->exists();
+                $isFriend = $user->following()->where('users.id', $otherUser->id)->exists() && 
+                           $user->followers()->where('users.id', $otherUser->id)->exists();
             }
         }
 
-        $conversation->messages()->where('sender_id', '!=', auth()->id())->where('is_read', false)->update(['is_read' => true]);
+        $conversation->messages()->where('sender_id', '!=', $user->id)->where('is_read', false)->update(['is_read' => true]);
 
         if ($conversation->type === 'group' && !$conversation->join_code) {
             $conversation->update(['join_code' => Conversation::generateUniqueJoinCode()]);
@@ -69,7 +77,7 @@ class ConversationController extends Controller
 
         $messages = $conversation->messages()->with(['sender', 'parent.sender'])->oldest()->get();
 
-        return view('messages.show', compact('conversation', 'messages', 'otherUser', 'isFriend'));
+        return view('messages.show', compact('conversation', 'messages', 'otherUser', 'isFriend', 'conversations', 'filter'));
     }
 
     public static function findOrCreateDirect($userId1, $userId2)
@@ -120,7 +128,7 @@ class ConversationController extends Controller
     {
         $conversation = self::findOrCreateDirect(auth()->id(), $user->id);
         if (!$conversation) {
-            return back()->with('error', 'Bạn chỉ có thể nhắn tin với người là bạn bè (theo dõi lẫn nhau).');
+            return back()->with('error', __('Bạn chỉ có thể nhắn tin với người là bạn bè (theo dõi lẫn nhau).'));
         }
         return redirect()->route('messages.show', $conversation->id);
     }
@@ -364,7 +372,7 @@ class ConversationController extends Controller
     {
         $conversation = self::findOrCreateDirect(auth()->id(), $user->id);
         if (!$conversation) {
-            return response()->json(['error' => 'Bạn chỉ có thể nhắn tin với người là bạn bè.'], 403);
+            return response()->json(['error' => __('Bạn chỉ có thể nhắn tin với người là bạn bè.')], 403);
         }
         $messages = $conversation->messages()->with('sender')->oldest()->get();
         return response()->json(['conversation_id' => $conversation->id, 'messages' => $messages]);
@@ -382,7 +390,7 @@ class ConversationController extends Controller
         $request->validate(['code' => 'required|string|size:5']);
         $code = strtoupper($request->code);
         $conversation = Conversation::where('type', 'group')->where('join_code', $code)->first();
-        if (!$conversation) return back()->withErrors(['code' => 'Mã nhóm không tồn tại.']);
+        if (!$conversation) return back()->withErrors(['code' => __('Mã nhóm không tồn tại.')]);
         $exists = Participant::where('conversation_id', $conversation->id)->where('user_id', auth()->id())->exists();
         if ($exists) return redirect()->route('messages.show', $conversation->id);
         Participant::create(['conversation_id' => $conversation->id, 'user_id' => auth()->id(), 'role' => 'member', 'status' => 'active', 'joined_at' => now()]);

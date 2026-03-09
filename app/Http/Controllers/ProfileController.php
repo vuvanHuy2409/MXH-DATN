@@ -26,14 +26,12 @@ class ProfileController extends Controller
         $user = auth()->user();
 
         $request->validate([
-            'username' => ['required', 'string', 'max:30', Rule::unique('users')->ignore($user->id)],
             'bio' => ['nullable', 'string', 'max:160'],
             'link_url' => ['nullable', 'url', 'max:512'],
             'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
         ]);
 
         $data = [
-            'username' => $request->username,
             'bio' => $request->bio,
             'link_url' => $request->link_url,
         ];
@@ -54,7 +52,7 @@ class ProfileController extends Controller
 
         $user->update($data);
 
-        return redirect()->route('profile.me')->with('success', 'Hồ sơ đã được cập nhật!');
+        return redirect()->route('profile.me')->with('success', __('Hồ sơ đã được cập nhật!'));
     }
 
     public function followers(User $user)

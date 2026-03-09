@@ -44,7 +44,7 @@ class AuthController extends Controller
         $email = $request->email_prefix . '@eaut.edu.vn';
         
         if (!User::where('email', $email)->exists()) {
-            return back()->withErrors(['email_prefix' => 'Email không tồn tại trong hệ thống.'])->withInput();
+            return back()->withErrors(['email_prefix' => __('Email không tồn tại trong hệ thống.')])->withInput();
         }
 
         $otpCode = rand(100000, 999999);
@@ -54,7 +54,7 @@ class AuthController extends Controller
 
         Mail::to($email)->send(new SendOtpMail($otpCode));
 
-        return redirect()->route('password.reset.form', ['email' => $email])->with('status', 'Mã OTP đã được gửi về email của bạn (hiệu lực 1 phút).');
+        return redirect()->route('password.reset.form', ['email' => $email])->with('status', __('Mã OTP đã được gửi về email của bạn (hiệu lực 1 phút).'));
     }
 
     public function showResetPassword(Request $request)
@@ -74,11 +74,11 @@ class AuthController extends Controller
         $cachedOtp = Cache::get('otp_forgot_password_' . $request->email);
 
         if (!$cachedOtp) {
-            return back()->withErrors(['otp' => 'Mã OTP đã hết hạn (chỉ có hiệu lực trong 1 phút).'])->withInput();
+            return back()->withErrors(['otp' => __('Mã OTP đã hết hạn (chỉ có hiệu lực trong 1 phút).')])->withInput();
         }
 
         if ($cachedOtp != $request->otp) {
-            return back()->withErrors(['otp' => 'Mã OTP không chính xác.'])->withInput();
+            return back()->withErrors(['otp' => __('Mã OTP không chính xác.')])->withInput();
         }
 
         $user = User::where('email', $request->email)->first();
@@ -87,7 +87,7 @@ class AuthController extends Controller
 
         Cache::forget('otp_forgot_password_' . $request->email);
 
-        return redirect('/login')->with('status', 'Mật khẩu đã được thay đổi thành công.');
+        return redirect('/login')->with('status', __('Mật khẩu đã được thay đổi thành công.'));
     }
     public function showLogin() { return view('auth.login'); }
 
@@ -99,7 +99,7 @@ class AuthController extends Controller
             $request->session()->regenerate();
             return redirect()->intended('/');
         }
-        return back()->withErrors(['email_prefix' => 'Thông tin đăng nhập không chính xác.'])->withInput();
+        return back()->withErrors(['email_prefix' => __('Thông tin đăng nhập không chính xác.')])->withInput();
     }
 
     public function showRegister()
@@ -133,7 +133,7 @@ class AuthController extends Controller
         }
 
         if (User::where('email', $email)->exists()) {
-            return back()->withErrors(['email' => 'Email này đã tồn tại.'])->withInput();
+            return back()->withErrors(['email' => __('Email này đã tồn tại.')])->withInput();
         }
 
         // Lưu thông tin vào session
@@ -148,7 +148,7 @@ class AuthController extends Controller
 
         Mail::to($email)->send(new SendOtpMail($otpCode));
 
-        return redirect()->route('register.verify.form', ['email' => $email])->with('status', 'Mã xác thực đã được gửi về email của bạn (hiệu lực 1 phút).');
+        return redirect()->route('register.verify.form', ['email' => $email])->with('status', __('Mã xác thực đã được gửi về email của bạn (hiệu lực 1 phút).'));
     }
 
     public function showVerifyRegistration(Request $request)
@@ -167,16 +167,16 @@ class AuthController extends Controller
         $cachedOtp = Cache::get('otp_registration_' . $request->email);
 
         if (!$cachedOtp) {
-            return back()->withErrors(['otp' => 'Mã OTP đã hết hạn (chỉ có hiệu lực trong 1 phút).'])->withInput();
+            return back()->withErrors(['otp' => __('Mã OTP đã hết hạn (chỉ có hiệu lực trong 1 phút).')])->withInput();
         }
 
         if ($cachedOtp != $request->otp) {
-            return back()->withErrors(['otp' => 'Mã OTP không chính xác.'])->withInput();
+            return back()->withErrors(['otp' => __('Mã OTP không chính xác.')])->withInput();
         }
 
         $data = session('registration_data');
         if (!$data || $data['email'] !== $request->email) {
-            return redirect()->route('register')->withErrors(['email' => 'Dữ liệu đăng ký không hợp lệ. Vui lòng đăng ký lại.']);
+            return redirect()->route('register')->withErrors(['email' => __('Dữ liệu đăng ký không hợp lệ. Vui lòng đăng ký lại.')]);
         }
 
         // Tạo username tự động từ họ tên

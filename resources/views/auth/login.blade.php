@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng nhập - Threads Clone</title>
+    <title>{{ __('Login') }} - Threads Clone</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -193,8 +193,8 @@
                 <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" />
             </svg>
         </div>
-        <h1>Chào mừng trở lại</h1>
-        <p class="subtitle">Đăng nhập tài khoản EAUT của bạn</p>
+        <h1>{{ __('Welcome back') }}</h1>
+        <p class="subtitle">{{ __('Login to your EAUT account') }}</p>
 
         @if($errors->any())
         <div class="error-msg">{{ $errors->first() }}</div>
@@ -203,25 +203,25 @@
         <form action="{{ route('login') }}" method="POST">
             @csrf
             <div class="form-group">
-                <label>Tài khoản Email</label>
+                <label>{{ __('Email Prefix') }}</label>
                 <div class="email-input-wrapper">
                     <input type="text" name="email_prefix" value="{{ old('email_prefix') }}"
-                        placeholder="8 số MSV hoặc tên viết tắt" required autofocus>
+                        placeholder="{{ __('8-digit student ID or username') }}" required autofocus>
                     <span class="email-suffix"></span>
                 </div>
             </div>
             <div class="form-group">
                 <label style="display: flex; justify-content: space-between;">
-                    Mật khẩu
-                    <a href="{{ route('password.request') }}" style="color: var(--accent-color); text-decoration: none; font-weight: 600; font-size: 12px;">Quên mật khẩu?</a>
+                    {{ __('Password') }}
+                    <a href="{{ route('password.request') }}" style="color: var(--accent-color); text-decoration: none; font-weight: 600; font-size: 12px;">{{ __('Forgot Password?') }}</a>
                 </label>
-                <input type="password" name="password" placeholder="Nhập mật khẩu" required>
+                <input type="password" name="password" placeholder="{{ __('Enter password') }}" required>
             </div>
-            <button type="submit" class="btn-login">Đăng nhập</button>
+            <button type="submit" class="btn-login">{{ __('Login') }}</button>
         </form>
 
         <div class="footer-links">
-            Chưa có tài khoản? <a href="{{ route('register') }}">Tham gia ngay</a>
+            {{ __("Don't have an account?") }} <a href="{{ route('register') }}">{{ __('Join now') }}</a>
         </div>
     </div>
 </body>

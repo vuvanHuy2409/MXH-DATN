@@ -40,6 +40,7 @@ Route::middleware('auth')->group(function () {
     
     Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
     Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show');
+    Route::patch('/posts/{post}', [PostController::class, 'update'])->name('posts.update');
     Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
 
     // Tương tác bài viết
@@ -127,8 +128,9 @@ Route::middleware('auth')->group(function () {
     })->name('profile.show');
 
     Route::get('/settings', [App\Http\Controllers\SettingsController::class, 'index'])->name('settings');
+    Route::get('/settings/help', [App\Http\Controllers\SettingsController::class, 'help'])->name('settings.help');
+    Route::post('/settings/feedback', [App\Http\Controllers\SettingsController::class, 'sendFeedback'])->name('settings.feedback');
     Route::post('/settings/change-password', [App\Http\Controllers\SettingsController::class, 'changePassword'])->name('settings.change-password');
-    Route::post('/settings/change-language', [App\Http\Controllers\SettingsController::class, 'changeLanguage'])->name('settings.change-language');
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });

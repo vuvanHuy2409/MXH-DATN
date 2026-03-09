@@ -54,29 +54,40 @@
             <!-- Academic Info Section -->
             <div style="display: flex; gap: 15px; margin-top: 12px; flex-wrap: wrap; opacity: 0.85;">
                 @php
-                    $details = $user->user_type === 'teacher' ? $user->teacher : $user->student;
-                    $facultyName = $details->faculty->name ?? null;
-                    $class = $user->user_type === 'student' ? ($details->class ?? null) : null;
-                    $dob = $user->user_type === 'student' ? ($details->dob ? \Carbon\Carbon::parse($details->dob)->format('d/m/Y') : null) : null;
+                $details = $user->user_type === 'teacher' ? $user->teacher : $user->student;
+                $facultyName = $details->faculty->name ?? null;
+                $class = $user->user_type === 'student' ? ($details->class ?? null) : null;
+                $dob = $user->user_type === 'student' ? ($details->dob ? \Carbon\Carbon::parse($details->dob)->format('d/m/Y') : null) : null;
                 @endphp
 
                 @if($facultyName)
                 <div title="Khoa" style="font-size: 13px; color: var(--secondary-text); display: flex; align-items: center; gap: 5px;">
-                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
                     <span>{{ $facultyName }}</span>
                 </div>
                 @endif
 
                 @if($class)
                 <div title="Lớp" style="font-size: 13px; color: var(--secondary-text); display: flex; align-items: center; gap: 5px;">
-                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="9" y1="3" x2="9" y2="21"></line>
+                    </svg>
                     <span>Lớp: {{ $class }}</span>
                 </div>
                 @endif
 
                 @if($dob)
                 <div title="Ngày sinh" style="font-size: 13px; color: var(--secondary-text); display: flex; align-items: center; gap: 5px;">
-                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
                     <span>{{ $dob }}</span>
                 </div>
                 @endif
@@ -111,13 +122,9 @@
 
     <!-- Minimalist Tabs -->
     <div style="margin: 30px 20px 10px; display: flex; gap: 30px; border-bottom: 1px solid var(--glass-border); padding: 0 10px;">
-        <div id="tab-posts" onclick="switchProfileTab('posts')" style="padding: 12px 5px; cursor: pointer; color: var(--text-color); font-weight: 800; position: relative; font-size: 15px;">
-            Luồng ({{ count($posts) }})
+        <div id="tab-posts" style="padding: 12px 5px; cursor: default; color: var(--text-color); font-weight: 800; position: relative; font-size: 15px;">
+            Bài Viết
             <div class="active-line" style="position: absolute; bottom: -1px; left: 0; width: 100%; height: 3px; background: var(--accent-color); border-radius: 3px;"></div>
-        </div>
-        <div id="tab-reposts" onclick="switchProfileTab('reposts')" style="padding: 12px 5px; cursor: pointer; color: var(--secondary-text); font-weight: 600; position: relative; font-size: 15px;">
-            Đã đăng lại
-            <div class="active-line" style="position: absolute; bottom: -1px; left: 0; width: 100%; height: 3px; background: var(--accent-color); border-radius: 3px; opacity: 0;"></div>
         </div>
     </div>
 
@@ -128,13 +135,6 @@
             @include('posts._item', ['post' => $post, 'prefix' => 'v2-p'])
             @empty
             <div style="text-align: center; padding: 60px 20px; opacity: 0.5;">Không có bài đăng nào.</div>
-            @endforelse
-        </div>
-        <div id="content-reposts" class="tab-content-area" style="display: none; animation: slideIn 0.4s ease-out;">
-            @forelse($reposts as $post)
-            @include('posts._item', ['post' => $post, 'prefix' => 'v2-r', 'repostedBy' => $user->username])
-            @empty
-            <div style="text-align: center; padding: 60px 20px; opacity: 0.5;">Không có bài đăng lại nào.</div>
             @endforelse
         </div>
     </div>
@@ -161,7 +161,7 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0);
+        background-image: radial-gradient(circle at 2px 2px, rgba(255, 255, 255, 0.15) 1px, transparent 0);
         background-size: 24px 24px;
     }
 
@@ -204,27 +204,11 @@
 </style>
 
 <script>
-    const profileUserId = {{ $user->id }};
-
-    function switchProfileTab(tab) {
-        document.querySelectorAll('.tab-content-area').forEach(el => el.style.display = 'none');
-        document.getElementById('content-' + tab).style.display = 'block';
-
-        ['posts', 'reposts'].forEach(t => {
-            const el = document.getElementById('tab-' + t);
-            if (!el) return;
-            const line = el.querySelector('.active-line');
-            if (t === tab) {
-                el.style.color = 'var(--text-color)';
-                el.style.fontWeight = '800';
-                if (line) line.style.opacity = '1';
-            } else {
-                el.style.color = 'var(--secondary-text)';
-                el.style.fontWeight = '600';
-                if (line) line.style.opacity = '0';
-            }
-        });
-    }
+    const profileUserId = {
+        {
+            $user - > id
+        }
+    };
 
     function handleMessageClick(isFriend, url) {
         if (isFriend) {
@@ -238,9 +222,9 @@
         const modal = document.getElementById('followModal');
         const list = document.getElementById('followList');
         const title = document.getElementById('followModalTitle');
-        
+
         if (!modal || !list || !title) return;
-        
+
         title.innerText = type === 'followers' ? 'Người theo dõi' : 'Đang theo dõi';
         list.innerHTML = '<div style="text-align:center; padding: 20px;">Đang tải...</div>';
         modal.style.display = 'flex';

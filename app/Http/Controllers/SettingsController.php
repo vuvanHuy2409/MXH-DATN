@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\FeedbackMail;
 
 class SettingsController extends Controller
 {
@@ -14,15 +16,25 @@ class SettingsController extends Controller
         return view('settings.index');
     }
 
-    public function changeLanguage(Request $request)
+    public function help()
+    {
+        return view('settings.help');
+    }
+
+    public function sendFeedback(Request $request)
     {
         $request->validate([
-            'locale' => 'required|in:en,vi',
+            'content' => 'required|string|min:10|max:2000',
         ]);
 
-        Session::put('locale', $request->locale);
-
-        return back()->with('status', $request->locale == 'vi' ? 'Đã đổi ngôn ngữ sang Tiếng Việt' : 'Language changed to English');
+        $user = Auth::user();
+        
+        try {
+            Mail::to('huyberrrrr@gmail.com')->send(new FeedbackMail($request->content, $user));
+            return back()->with('status', 'Cảm ơn bạn! Ý kiến của bạn đã được gửi đi thành công.');
+        } catch (\Exception $e) {
+            return back()->withErrors(['feedback' => 'Có lỗi xảy ra khi gửi phản hồi. Vui lòng thử lại sau.']);
+        }
     }
 
     public function changePassword(Request $request)
@@ -35,12 +47,12 @@ class SettingsController extends Controller
         $user = Auth::user();
 
         if (!Hash::check($request->current_password, $user->password_hash)) {
-            return back()->withErrors(['current_password' => 'Mật khẩu hiện tại không chính xác.']);
+            return back()->withErrors(['current_password' => __('Mật khẩu hiện tại không chính xác.')]);
         }
 
         $user->password_hash = Hash::make($request->new_password);
         $user->save();
 
-        return back()->with('status', 'Mật khẩu đã được thay đổi thành công.');
+        return back()->with('status', __('Mật khẩu đã được thay đổi thành công.'));
     }
 }

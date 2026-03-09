@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đặt lại mật khẩu - Threads Clone</title>
+    <title>{{ __('Reset Password') }} - Threads Clone</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -47,8 +47,8 @@
 </head>
 <body>
     <div class="container">
-        <h1>Đặt lại mật khẩu</h1>
-        <p class="subtitle">Nhập mã OTP đã được gửi tới {{ $email }} và mật khẩu mới của bạn</p>
+        <h1>{{ __('Reset Password') }}</h1>
+        <p class="subtitle">{{ __('Enter the OTP code sent to :email and your new password', ['email' => $email]) }}</p>
 
         @if(session('status'))
             <div class="success-msg">{{ session('status') }}</div>
@@ -63,21 +63,21 @@
             <input type="hidden" name="email" value="{{ $email }}">
             
             <div class="form-group">
-                <label>Mã OTP (6 số)</label>
-                <input type="text" name="otp" placeholder="Nhập mã OTP" required autofocus maxlength="6">
+                <label>{{ __('OTP Code (6 digits)') }}</label>
+                <input type="text" name="otp" placeholder="{{ __('Enter OTP code') }}" required autofocus maxlength="6">
             </div>
 
             <div class="form-group">
-                <label>Mật khẩu mới</label>
-                <input type="password" name="password" placeholder="Nhập mật khẩu mới" required>
+                <label>{{ __('New Password') }}</label>
+                <input type="password" name="password" placeholder="{{ __('Enter new password') }}" required>
             </div>
 
             <div class="form-group">
-                <label>Xác nhận mật khẩu mới</label>
-                <input type="password" name="password_confirmation" placeholder="Xác nhận mật khẩu" required>
+                <label>{{ __('Confirm New Password') }}</label>
+                <input type="password" name="password_confirmation" placeholder="{{ __('Confirm password') }}" required>
             </div>
 
-            <button type="submit" class="btn-submit">Cập nhật mật khẩu</button>
+            <button type="submit" class="btn-submit">{{ __('Update Password') }}</button>
         </form>
     </div>
 </body>

@@ -1,22 +1,43 @@
 @extends('layouts.app')
 
 @section('content')
-<!-- Trigger Modal -->
-<div onclick="openModal()" class="post-card" style="cursor: pointer; display: flex; align-items: center; gap: 15px; margin-top: 20px;">
-    <div class="avatar" style="background-image: url('{{ auth()->user()->avatar_url }}'); background-size: cover; width: 42px; height: 42px;"></div>
-    <div style="color: var(--secondary-text); font-size: 15px; flex-grow: 1;">Bạn đang nghĩ gì?</div>
-    <button class="btn-post" style="opacity: 0.8; font-size: 14px;">Đăng</button>
+<!-- Create Post Trigger -->
+<div class="glass-bubble" style="margin-top: 20px; padding: 15px 25px; cursor: pointer; display: flex; align-items: center; gap: 15px; border-radius: 24px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);" onclick="openModal()" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 15px 35px rgba(0,0,0,0.08)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--glass-shadow)'">
+    <div class="avatar" style="background-image: url('{{ auth()->user()->avatar_url }}'); background-size: cover; width: 44px; height: 42px; border: 2px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.05);"></div>
+    <div style="color: var(--secondary-text); font-size: 16px; font-weight: 500; flex-grow: 1; opacity: 0.7;">Có gì mới hôm nay, {{ explode(' ', auth()->user()->studentDetail->full_name ?? auth()->user()->username)[0] }}?</div>
+    <div style="background: var(--accent-color); color: white; padding: 8px 18px; border-radius: 12px; font-weight: 700; font-size: 14px; box-shadow: 0 8px 20px rgba(0, 113, 227, 0.2);">Đăng</div>
 </div>
 
-<!-- Tabs -->
-<div style="display: flex; gap: 15px; margin-bottom: 25px; margin-top: 20px;">
-    <div id="tab-foryou" onclick="switchTab('foryou')" style="padding: 8px 20px; cursor: pointer; font-weight: 600; font-size: 15px; border-radius: 20px; background: var(--glass-bg); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); transition: all 0.3s; color: var(--text-color);">
+<!-- Navigation Tabs -->
+<div style="display: flex; gap: 5px; margin: 30px 0 20px; background: rgba(0,0,0,0.03); padding: 5px; border-radius: 18px; width: fit-content;">
+    <div id="tab-foryou" onclick="switchTab('foryou')" class="tab-item active">
         Dành cho bạn
     </div>
-    <div id="tab-following" onclick="switchTab('following')" style="padding: 8px 20px; cursor: pointer; font-weight: 600; font-size: 15px; border-radius: 20px; color: var(--secondary-text); transition: all 0.3s;">
+    <div id="tab-following" onclick="switchTab('following')" class="tab-item">
         Đang theo dõi
     </div>
 </div>
+
+<style>
+    .tab-item {
+        padding: 8px 24px;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 14px;
+        border-radius: 14px;
+        transition: all 0.3s ease;
+        color: var(--secondary-text);
+    }
+    .tab-item.active {
+        background: white;
+        color: var(--text-color);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    [data-theme="dark"] .tab-item.active {
+        background: var(--glass-bg);
+        color: white;
+    }
+</style>
 
 <!-- Tab Content: Dành cho bạn -->
 <div id="content-foryou">
@@ -37,7 +58,70 @@
 </div>
 
 <!-- SIDE PANEL FOR COMMENTS -->
-<div id="commentSidePanel" class="comment-modal">
+<div id="commentSidePanel" class="comment-modal" style="display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.2); backdrop-filter: blur(10px); justify-content: flex-end;">
+    <div class="glass-bubble" style="width: 100%; max-width: 500px; height: 100%; border-radius: 35px 0 0 35px; display: flex; flex-direction: column; overflow: hidden; animation: slideLeft 0.4s cubic-bezier(0.16, 1, 0.3, 1);">
+        <!-- Header -->
+        <div style="padding: 25px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02);">
+            <h3 style="margin: 0; font-size: 20px; font-weight: 800;">Bình luận</h3>
+            <div onclick="closeCommentSidePanel()" style="cursor: pointer; width: 36px; height: 36px; border-radius: 50%; background: rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.1)'" onmouseout="this.style.background='rgba(0,0,0,0.05)'">
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </div>
+        </div>
+
+        <!-- Source Post Info (Mini) -->
+        <div style="padding: 20px 25px; background: rgba(0,0,0,0.02); display: flex; gap: 12px; align-items: flex-start; border-bottom: 1px solid var(--glass-border);">
+            <div id="panelSourceAvatar" class="avatar" style="width: 32px; height: 32px; background-size: cover; border-radius: 50%; flex-shrink: 0;"></div>
+            <div style="flex-grow: 1; min-width: 0;">
+                <div id="panelSourceUsername" style="font-weight: 800; font-size: 14px; margin-bottom: 2px;"></div>
+                <div id="panelSourceContent" style="font-size: 13px; opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
+            </div>
+        </div>
+
+        <!-- Comments List -->
+        <div id="panelActualComments" style="flex-grow: 1; overflow-y: auto; padding: 25px; display: flex; flex-direction: column; gap: 5px;">
+            <!-- Comments will be rendered here -->
+        </div>
+
+        <!-- Reply Indicator -->
+        <div id="panelReplyIndicator" style="display: none; padding: 10px 25px; background: rgba(0,113,227,0.05); border-top: 1px solid var(--glass-border); align-items: center; justify-content: space-between;">
+            <div style="font-size: 12px; font-weight: 700; color: var(--accent-color);">Đang trả lời <span id="panelReplyUser"></span></div>
+            <div onclick="cancelPanelReply()" style="cursor: pointer; opacity: 0.5;"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
+        </div>
+
+        <!-- Input Area -->
+        <div style="padding: 20px 25px 40px; border-top: 1px solid var(--glass-border); background: var(--glass-bg); backdrop-filter: blur(20px);">
+            <div style="display: flex; gap: 12px; align-items: center; background: rgba(0,0,0,0.03); border: 1px solid var(--glass-border); border-radius: 24px; padding: 8px 18px;">
+                <div class="avatar" style="background-image: url('{{ auth()->user()->avatar_url }}'); background-size: cover; width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;"></div>
+                <input type="text" id="panelCommentInput" placeholder="Viết bình luận..." style="flex-grow: 1; background: transparent; border: none; outline: none; padding: 10px 0; font-size: 14px; color: var(--text-color);">
+                <button onclick="submitPanelComment()" style="background: none; border: none; color: var(--accent-color); font-weight: 800; cursor: pointer; padding: 5px 10px; font-size: 14px;">Đăng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes slideLeft {
+        from { transform: translateX(100%); }
+        to { transform: translateX(0); }
+    }
+    .author-badge {
+        background: var(--accent-color);
+        color: white;
+        font-size: 9px;
+        font-weight: 800;
+        padding: 2px 6px;
+        border-radius: 6px;
+        text-transform: uppercase;
+        margin-left: 8px;
+    }
+    .comment-thread-line {
+        position: absolute;
+        width: 2px;
+        background: var(--glass-border);
+        opacity: 0.4;
+        border-radius: 1px;
+    }
+</style>
 
 <script>
     function closeShareModal(e) {
@@ -81,26 +165,25 @@
         const div = document.createElement('div');
         div.className = 'comment-item';
         const isNested = c.parent_id && c.parent_id != activePanelPostId;
-        div.style.cssText = `display: flex; gap: 10px; position: relative; margin-left: ${isNested ? '35px' : '0px'}; margin-bottom: 20px;`;
+        div.style.cssText = `display: flex; gap: 12px; position: relative; margin-left: ${isNested ? '45px' : '0px'}; margin-bottom: 20px;`;
         const authorBadge = c.user_id === activePanelAuthorId ? '<span class="author-badge">Tác giả</span>' : '';
         const isLiked = c.is_liked_by_me;
         div.innerHTML = `
-            ${!isNested ? '<div class="comment-thread-line" style="left: 16px; top: 35px; bottom: -15px;"></div>' : ''}
-            <div class="avatar" style="width: 32px; height: 32px; background-image: url(\'${c.user.avatar_url}\'); background-size: cover; flex-shrink: 0; z-index: 2; border-radius: 50%;"></div>
+            ${!isNested && c.reply_count > 0 ? '<div class="comment-thread-line" style="left: 16px; top: 35px; bottom: -15px;"></div>' : ''}
+            <div class="avatar" style="width: 34px; height: 34px; background-image: url(\'${c.user.avatar_url}\'); background-size: cover; flex-shrink: 0; z-index: 2; border-radius: 50%; border: 2px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.05);"></div>
             <div style="flex-grow: 1; z-index: 2;">
-                <div style="background: rgba(255, 255, 255, 0.06); padding: 10px 14px; border-radius: 18px; border: 1px solid var(--glass-border);">
-                    <div style="display: flex; align-items: center; margin-bottom: 2px;">
-                        <strong style="font-size: 13px;">${c.user.username}</strong>
-                        ${authorBadge}
+                <div style="background: rgba(0,0,0,0.03); padding: 12px 16px; border-radius: 20px; border: 1px solid var(--glass-border);">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                        <div style="display: flex; align-items: center;">
+                            <strong style="font-size: 13.5px; font-weight: 750;">${c.user.username}</strong>
+                            ${authorBadge}
+                        </div>
+                        <span style="font-size: 11px; opacity: 0.5;">${new Date(c.created_at).toLocaleDateString()}</span>
                     </div>
-                    <div style="font-size: 13px; line-height: 1.4; opacity: 0.9;">${escapeHtml(c.content)}</div>
+                    <div style="font-size: 14px; line-height: 1.5; color: var(--text-color);">${escapeHtml(c.content)}</div>
                 </div>
-                <div style="margin-top: 4px; display: flex; gap: 15px; font-size: 11px; color: var(--secondary-text); padding-left: 5px;">
-                    <span onclick="toggleCommentLike(${c.id}, this)" class="comment-like-btn ${isLiked ? 'liked' : ''}" style="cursor: pointer; display: flex; align-items: center; gap: 4px; ${isLiked ? 'color: #ff3b30;' : ''}">
-                        <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="${isLiked ? 'currentColor' : 'none'}"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-                        <span class="like-count">${c.like_count}</span>
-                    </span>
-                    <span onclick="preparePanelReply(${c.id}, '${c.user.username}')" style="cursor: pointer; font-weight: 600;">Trả lời</span>
+                <div style="margin-top: 4px; font-size: 11px; color: var(--secondary-text); padding-left: 8px; opacity: 0.6;">
+                    ${new Date(c.created_at).toLocaleDateString()}
                 </div>
             </div>
         `;
@@ -158,21 +241,53 @@
         btns.forEach(btn => {
             const countSpan = btn.querySelector('.like-count');
             const svg = btn.querySelector('svg');
-            const isLiked = btn.classList.contains('liked');
-            let count = parseInt(countSpan.innerText) || 0;
+            const isCurrentlyLiked = btn.classList.contains('liked');
+            let currentCount = parseInt(countSpan.innerText) || 0;
 
-            if (isLiked) {
-                btn.classList.remove('liked'); btn.style.color = 'inherit';
-                svg.setAttribute('fill', 'none'); countSpan.innerText = Math.max(0, count - 1);
+            // 1. Cập nhật UI ngay lập tức (Optimistic)
+            if (isCurrentlyLiked) {
+                btn.classList.remove('liked');
+                countSpan.innerText = Math.max(0, currentCount - 1);
+                if (svg) svg.setAttribute('fill', 'none');
             } else {
-                btn.classList.add('liked'); btn.style.color = '#ff3b30';
-                svg.setAttribute('fill', 'currentColor'); countSpan.innerText = count + 1;
+                btn.classList.add('liked');
+                countSpan.innerText = currentCount + 1;
+                if (svg) svg.setAttribute('fill', 'currentColor');
+                
+                // Hiệu ứng tia sáng (chỉ khi like)
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle-effect';
+                sparkle.style.left = '50%';
+                sparkle.style.top = '50%';
+                sparkle.style.transform = 'translate(-50%, -50%)';
+                btn.appendChild(sparkle);
+                setTimeout(() => sparkle.remove(), 500);
+            }
+
+            // 2. Chạy Animation nảy tim
+            if (svg) {
+                svg.classList.remove('like-animate');
+                void svg.offsetWidth; // Force reflow
+                svg.classList.add('like-animate');
             }
         });
 
-        fetch('/posts/' + postId + '/like', { method: 'POST', headers: { 'X-CSRF-TOKEN': token, 'Accept': 'application/json' } })
-        .then(res => res.json()).then(data => {
-            btns.forEach(btn => { btn.querySelector('.like-count').innerText = data.count; });
+        // 3. Gửi request lên server
+        fetch('/posts/' + postId + '/like', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': token,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            // Cập nhật lại số lượng chính xác từ server (nếu có sai lệch)
+            btns.forEach(btn => {
+                const span = btn.querySelector('.like-count');
+                if (span) span.innerText = data.count;
+            });
         });
     }
 
@@ -199,13 +314,16 @@
     function switchTab(tab) {
         document.getElementById('content-foryou').style.display = tab === 'foryou' ? 'block' : 'none';
         document.getElementById('content-following').style.display = tab === 'following' ? 'block' : 'none';
-        const t1 = document.getElementById('tab-foryou'), t2 = document.getElementById('tab-following');
+        
+        const t1 = document.getElementById('tab-foryou');
+        const t2 = document.getElementById('tab-following');
+        
         if (tab === 'foryou') {
-            t1.style.background = 'var(--glass-bg)'; t1.style.color = 'var(--text-color)';
-            t2.style.background = 'none'; t2.style.color = 'var(--secondary-text)';
+            t1.classList.add('active');
+            t2.classList.remove('active');
         } else {
-            t2.style.background = 'var(--glass-bg)'; t2.style.color = 'var(--text-color)';
-            t1.style.background = 'none'; t1.style.color = 'var(--secondary-text)';
+            t2.classList.add('active');
+            t1.classList.remove('active');
         }
     }
 

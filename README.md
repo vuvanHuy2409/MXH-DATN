@@ -5,12 +5,12 @@
 ---
 
 ## 👨‍🎓 Thông tin Sinh viên thực hiện
-*   **Họ và tên:** [Tên của bạn]
-*   **Mã sinh viên:** [Mã sinh viên của bạn]
-*   **Lớp:** [Lớp của bạn]
+*   **Họ và tên:** [Vũ Văn Huy]
+*   **Mã sinh viên:** [20222591]
+*   **Lớp:** [DCCNTT13.10.14]
 *   **Khoa:** Công nghệ thông tin
 *   **Trường:** Đại học Công nghệ Đông Á (EAUT)
-*   **Đồ án:** Đồ án tốt nghiệp / Bài tập lớn chuyên ngành
+*   **Đồ án:** Đồ án tốt nghiệp 
 
 ---
 
@@ -104,4 +104,5 @@
 - [ ] Chức năng nhóm học tập (Study Groups).
 
 ---
-© 2026 E-Connect Project. Được thực hiện bởi Sinh viên EAUT.
+© 2026 E-Connect Project. Được thực hiện bởi Sinh viên Vũ Văn Huy.
+email: huyberr@gmail.com

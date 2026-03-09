@@ -25,7 +25,7 @@ class MessageController extends Controller
                 
                 if (!$isFriend) {
                     return response()->json([
-                        'error' => 'Người này đã hủy theo dõi bạn hoặc bạn đã hủy theo dõi họ. Bạn không thể gửi tin nhắn.'
+                        'error' => __('Người này đã hủy theo dõi bạn hoặc bạn đã hủy theo dõi họ. Bạn không thể gửi tin nhắn.')
                     ], 403);
                 }
             }

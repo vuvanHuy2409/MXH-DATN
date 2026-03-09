@@ -562,6 +562,44 @@
             .container { padding-bottom: 100px; }
         }
     </style>
+    <style>
+        /* Like Button Animations */
+        @keyframes heartPop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.4); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes sparkle {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+
+        .like-animate {
+            animation: heartPop 0.45s cubic-bezier(0.17, 0.89, 0.32, 1.49);
+        }
+
+        .like-btn.liked {
+            color: #ff3b30 !important;
+        }
+
+        .like-btn.liked svg {
+            fill: #ff3b30 !important;
+            stroke: #ff3b30 !important;
+        }
+
+        .sparkle-effect {
+            position: absolute;
+            pointer-events: none;
+            width: 40px;
+            height: 40px;
+            background: radial-gradient(circle, #ff3b30 20%, transparent 70%);
+            border-radius: 50%;
+            z-index: -1;
+            animation: sparkle 0.5s ease-out forwards;
+        }
+    </style>
 </head>
 
 <body>
@@ -1085,6 +1123,69 @@
                 }
             }
         });
+    </script>
+    <!-- Edit Post Modal -->
+    <div id="editPostModal" class="modal" style="display: none; background: rgba(0,0,0,0.3); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); align-items: center; justify-content: center; z-index: 6000;">
+        <div class="modal-content glass-bubble" style="max-width: 550px; padding: 0; border-radius: 28px; width: 90%; overflow: hidden;">
+            <div style="padding: 20px 25px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0; font-size: 18px; font-weight: 800;">Chỉnh sửa bài viết</h3>
+                <span onclick="closeEditPostModal()" style="cursor: pointer; font-size: 24px; opacity: 0.5;">&times;</span>
+            </div>
+            <div style="padding: 25px;">
+                <textarea id="editPostContent" style="width: 100%; min-height: 150px; border: none; background: transparent; font-size: 16px; color: var(--text-color); resize: none; outline: none;" placeholder="Bạn đang nghĩ gì?"></textarea>
+                <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 12px;">
+                    <button onclick="closeEditPostModal()" style="padding: 10px 20px; border-radius: 12px; border: 1px solid var(--glass-border); background: transparent; font-weight: 600; cursor: pointer;">Hủy</button>
+                    <button onclick="submitEditPost()" class="btn-post" style="padding: 10px 25px; border-radius: 12px; font-weight: 700;">Lưu thay đổi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentEditingPostId = null;
+
+        function openEditPostModal(id, content) {
+            currentEditingPostId = id;
+            document.getElementById('editPostContent').value = content;
+            document.getElementById('editPostModal').style.display = 'flex';
+            document.body.classList.add('modal-open');
+            // Đóng tất cả dropdown đang mở
+            document.querySelectorAll('.dropdown-content').forEach(d => d.classList.remove('show'));
+        }
+
+        function closeEditPostModal() {
+            document.getElementById('editPostModal').style.display = 'none';
+            document.body.classList.remove('modal-open');
+            currentEditingPostId = null;
+        }
+
+        function submitEditPost() {
+            const content = document.getElementById('editPostContent').value.trim();
+            if (!content) return;
+
+            fetch(`/posts/${currentEditingPostId}`, {
+                method: 'PATCH',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ content: content })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Cập nhật nội dung trên giao diện cho tất cả các bản sao của bài viết này
+                    const postWrappers = document.querySelectorAll(`[id$="-${currentEditingPostId}"]`);
+                    postWrappers.forEach(wrapper => {
+                        // Tìm thẻ div chứa text bài viết
+                        const textEl = wrapper.querySelector('.post-text, [style*="font-size: 15px"]');
+                        if (textEl) textEl.innerText = data.content;
+                    });
+                    closeEditPostModal();
+                }
+            });
+        }
     </script>
 </body>
 

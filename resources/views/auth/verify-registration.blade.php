@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Xác thực đăng ký - Threads Clone</title>
+    <title>{{ __('Verify Registration') }} - Threads Clone</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -47,8 +47,8 @@
 </head>
 <body>
     <div class="container">
-        <h1>Xác nhận đăng ký</h1>
-        <p class="subtitle">Nhập mã OTP 6 số đã được gửi tới {{ $email }} để hoàn tất đăng ký</p>
+        <h1>{{ __('Confirm Registration') }}</h1>
+        <p class="subtitle">{{ __('Enter the 6-digit OTP code sent to :email to complete registration', ['email' => $email]) }}</p>
 
         @if(session('status'))
             <div class="success-msg">{{ session('status') }}</div>
@@ -63,11 +63,11 @@
             <input type="hidden" name="email" value="{{ $email }}">
             
             <div class="form-group">
-                <label>Mã xác thực OTP</label>
+                <label>{{ __('OTP Verification Code') }}</label>
                 <input type="text" name="otp" placeholder="XXXXXX" required autofocus maxlength="6">
             </div>
 
-            <button type="submit" class="btn-submit">Xác nhận tài khoản</button>
+            <button type="submit" class="btn-submit">{{ __('Confirm Account') }}</button>
         </form>
     </div>
 </body>

@@ -120,13 +120,33 @@ class PostController extends Controller
         return view('posts.show', compact('post'));
     }
 
+    public function update(Request $request, Post $post)
+    {
+        if ($post->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $request->validate([
+            'content' => 'required|max:500',
+        ]);
+
+        $post->update([
+            'content' => $request->content,
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'content' => $post->content
+        ]);
+    }
+
     /**
      * Xóa bài viết (Kèm theo các bình luận liên quan).
      */
     public function destroy(Post $post)
     {
         if ($post->user_id !== auth()->id()) {
-            return response()->json(['message' => 'Không có quyền'], 403);
+            return response()->json(['message' => __('Không có quyền')], 403);
         }
 
         // Khi xóa Post, các Comment sẽ tự động bị xóa do ràng buộc foreign key (onDelete cascade)
@@ -147,7 +167,7 @@ class PostController extends Controller
         $comment = \App\Models\Comment::findOrFail($commentId);
         
         if ($comment->user_id !== auth()->id()) {
-            return response()->json(['message' => 'Không có quyền'], 403);
+            return response()->json(['message' => __('Không có quyền')], 403);
         }
 
         $post = \App\Models\Post::find($comment->post_id);

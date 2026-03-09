@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quên mật khẩu - Threads Clone</title>
+    <title>{{ __('Forgot Password') }} - Threads Clone</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -53,8 +53,8 @@
 </head>
 <body>
     <div class="container">
-        <h1>Quên mật khẩu?</h1>
-        <p class="subtitle">Nhập email của bạn để nhận mã OTP khôi phục mật khẩu</p>
+        <h1>{{ __('Forgot Password?') }}</h1>
+        <p class="subtitle">{{ __('Enter your email to receive an OTP code to reset your password') }}</p>
 
         @if($errors->any())
             <div class="error-msg">{{ $errors->first() }}</div>
@@ -63,18 +63,18 @@
         <form action="{{ route('password.email') }}" method="POST">
             @csrf
             <div class="form-group">
-                <label>Tài khoản Email EAUT</label>
+                <label>{{ __('EAUT Email Account') }}</label>
                 <div class="email-input-wrapper">
                     <input type="text" name="email_prefix" value="{{ old('email_prefix') }}" 
-                           placeholder="8 số MSV hoặc tên viết tắt" required autofocus>
+                           placeholder="{{ __('8-digit ID or abbreviation') }}" required autofocus>
                     <span class="email-suffix">@eaut.edu.vn</span>
                 </div>
             </div>
-            <button type="submit" class="btn-submit">Gửi mã OTP</button>
+            <button type="submit" class="btn-submit">{{ __('Send OTP') }}</button>
         </form>
 
         <div class="footer-links">
-            Quay lại <a href="{{ route('login') }}">Đăng nhập</a>
+            {{ __('Back to') }} <a href="{{ route('login') }}">{{ __('Login') }}</a>
         </div>
     </div>
 </body>

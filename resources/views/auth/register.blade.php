@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng ký - EAUT Social</title>
+    <title>{{ __('Register') }} - EAUT Social</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -165,10 +165,10 @@
 
 <body>
     <div class="register-container">
-        <h1>Tạo tài khoản</h1>
+        <h1>{{ __('Create Account') }}</h1>
         <div class="type-selector">
-            <div onclick="setType('student')" id="btn-student" class="type-option active">Sinh viên</div>
-            <div onclick="setType('teacher')" id="btn-teacher" class="type-option">Giáo viên</div>
+            <div onclick="setType('student')" id="btn-student" class="type-option active">{{ __('Student') }}</div>
+            <div onclick="setType('teacher')" id="btn-teacher" class="type-option">{{ __('Teacher') }}</div>
         </div>
 
         @if($errors->any())
@@ -182,14 +182,14 @@
             <input type="hidden" name="user_type" id="user_type" value="student">
 
             <div class="form-group">
-                <label>Họ và tên</label>
-                <input type="text" name="full_name" value="{{ old('full_name') }}" placeholder="Nhập họ và tên thật" required autofocus>
+                <label>{{ __('Full Name') }}</label>
+                <input type="text" name="full_name" value="{{ old('full_name') }}" placeholder="{{ __('Enter full name') }}" required autofocus>
             </div>
 
             <div class="form-group">
-                <label>Khoa</label>
+                <label>{{ __('Faculty') }}</label>
                 <select name="faculty_id" id="faculty_id" required>
-                    <option value="">-- Chọn khoa --</option>
+                    <option value="">-- {{ __('Select Faculty') }} --</option>
                     @foreach($faculties as $faculty)
                     <option value="{{ $faculty->id }}" {{ old('faculty_id') == $faculty->id ? 'selected' : '' }}>{{ $faculty->name }}</option>
                     @endforeach
@@ -200,19 +200,19 @@
             <div id="student-fields">
                 <div style="display: flex; gap: 15px;">
                     <div class="form-group" style="flex: 1;">
-                        <label>Ngày sinh</label>
+                        <label>{{ __('Date of Birth') }}</label>
                         <input type="date" name="dob" value="{{ old('dob') }}">
                     </div>
                     <div class="form-group" style="flex: 1;">
-                        <label>Lớp học</label>
-                        <input type="text" name="class" value="{{ old('class') }}" list="class-list" placeholder="Chọn lớp...">
+                        <label>{{ __('Class') }}</label>
+                        <input type="text" name="class" value="{{ old('class') }}" list="class-list" placeholder="{{ __('Select class') }}...">
                         <datalist id="class-list">
                             @for($i = 1; $i <= 22; $i++) <option value="DCCNTT13.10.{{ $i }}"> @endfor
                         </datalist>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Email sinh viên (8 số MSV)</label>
+                    <label>{{ __('Student Email (8-digit ID)') }}</label>
                     <div class="email-input-wrapper">
                         <input type="text" name="student_id_prefix" value="{{ old('student_id_prefix') }}" maxlength="8" pattern="\d{8}">
                         <span class="email-suffix">@eaut.edu.vn</span>
@@ -223,7 +223,7 @@
             <!-- Teacher Fields -->
             <div id="teacher-fields" style="display: none;">
                 <div class="form-group">
-                    <label>Email giáo viên (Tên viết tắt)</label>
+                    <label>{{ __('Teacher Email (Abbreviation)') }}</label>
                     <div class="email-input-wrapper">
                         <input type="text" name="teacher_email_prefix" value="{{ old('teacher_email_prefix') }}">
                         <span class="email-suffix">@eaut.edu.vn</span>
@@ -233,19 +233,19 @@
 
             <div style="display: flex; gap: 15px;">
                 <div class="form-group" style="flex: 1;">
-                    <label>Mật khẩu</label>
+                    <label>{{ __('Password') }}</label>
                     <input type="password" name="password" required>
                 </div>
                 <div class="form-group" style="flex: 1;">
-                    <label>Xác nhận</label>
+                    <label>{{ __('Confirm') }}</label>
                     <input type="password" name="password_confirmation" required>
                 </div>
             </div>
 
-            <button type="submit" class="btn-register">Đăng ký ngay</button>
+            <button type="submit" class="btn-register">{{ __('Register Now') }}</button>
         </form>
 
-        <div class="footer-links">Đã có tài khoản? <a href="{{ route('login') }}">Đăng nhập</a></div>
+        <div class="footer-links">{{ __('Already have an account?') }} <a href="{{ route('login') }}">{{ __('Login') }}</a></div>
     </div>
 
     <script>
