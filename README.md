@@ -1,60 +1,107 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# E-Connect - Mạng Xã Hội Sinh Viên EAUT 🚀
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>git commit -m "Mô tả thay đổi"
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+**E-Connect** là một nền tảng mạng xã hội nội bộ dành riêng cho sinh viên và giảng viên Trường Đại học Công nghệ Đông Á (EAUT). Dự án được thiết kế với phong cách hiện đại (Apple Glassmorphism), tập trung vào sự tối giản, mượt mà và khả năng kết nối cộng đồng học thuật.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 👨‍🎓 Thông tin Sinh viên thực hiện
+*   **Họ và tên:** [Tên của bạn]
+*   **Mã sinh viên:** [Mã sinh viên của bạn]
+*   **Lớp:** [Lớp của bạn]
+*   **Khoa:** Công nghệ thông tin
+*   **Trường:** Đại học Công nghệ Đông Á (EAUT)
+*   **Đồ án:** Đồ án tốt nghiệp / Bài tập lớn chuyên ngành
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 🛠 Công nghệ sử dụng (Tech Stack)
 
-## Learning Laravel
+### Backend
+*   **Framework:** Laravel 12.x
+*   **Language:** PHP 8.x
+*   **Database:** MySQL
+*   **Real-time:** Laravel Reverb (WebSockets)
+*   **Authentication:** Custom Auth with OTP Verification
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### Frontend
+*   **Template Engine:** Blade
+*   **Styling:** Vanilla CSS (Phong cách Glassmorphism)
+*   **Interactions:** Vanilla JavaScript
+*   **Localization:** Đa ngôn ngữ (Việt - Anh)
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## 🌟 Chức năng chính (Features)
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### 1. Hệ thống Tài khoản & Bảo mật
+*   **Đăng ký/Đăng nhập:** Xác thực qua email tên miền `@eaut.edu.vn`.
+*   **Xác thực OTP:** Gửi mã xác thực về email thực tế (hiệu lực 60s).
+*   **Phân quyền:** Tài khoản sinh viên và giảng viên với thông tin chi tiết riêng biệt.
+*   **Đổi mật khẩu:** Chức năng đổi mật khẩu an toàn trong phần cài đặt.
 
-### Premium Partners
+### 2. Tương tác Mạng xã hội
+*   **Đăng bài (Posts):** Hỗ trợ đăng văn bản, hình ảnh, video và liên kết.
+*   **Tương tác:** Thích (Like), Đăng lại (Repost), Bình luận (Comment) theo dạng Thread.
+*   **Tìm kiếm:** Tìm kiếm người dùng và bài viết nhanh chóng.
+*   **Hồ sơ:** Trang cá nhân hiển thị bài viết, danh sách người theo dõi.
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### 3. Giao tiếp & Thông báo
+*   **Nhắn tin (Direct Messages):** Trò chuyện trực tiếp giữa các người dùng.
+*   **Thông báo (Notifications):** Nhận thông báo thời gian thực khi có người thích, bình luận hoặc theo dõi.
 
-## Contributing
+### 4. Tùy chỉnh cá nhân (Settings)
+*   **Dark Mode:** Chế độ nền tối bảo vệ mắt.
+*   **Đa ngôn ngữ:** Chuyển đổi linh hoạt giữa Tiếng Việt và Tiếng Anh.
+*   **Cửa sổ chào mừng:** Giao diện chào mừng thân thiện khi đăng ký thành công.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+---
 
-## Code of Conduct
+## 📸 Giao diện ứng dụng
+Ứng dụng sử dụng ngôn ngữ thiết kế **Glassmorphism** với các đặc điểm:
+*   Nền mờ (Backdrop blur) 25px.
+*   Viền kính trắng mỏng (Glass border).
+*   Bóng đổ mềm mại (Soft shadows).
+*   Hoạt ảnh mượt mà (Smooth animations).
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+## 🚀 Hướng dẫn cài đặt
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+1. **Clone dự án:**
+   ```bash
+   git clone [link-git-cua-ban]
+   cd mxh_DATN
+   ```
 
-## License
+2. **Cài đặt thư viện:**
+   ```bash
+   composer install
+   npm install
+   ```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
-# MXH-DATN
+3. **Cấu hình môi trường:**
+   *   Sao chép `.env.example` thành `.env`.
+   *   Cấu hình `DB_DATABASE`, `MAIL_USERNAME`, `MAIL_PASSWORD`.
+
+4. **Khởi tạo dữ liệu:**
+   ```bash
+   php artisan key:generate
+   php artisan migrate --seed
+   ```
+
+5. **Chạy ứng dụng:**
+   ```bash
+   php artisan serve
+   ```
+
+---
+
+## 📝 Nội dung phát triển (Roadmap)
+- [x] Hệ thống OTP qua Email.
+- [x] Giao diện đa ngôn ngữ.
+- [x] Chế độ Dark Mode.
+- [ ] Tích hợp Chat GPT hỗ trợ giải đáp học tập.
+- [ ] Chức năng nhóm học tập (Study Groups).
+
+---
+© 2026 E-Connect Project. Được thực hiện bởi Sinh viên EAUT.
