@@ -57,36 +57,52 @@
 
     .modern-input {
         width: 100%;
-        padding: 12px 15px;
-        border-radius: 12px;
-        border: 1px solid var(--glass-border);
-        background: rgba(0, 0, 0, 0.03);
-        color: #000;
+        padding: 12px 18px;
+        border-radius: 14px;
+        border: 2px solid #edf2f7;
+        background: #ffffff !important;
+        color: #000000 !important;
         outline: none;
         box-sizing: border-box;
         font-size: 15px;
-        transition: all 0.2s;
+        font-weight: 500;
+        transition: all 0.2s ease;
         display: block;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        -webkit-text-fill-color: #000000 !important;
+    }
+
+    /* Đảm bảo text trong select và option luôn đen và rõ nét */
+    select.modern-input, 
+    select.modern-input option,
+    #facultySelect,
+    #classSelect,
+    #facultySelect option,
+    #classSelect option {
+        color: #000000 !important;
+        background-color: #ffffff !important;
+        font-weight: 600 !important;
+        -webkit-text-fill-color: #000000 !important;
+    }
+
+    input.modern-input:focus, select.modern-input:focus {
+        border-color: var(--accent-color);
+        background: #ffffff !important;
+        box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1);
     }
 
     input.modern-input, select.modern-input {
-        height: 50px;
+        height: 52px;
     }
 
     select.modern-input {
         cursor: pointer;
         appearance: none;
         -webkit-appearance: none;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 15px center;
-        padding-right: 40px;
-    }
-
-    .modern-input:focus {
-        background: #fff;
-        border-color: var(--accent-color);
-        box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1);
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+        background-repeat: no-repeat !important;
+        background-position: right 18px center !important;
+        padding-right: 45px !important;
     }
 
     .input-label {
@@ -94,18 +110,20 @@
         font-size: 14px;
         font-weight: 700;
         margin-bottom: 8px;
-        color: #000;
+        color: #000000 !important;
     }
 
     input.modern-input:disabled, select.modern-input:disabled {
-        opacity: 0.6;
+        opacity: 0.7;
         cursor: not-allowed;
-        background: rgba(0, 0, 0, 0.01);
+        background: rgba(0, 0, 0, 0.05);
+        color: #000000 !important;
+        -webkit-text-fill-color: #000000;
     }
 
     select.modern-input option {
-        color: #000;
-        background: #fff;
+        color: #000000 !important;
+        background: #ffffff !important;
     }
 
     @media (max-width: 900px) {
@@ -187,7 +205,7 @@
                 
                 <!-- Dropdown Menu -->
                 <div id="groupManagementMenu" style="display: none; position: absolute; top: 45px; right: 0; width: 220px; background: var(--glass-bg); backdrop-filter: blur(30px); border: 1px solid var(--glass-border); border-radius: 18px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); overflow: hidden; animation: fadeIn 0.2s ease;">
-                    @if(auth()->user()->id === $activeGroup->creator_id || (isset($isMember) && $activeGroup->groupMembers()->where('user_id', auth()->id())->first()->role === 'admin'))
+                    @if(auth()->user()->id === $activeGroup->creator_id || (isset($isMember) && $activeGroup->members()->where('user_id', auth()->id())->first()->role === 'admin'))
                     <div onclick="editGroupInfo()" style="padding: 12px 18px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.2s; font-size: 14px; font-weight: 600;" onmouseover="this.style.background='rgba(0,113,227,0.1)'; this.style.color='var(--accent-color)'" onmouseout="this.style.background='transparent'; this.style.color='inherit'">
                         <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1h1l9.5-9.5z"></path></svg>
                         Chỉnh sửa thông tin
@@ -201,7 +219,23 @@
             </div>
 
             <div style="position: absolute; bottom: -30px; left: 30px; display: flex; align-items: flex-end; gap: 20px;">
-                <div class="avatar" style="width: 90px; height: 90px; background-image: url('{{ $activeGroup->avatar_url }}'); background-size: cover; border-radius: 24px; border: 5px solid var(--bg-main); box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 5;"></div>
+                <div class="avatar" style="width: 90px; height: 90px; background-image: url('{{ $activeGroup->avatar_url }}'); background-size: cover; border-radius: 24px; border: 5px solid var(--bg-main); box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 5; position: relative;">
+                    @if(auth()->id() === $activeGroup->creator_id)
+                    <div onclick="document.getElementById('groupAvatarInput').click()" 
+                         style="position: absolute; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; cursor: pointer; border-radius: 19px;" 
+                         onmouseover="this.style.opacity='1'" 
+                         onmouseout="this.style.opacity='0'">
+                        <svg viewBox="0 0 24 24" width="24" height="24" stroke="white" stroke-width="2.5" fill="none">
+                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                            <circle cx="12" cy="13" r="4"></circle>
+                        </svg>
+                    </div>
+                    <form id="groupAvatarForm" action="{{ route('groups.update_avatar', $activeGroup->slug) }}" method="POST" enctype="multipart/form-data" style="display: none;">
+                        @csrf
+                        <input type="file" name="avatar" id="groupAvatarInput" accept="image/*" onchange="document.getElementById('groupAvatarForm').submit()">
+                    </form>
+                    @endif
+                </div>
                 <div style="padding-bottom: 8px; z-index: 5;">
                     <h1 style="margin: 0; font-size: 24px; font-weight: 800; color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.3);">{{ $activeGroup->name }}</h1>
                     <div style="display: flex; align-items: center; gap: 10px; color: rgba(255,255,255,0.95); font-size: 13px; font-weight: 700; margin-top: 4px;">
@@ -640,19 +674,31 @@
             typeInput = document.getElementById('groupTypeInput');
         const classField = document.getElementById('classSelectionField'),
             privacyField = document.getElementById('privacyField');
+        
+        const communityText = communityBtn.querySelector('div');
+        const classText = classBtn.querySelector('div');
+
         typeInput.value = type;
         if (type === 'community') {
             communityBtn.style.borderColor = 'var(--accent-color)';
             communityBtn.style.background = 'rgba(0,113,227,0.05)';
+            communityText.style.color = 'var(--accent-color)';
+            
             classBtn.style.borderColor = 'var(--glass-border)';
             classBtn.style.background = 'transparent';
+            classText.style.color = 'var(--secondary-text)';
+            
             classField.style.display = 'none';
             privacyField.style.display = 'block';
         } else {
             classBtn.style.borderColor = 'var(--accent-color)';
             classBtn.style.background = 'rgba(0,113,227,0.05)';
+            classText.style.color = '#000000';
+            
             communityBtn.style.borderColor = 'var(--glass-border)';
             communityBtn.style.background = 'transparent';
+            communityText.style.color = 'var(--secondary-text)';
+            
             classField.style.display = 'block';
             privacyField.style.display = 'none';
         }

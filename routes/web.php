@@ -42,6 +42,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/groups/{slug?}', [App\Http\Controllers\SocialGroupController::class, 'index'])->name('groups.index');
     Route::post('/groups', [App\Http\Controllers\SocialGroupController::class, 'store'])->name('groups.store');
     Route::put('/groups/{group:slug}', [App\Http\Controllers\SocialGroupController::class, 'update'])->name('groups.update');
+    Route::post('/groups/{group:slug}/avatar', [App\Http\Controllers\SocialGroupController::class, 'updateAvatar'])->name('groups.update_avatar');
     Route::delete('/groups/{group:slug}', [App\Http\Controllers\SocialGroupController::class, 'destroy'])->name('groups.destroy');
     Route::post('/groups/join-by-code', [App\Http\Controllers\SocialGroupController::class, 'joinByCode'])->name('groups.join_by_code');
     // Bỏ route groups.show riêng biệt vì đã gộp vào index
@@ -92,6 +93,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/kick/{user}', [ConversationController::class, 'kickMember'])->name('messages.kick');
         Route::post('/add-members', [ConversationController::class, 'addMembers'])->name('messages.add_members');
         Route::post('/approve/{user}', [ConversationController::class, 'approveMember'])->name('messages.approve');
+        Route::get('/members', [ConversationController::class, 'getMembers'])->name('messages.members');
         Route::get('/media', [ConversationController::class, 'getMedia'])->name('messages.media');
         Route::get('/search', [ConversationController::class, 'searchMessages'])->name('messages.search');
         Route::post('/avatar', [ConversationController::class, 'updateGroupAvatar'])->name('messages.update_avatar');

@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'Threads Clone') }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -889,8 +890,11 @@
                     </div>
 
                     <!-- Textarea -->
+                    @if($errors->has('content'))
+                        <div style="color: #ff3b30; font-size: 13px; font-weight: 700; margin-bottom: 10px;">{{ $errors->first('content') }}</div>
+                    @endif
                     <textarea name="content" rows="4" placeholder="Bạn đang nghĩ gì?" required autofocus
-                              style="width: 100%; border: none; background: transparent; color: inherit; font-size: 18px; line-height: 1.6; outline: none; padding: 0; resize: none; min-height: 120px; font-weight: 500;"></textarea>
+                              style="width: 100%; border: none; background: transparent; color: inherit; font-size: 18px; line-height: 1.6; outline: none; padding: 0; resize: none; min-height: 120px; font-weight: 500;">{{ old('content') }}</textarea>
 
                     <!-- Link Input Area -->
                     <div id="linkInputContainer" style="display: none; margin-top: 15px; background: rgba(0,113,227,0.03); padding: 15px; border-radius: 18px; border: 1px dashed var(--accent-color); animation: slideDown 0.3s ease;">
@@ -913,9 +917,14 @@
                 <div style="padding: 15px 25px 25px; border-top: 1px solid var(--glass-border); background: rgba(255,255,255,0.02); display: flex; justify-content: space-between; align-items: center;">
                     <div style="display: flex; gap: 8px;">
                         <label style="cursor: pointer; width: 44px; height: 44px; border-radius: 14px; background: rgba(0,0,0,0.03); display: flex; align-items: center; justify-content: center; color: var(--secondary-text); transition: all 0.2s;" 
-                               title="Thêm ảnh/video" onmouseover="this.style.background='rgba(0,113,227,0.1)'; this.style.color='var(--accent-color)'" onmouseout="this.style.background='rgba(0,0,0,0.03)'; this.style.color='var(--secondary-text)'">
+                               title="Thêm ảnh" onmouseover="this.style.background='rgba(0,113,227,0.1)'; this.style.color='var(--accent-color)'" onmouseout="this.style.background='rgba(0,0,0,0.03)'; this.style.color='var(--secondary-text)'">
                             <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2.2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                            <input type="file" name="media[]" accept="image/*,video/*,.gif" id="mediaInput" style="display: none;" onchange="previewMedia(event)" multiple>
+                            <input type="file" name="media[]" accept="image/*,.gif" id="mediaInput" style="display: none;" onchange="previewMedia(event)" multiple>
+                        </label>
+                        <label style="cursor: pointer; width: 44px; height: 44px; border-radius: 14px; background: rgba(0,0,0,0.03); display: flex; align-items: center; justify-content: center; color: var(--secondary-text); transition: all 0.2s;" 
+                               title="Thêm tài liệu" onmouseover="this.style.background='rgba(0,113,227,0.1)'; this.style.color='var(--accent-color)'" onmouseout="this.style.background='rgba(0,0,0,0.03)'; this.style.color='var(--secondary-text)'">
+                            <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2.2" fill="none"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+                            <input type="file" name="media[]" id="fileInput" style="display: none;" onchange="previewMedia(event)" multiple>
                         </label>
                         <div onclick="toggleLinkInput()" id="linkToggleButton" style="cursor: pointer; width: 44px; height: 44px; border-radius: 14px; background: rgba(0,0,0,0.03); display: flex; align-items: center; justify-content: center; color: var(--secondary-text); transition: all 0.2s;" 
                              title="Gán link" onmouseover="this.style.background='rgba(0,113,227,0.1)'; this.style.color='var(--accent-color)'" onmouseout="this.style.background='rgba(0,0,0,0.03)'; this.style.color='var(--secondary-text)'">
@@ -1333,7 +1342,8 @@
             const grid = document.getElementById('mediaPreviewGrid');
             const container = document.getElementById('mediaPreviewContainer');
 
-            grid.innerHTML = '';
+            // Không xóa grid cũ để cho phép chọn từ cả 2 nút
+            // grid.innerHTML = ''; 
             if (files.length > 0) {
                 container.style.display = 'block';
             }
@@ -1342,46 +1352,60 @@
                 const file = files[i];
                 const reader = new FileReader();
                 const itemDiv = document.createElement('div');
-                itemDiv.style.cssText = 'position: relative; flex: 0 0 40%; border-radius: 12px; overflow: hidden; border: 1px solid var(--glass-border); aspect-ratio: 1; background: rgba(0,0,0,0.05); scroll-snap-align: start;';
+                itemDiv.style.cssText = 'position: relative; flex: 0 0 130px; border-radius: 12px; overflow: hidden; border: 1px solid var(--glass-border); aspect-ratio: 1; background: rgba(0,0,0,0.05); scroll-snap-align: start; display: flex; align-items: center; justify-content: center;';
 
-                reader.onload = function(e) {
-                    if (file.type.startsWith('video/')) {
-                        itemDiv.innerHTML = `
-                            <video src="${e.target.result}" style="width: 100%; height: 100%; display: block; object-fit: cover;" muted></video>
-                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; opacity: 0.8;">
-                                <svg viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                            </div>
-                        `;
-                    } else {
+                if (file.type.startsWith('image/')) {
+                    reader.onload = function(e) {
                         itemDiv.innerHTML = `<img src="${e.target.result}" style="width: 100%; height: 100%; display: block; object-fit: cover;">`;
-                    }
-                    // Nút xóa
-                    const removeBtn = document.createElement('span');
-                    removeBtn.innerHTML = '&times;';
-                    removeBtn.style.cssText = 'position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.5); color: #fff; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; font-weight: bold; backdrop-filter: blur(4px);';
-                    removeBtn.onclick = function() {
-                        itemDiv.remove();
-                        if (grid.children.length === 0) {
-                            container.style.display = 'none';
-                        }
+                        addRemoveButton(itemDiv);
                     };
-                    itemDiv.appendChild(removeBtn);
-                };
-                reader.readAsDataURL(file);
+                    reader.readAsDataURL(file);
+                } else {
+                    // Generic file
+                    itemDiv.innerHTML = `
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px; text-align: center; width: 100%;">
+                            <svg viewBox="0 0 24 24" width="32" height="32" stroke="var(--accent-color)" stroke-width="2" fill="none" style="margin-bottom: 5px;"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+                            <div style="font-size: 10px; font-weight: 700; color: var(--text-color); word-break: break-all; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${file.name}</div>
+                        </div>
+                    `;
+                    addRemoveButton(itemDiv);
+                }
                 grid.appendChild(itemDiv);
             }
+        }
+
+        function addRemoveButton(container) {
+            const removeBtn = document.createElement('span');
+            removeBtn.innerHTML = '&times;';
+            removeBtn.style.cssText = 'position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.5); color: #fff; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; font-weight: bold; backdrop-filter: blur(4px); z-index: 10;';
+            removeBtn.onclick = function() {
+                container.remove();
+                if (document.getElementById('mediaPreviewGrid').children.length === 0) {
+                    document.getElementById('mediaPreviewContainer').style.display = 'none';
+                }
+            };
+            container.appendChild(removeBtn);
         }
 
         function removeAllMedia() {
             document.getElementById('mediaPreviewGrid').innerHTML = '';
             document.getElementById('mediaPreviewContainer').style.display = 'none';
             document.getElementById('mediaInput').value = '';
+            const fileInput = document.getElementById('fileInput');
+            if (fileInput) fileInput.value = '';
         }
 
         // Khởi tạo theme từ localStorage
         const savedTheme = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
         updateThemeIcon(savedTheme);
+
+        // Show modal if there are validation errors
+        @if($errors->has('content') || $errors->has('media.*') || $errors->has('link_url'))
+            window.onload = function() {
+                openModal();
+            };
+        @endif
 
         // Dropdown Toggle Logic
         function toggleDropdown(id) {
@@ -1464,6 +1488,15 @@
                         closeEditPostModal();
                     }
                 });
+        }
+
+        function sharePost(id) {
+            const url = window.location.origin + '/posts/' + id;
+            navigator.clipboard.writeText(url).then(() => {
+                alert('Đã sao chép liên kết bài viết vào bộ nhớ tạm!');
+            }).catch(err => {
+                console.error('Không thể sao chép: ', err);
+            });
         }
     </script>
 </body>

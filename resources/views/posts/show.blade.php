@@ -26,40 +26,91 @@
 
     <!-- Replies List (Danh sách bình luận - Nhỏ hơn) -->
     <div id="replies-container" style="padding: 10px 0;">
-        @foreach($post->rootComments as $reply)
-        <div class="comment-section">
-            <!-- Bình luận chính (Cấp 2) -->
-            @include('posts._item', [
-            'post' => $reply,
-            'prefix' => 'r1',
-            'hideLike' => true,
-            'hideRepost' => true,
-            'hideShare' => true,
-            'hideReply' => true,
-            'isComment' => true,
-            'small' => true,
-            'class' => 'comment-bubble'
-            ])
+        @php
+            // Nhóm bình luận theo parent_id
+            $commentsByParent = $post->comments->groupBy('parent_id');
+            $rootComments = $commentsByParent->get(null) ?? collect();
 
-            <!-- Các phản hồi cho bình luận này (Nếu có) -->
-            @if($reply->replies->isNotEmpty())
-            <div class="nested-replies">
-                @foreach($reply->replies as $nestedReply)
+            // Hàm thu thập tất cả bình luận con thành mảng phẳng
+            if (!function_exists('getFlatReplies')) {
+                function getFlatReplies($parentId, $commentsByParent, &$allReplies, $depth = 1) {
+                    if ($depth > 100) return;
+                    $replies = $commentsByParent->get($parentId) ?? collect();
+                    foreach($replies as $reply) {
+                        $allReplies[] = $reply;
+                        getFlatReplies($reply->id, $commentsByParent, $allReplies, $depth + 1);
+                    }
+                }
+            }
+        @endphp
+
+        @foreach($rootComments as $reply)
+            <div class="comment-section">
+                <!-- Bình luận gốc (Cấp 1) -->
                 @include('posts._item', [
-                'post' => $nestedReply,
-                'prefix' => 'r2',
-                'hideLike' => true,
-                'hideRepost' => true,
-                'hideShare' => true,
-                'hideReply' => true,
-                'isComment' => true,
-                'small' => true,
-                'class' => 'comment-bubble nested'
+                    'post' => $reply,
+                    'prefix' => 'r1-' . $reply->id,
+                    'hideLike' => false,
+                    'hideRepost' => true,
+                    'hideShare' => true,
+                    'hideReply' => true,
+                    'isComment' => true,
+                    'small' => true,
+                    'class' => 'comment-bubble'
                 ])
-                @endforeach
+
+                <!-- Các phản hồi -->
+                @if($commentsByParent->has($reply->id))
+                    <div class="nested-replies" id="nested-container-{{ $reply->id }}">
+                        @php
+                            $allFlatReplies = [];
+                            getFlatReplies($reply->id, $commentsByParent, $allFlatReplies);
+                            $firstReply = array_shift($allFlatReplies);
+                        @endphp
+                        
+                        <!-- Hiển thị bình luận đầu tiên -->
+                        <div class="comment-section" style="margin-bottom: 5px; padding: 0;">
+                            @include('posts._item', [
+                                'post' => $firstReply,
+                                'prefix' => 'r-flat-' . $firstReply->id,
+                                'hideLike' => false,
+                                'hideRepost' => true,
+                                'hideShare' => true,
+                                'hideReply' => true,
+                                'isComment' => true,
+                                'small' => true,
+                                'class' => 'comment-bubble nested'
+                            ])
+                        </div>
+
+                        <!-- Nếu còn nhiều hơn 1 bình luận con, ẩn phần còn lại -->
+                        @if(count($allFlatReplies) > 0)
+                            <div id="more-replies-{{ $reply->id }}" style="display: none;">
+                                @foreach($allFlatReplies as $hiddenReply)
+                                    <div class="comment-section" style="margin-bottom: 5px; padding: 0;">
+                                        @include('posts._item', [
+                                            'post' => $hiddenReply,
+                                            'prefix' => 'r-flat-' . $hiddenReply->id,
+                                            'hideLike' => false,
+                                            'hideRepost' => true,
+                                            'hideShare' => true,
+                                            'hideReply' => true,
+                                            'isComment' => true,
+                                            'small' => true,
+                                            'class' => 'comment-bubble nested'
+                                        ])
+                                    </div>
+                                @endforeach
+                            </div>
+                            
+                            <div class="show-more-comments" onclick="toggleReplies({{ $reply->id }})" id="btn-more-{{ $reply->id }}" style="font-size: 13px; font-weight: 700; color: var(--accent-color); cursor: pointer; padding: 5px 0 10px 0; display: flex; align-items: center; gap: 8px; opacity: 0.9;">
+                                <div style="width: 15px; height: 2px; background: currentColor; opacity: 0.3; border-radius: 1px;"></div>
+                                <span>Xem thêm {{ count($allFlatReplies) }} bình luận</span>
+                            </div>
+                        @endif
+                    </div>
+                @endif
             </div>
-            @endif
-        </div>
         @endforeach
     </div>
 
@@ -251,6 +302,20 @@
         navigator.clipboard.writeText(window.location.origin + '/posts/' + id);
         alert('Đã sao chép liên kết!');
     }
+
+    function toggleReplies(id) {
+        const moreDiv = document.getElementById('more-replies-' + id);
+        const btn = document.getElementById('btn-more-' + id);
+        if (moreDiv.style.display === 'none') {
+            moreDiv.style.display = 'block';
+            btn.querySelector('span').innerText = 'Thu gọn';
+        } else {
+            moreDiv.style.display = 'none';
+            // Đếm số lượng con (đã render trong moreDiv)
+            const count = moreDiv.querySelectorAll('.comment-section').length;
+            btn.querySelector('span').innerText = 'Xem thêm ' + count + ' bình luận';
+        }
+    }
 </script>
 
 <style>
@@ -277,9 +342,13 @@
     }
 
     .nested-replies {
-        margin-left: 40px;
-        border-left: 1.5px solid var(--glass-border);
-        padding-left: 12px;
+        margin-left: 55px;
+        border-left: 2px solid rgba(0,0,0,0.05);
+        padding-left: 15px;
+    }
+
+    [data-theme="dark"] .nested-replies {
+        border-left-color: rgba(255,255,255,0.1);
     }
 
     .comment-bubble.nested {

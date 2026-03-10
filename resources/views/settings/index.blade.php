@@ -59,6 +59,34 @@
         </div>
     </div>
 
+    <!-- Nhóm: Giới thiệu -->
+    <div style="margin-bottom: 30px;">
+        <h3 style="font-size: 14px; color: var(--secondary-text); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; padding-left: 5px;">Giới thiệu</h3>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+            <!-- Về sản phẩm -->
+            <div onclick="openAboutProductModal()" class="settings-item">
+                <div class="settings-item-left">
+                    <div class="icon-box" style="background: rgba(0, 113, 227, 0.1); color: #0071e3;">
+                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                    </div>
+                    <span>Về sản phẩm</span>
+                </div>
+                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </div>
+
+            <!-- Về tác giả -->
+            <div onclick="openAboutAuthorModal()" class="settings-item">
+                <div class="settings-item-left">
+                    <div class="icon-box" style="background: rgba(255, 45, 85, 0.1); color: #ff2d55;">
+                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    </div>
+                    <span>Về tác giả</span>
+                </div>
+                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </div>
+        </div>
+    </div>
+
     <!-- Nhóm: Hỗ trợ -->
     <div style="margin-bottom: 40px;">
         <h3 style="font-size: 14px; color: var(--secondary-text); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; padding-left: 5px;">Hỗ trợ</h3>
@@ -168,6 +196,50 @@
     </div>
 </div>
 
+<!-- About Product Modal -->
+<div id="aboutProductModal" class="modal" style="display: none; background: rgba(0,0,0,0.2); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); align-items: center; justify-content: center;">
+    <div class="modal-content glass-bubble" style="max-width: 500px; padding: 35px; border-radius: 35px; border: 1px solid rgba(255,255,255,0.5); width: 90%;">
+        <div style="text-align: center; margin-bottom: 25px;">
+            <div style="width: 60px; height: 60px; background: rgba(0, 113, 227, 0.1); color: #0071e3; border-radius: 20px; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center;">
+                <svg viewBox="0 0 24 24" width="30" height="30" stroke="currentColor" stroke-width="2.5" fill="none"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            </div>
+            <h3 style="margin: 0; font-size: 22px; font-weight: 800;">Về E-Connect</h3>
+        </div>
+        <div style="line-height: 1.6; color: var(--text-color); font-size: 15px;">
+            <p><strong>E-Connect</strong> là một mạng xã hội học đường hiện đại, được thiết kế chuyên biệt để kết nối cộng đồng sinh viên và giảng viên.</p>
+            <p>Sứ mệnh của chúng tôi là tạo ra một môi trường giao lưu học thuật năng động, nơi kiến thức được chia sẻ dễ dàng và các mối quan hệ học thuật được thắt chặt hơn thông qua công nghệ.</p>
+            <p>Các tính năng chính:</p>
+            <ul style="padding-left: 20px; margin-top: 10px;">
+                <li>Chia sẻ bài viết, tài liệu và kiến thức.</li>
+                <li>Hệ thống tin nhắn thời gian thực (Cá nhân & Nhóm).</li>
+                <li>Quản lý nhóm học tập và cộng đồng.</li>
+                <li>Thông báo tức thì về các hoạt động mới.</li>
+            </ul>
+        </div>
+        <button type="button" onclick="closeAboutProductModal()" style="width: 100%; padding: 15px; border-radius: 18px; border: 1px solid var(--glass-border); background: var(--accent-color); color: white; font-weight: 700; cursor: pointer; margin-top: 25px;">Đóng</button>
+    </div>
+</div>
+
+<!-- About Author Modal -->
+<div id="aboutAuthorModal" class="modal" style="display: none; background: rgba(0,0,0,0.2); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); align-items: center; justify-content: center;">
+    <div class="modal-content glass-bubble" style="max-width: 450px; padding: 35px; border-radius: 35px; border: 1px solid rgba(255,255,255,0.5); width: 90%;">
+        <div style="text-align: center; margin-bottom: 25px;">
+            <div style="width: 80px; height: 80px; background: rgba(255, 45, 85, 0.1); color: #ff2d55; border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                <svg viewBox="0 0 24 24" width="40" height="40" stroke="currentColor" stroke-width="2" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            </div>
+            <h3 style="margin: 0; font-size: 22px; font-weight: 800;">Thông tin Tác giả</h3>
+        </div>
+        <div style="line-height: 1.6; color: var(--text-color); font-size: 15px; text-align: center;">
+            <p>Sản phẩm được phát triển với niềm đam mê và tâm huyết nhằm mang lại giá trị thiết thực cho cộng đồng giáo dục.</p>
+            <div style="margin-top: 20px; padding: 15px; background: rgba(0,0,0,0.02); border-radius: 15px; border: 1px solid var(--glass-border);">
+                <div style="font-weight: 700; color: var(--secondary-text); font-size: 12px; text-transform: uppercase; margin-bottom: 5px;">Liên hệ với tôi</div>
+                <div style="font-size: 16px; font-weight: 800; color: var(--accent-color);">huyberr@gmail.com</div>
+            </div>
+        </div>
+        <button type="button" onclick="closeAboutAuthorModal()" style="width: 100%; padding: 15px; border-radius: 18px; border: 1px solid var(--glass-border); background: transparent; font-weight: 700; cursor: pointer; margin-top: 25px;">Đóng</button>
+    </div>
+</div>
+
 <script>
     function openPasswordModal() {
         document.getElementById('passwordModal').style.display = 'flex';
@@ -183,6 +255,23 @@
     }
     function closeFeedbackModal() {
         document.getElementById('feedbackModal').style.display = 'none';
+        document.body.classList.remove('modal-open');
+    }
+
+    function openAboutProductModal() {
+        document.getElementById('aboutProductModal').style.display = 'flex';
+        document.body.classList.add('modal-open');
+    }
+    function closeAboutProductModal() {
+        document.getElementById('aboutProductModal').style.display = 'none';
+        document.body.classList.remove('modal-open');
+    }
+    function openAboutAuthorModal() {
+        document.getElementById('aboutAuthorModal').style.display = 'flex';
+        document.body.classList.add('modal-open');
+    }
+    function closeAboutAuthorModal() {
+        document.getElementById('aboutAuthorModal').style.display = 'none';
         document.body.classList.remove('modal-open');
     }
 </script>

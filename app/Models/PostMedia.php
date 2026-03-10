@@ -14,6 +14,7 @@ class PostMedia extends Model
     protected $fillable = [
         'post_id',
         'media_url',
+        'file_name',
         'media_type',
     ];
 

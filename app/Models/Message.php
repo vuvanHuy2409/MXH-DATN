@@ -10,7 +10,8 @@ class Message extends Model
 {
     use HasFactory;
 
-    public $timestamps = false; // mxh.sql only has created_at
+    public $timestamps = true;
+    const UPDATED_AT = null;
 
     protected $casts = [
         'created_at' => 'datetime',
@@ -25,6 +26,7 @@ class Message extends Model
         'content',
         'metadata',
         'is_read',
+        'created_at',
     ];
 
     public function conversation()

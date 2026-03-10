@@ -159,13 +159,18 @@
                                 </a>
 
                                 @if($post->media->isNotEmpty())
-                                    <div class="post-media-container" style="margin-top: 12px;">
+                                    <div class="post-media-container" style="margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px;">
                                         @foreach($post->media as $media)
-                                            <div class="post-media-item {{ $post->media->count() === 1 ? 'single' : '' }}">
+                                            <div class="post-media-item {{ $post->media->count() === 1 ? 'single' : '' }}" style="border-radius: 12px; overflow: hidden; border: 1px solid var(--glass-border);">
                                                 @if($media->media_type === 'video')
-                                                    <video src="{{ asset($media->media_url) }}" controls></video>
+                                                    <video src="{{ asset($media->media_url) }}" controls style="max-height: 200px; width: auto;"></video>
+                                                @elseif($media->media_type === 'image' || $media->media_type === 'gif')
+                                                    <img src="{{ asset($media->media_url) }}" onclick="openLightbox(this.src)" style="cursor: zoom-in; max-height: 200px; width: auto;">
                                                 @else
-                                                    <img src="{{ asset($media->media_url) }}" onclick="openLightbox(this.src)" style="cursor: zoom-in;">
+                                                    <a href="{{ asset($media->media_url) }}" download="{{ $media->file_name }}" style="text-decoration: none; display: flex; align-items: center; gap: 10px; padding: 12px; background: white; border-radius: 12px; border: 1px solid var(--glass-border);">
+                                                        <svg viewBox="0 0 24 24" width="24" height="24" stroke="var(--accent-color)" stroke-width="2.5" fill="none"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+                                                        <span style="font-size: 13px; font-weight: 700; color: var(--text-color); max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $media->file_name ?? 'Tài liệu' }}</span>
+                                                    </a>
                                                 @endif
                                             </div>
                                         @endforeach

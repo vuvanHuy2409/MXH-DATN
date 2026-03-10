@@ -60,7 +60,7 @@ class SocialGroupController extends Controller
                 'description' => $request->description,
                 'privacy' => $privacy,
                 'creator_id' => Auth::id(),
-                'avatar_url' => $request->type === 'class' ? '/groups/class-default.png' : '/groups/community-default.png',
+                'avatar_url' => $request->type === 'class' ? '/uploads/groups/class-default.png' : '/uploads/groups/community-default.png',
             ]);
 
             $group->members()->attach(Auth::id(), ['role' => 'admin']);
@@ -142,6 +142,41 @@ class SocialGroupController extends Controller
         }
 
         return response()->json(['message' => 'Đã thêm thành viên thành công.']);
+    }
+
+    public function updateAvatar(Request $request, SocialGroup $group)
+    {
+        if ($group->creator_id !== Auth::id()) abort(403);
+
+        $request->validate([
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        ]);
+
+        if ($request->hasFile('avatar')) {
+            $file = $request->file('avatar');
+            $filename = time() . '_' . $group->id . '.' . $file->getClientOriginalExtension();
+            
+            // Ensure the directory exists
+            if (!file_exists(public_path('uploads/groups/avatars'))) {
+                mkdir(public_path('uploads/groups/avatars'), 0755, true);
+            }
+            
+            $file->move(public_path('uploads/groups/avatars'), $filename);
+            
+            // Delete old avatar if it's not a default one
+            if ($group->avatar_url && !str_contains($group->avatar_url, 'default.png')) {
+                $oldPath = public_path($group->avatar_url);
+                if (file_exists($oldPath)) {
+                    @unlink($oldPath);
+                }
+            }
+
+            $group->update([
+                'avatar_url' => '/uploads/groups/avatars/' . $filename
+            ]);
+        }
+
+        return back()->with('status', 'Ảnh nhóm đã được cập nhật thành công!');
     }
 
     public function update(Request $request, SocialGroup $group)

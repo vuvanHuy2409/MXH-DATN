@@ -24,6 +24,12 @@
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; width: 100%;">
                 <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; text-align: left;">
                     <a href="{{ route('profile.show', $post->user->username) }}" style="text-decoration: none; color: var(--text-color); font-weight: 750; font-size: 15px; letter-spacing: -0.2px;">{{ $post->user->username }}</a>
+                    @if($isCommentType && $post->parent_id && $post->parent)
+                        <span style="color: var(--secondary-text); font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 4px; opacity: 0.8;">
+                            <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="3" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                            <a href="{{ route('profile.show', $post->parent->user->username) }}" style="text-decoration: none; color: var(--accent-color);">{{ $post->parent->user->username }}</a>
+                        </span>
+                    @endif
                     @if($post->user->user_type === 'teacher')
                         <svg viewBox="0 0 24 24" width="14" height="14" fill="var(--accent-color)" style="margin-left: -2px;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
                     @endif
@@ -54,31 +60,18 @@
                         @endif
                         
                         @if(!$isCommentType)
-                        <button onclick="alert('Tính năng đang phát triển')"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg> Lưu bài viết</button>
+                        <button onclick="sharePost({{ $post->id }})">
+                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg> 
+                            Sao chép liên kết
+                        </button>
                         @endif
                     </div>
                 </div>
             </div>
 
             <!-- Content Body -->
-            <div onclick="if(event.target.tagName !== 'A') window.location.href='{{ route('posts.show', $post->id) }}'" style="cursor: pointer; margin-bottom: 12px; width: 100%; text-align: left;">
-                <div style="font-size: 15px; line-height: 1.55; color: var(--text-color); font-weight: 450; white-space: pre-wrap; word-break: break-word; text-align: left;">
-                    @php
-                        $content = e($post->content);
-                        // Regex nhận diện URL: http, https, www hoặc domain.com
-                        $urlRegex = '/(https?:\/\/[^\s]+|www\.[^\s]+|[a-z0-9.-]+\.[a-z]{2,}(\/[^\s]*)?)/i';
-                        $contentWithLinks = preg_replace_callback($urlRegex, function($matches) {
-                            $url = $matches[0];
-                            $href = $url;
-                            if (!preg_match('/^https?:\/\//i', $url)) {
-                                $href = 'https://' . $url;
-                            }
-                            // Thêm style: Màu sắc, Gạch chân, In nghiêng
-                            return '<a href="' . $href . '" target="_blank" onclick="event.stopPropagation()" style="color: var(--accent-color); text-decoration: underline; font-style: italic; font-weight: 600; cursor: pointer;">' . $url . '</a>';
-                        }, $content);
-                    @endphp
-                    {!! $contentWithLinks !!}
-                </div>
+            <div onclick="window.location.href='{{ route('posts.show', $post->id) }}'" style="cursor: pointer; margin-bottom: 12px; width: 100%; text-align: left;">
+                <div style="font-size: 15px; line-height: 1.55; color: var(--text-color); font-weight: 450; white-space: pre-wrap; word-break: break-word; text-align: left;">{{ trim($post->content) }}</div>
             </div>
 
             <!-- Media -->
@@ -89,8 +82,19 @@
                         @php $media = $post->media->first(); @endphp
                         @if($media->media_type === 'video')
                             <video src="{{ asset($media->media_url) }}" controls style="width: 100%; max-height: 450px; display: block; object-fit: contain;"></video>
-                        @else
+                        @elseif($media->media_type === 'image' || $media->media_type === 'gif')
                             <img src="{{ asset($media->media_url) }}" onclick="openLightbox(this.src)" style="width: 100%; max-height: 450px; display: block; cursor: zoom-in; object-fit: cover;">
+                        @else
+                            <a href="{{ asset($media->media_url) }}" download="{{ $media->file_name }}" style="text-decoration: none; display: flex; align-items: center; gap: 12px; padding: 20px; background: white; border-radius: 14px; width: 100%; border: 1px solid var(--glass-border); box-shadow: 0 4px 12px rgba(0,0,0,0.05); transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                                <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(0,113,227,0.1); display: flex; align-items: center; justify-content: center; color: var(--accent-color); flex-shrink: 0;">
+                                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+                                </div>
+                                <div style="flex-grow: 1; overflow: hidden;">
+                                    <div style="font-size: 14px; font-weight: 700; color: var(--text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $media->file_name ?? 'Tài liệu đính kèm' }}</div>
+                                    <div style="font-size: 11px; font-weight: 600; color: var(--accent-color); text-transform: uppercase; margin-top: 2px;">Nhấn để tải về</div>
+                                </div>
+                                <svg viewBox="0 0 24 24" width="20" height="20" stroke="var(--secondary-text)" stroke-width="2.5" fill="none" style="opacity: 0.5;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                            </a>
                         @endif
                     </div>
                 @else
@@ -99,8 +103,13 @@
                             <div style="flex: 0 0 160px; height: 160px; border-radius: 16px; overflow: hidden; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.02); scroll-snap-align: start;">
                                 @if($media->media_type === 'video')
                                     <video src="{{ asset($media->media_url) }}" controls style="width: 100%; height: 100%; object-fit: cover;"></video>
-                                @else
+                                @elseif($media->media_type === 'image' || $media->media_type === 'gif')
                                     <img src="{{ asset($media->media_url) }}" onclick="openLightbox(this.src)" style="width: 100%; height: 100%; object-fit: cover; cursor: zoom-in;">
+                                @else
+                                    <a href="{{ asset($media->media_url) }}" download="{{ $media->file_name }}" style="text-decoration: none; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px; text-align: center; background: white;">
+                                        <svg viewBox="0 0 24 24" width="32" height="32" stroke="var(--accent-color)" stroke-width="2.5" fill="none" style="margin-bottom: 8px;"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+                                        <div style="font-size: 11px; font-weight: 700; color: var(--text-color); word-break: break-all; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">{{ $media->file_name ?? 'Tài liệu' }}</div>
+                                    </a>
                                 @endif
                             </div>
                         @endforeach
@@ -132,6 +141,12 @@
                 <div class="action-btn-v2" onclick="window.location.href='{{ route('posts.show', $post->id) }}'">
                     <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
                     <span style="font-size: 13px; font-weight: 600;">{{ $post->reply_count ?? 0 }}</span>
+                </div>
+                @endif
+
+                @if(isset($isComment) && $isComment)
+                <div class="action-btn-v2" onclick="prepareQuickReply({{ $post->id }}, '{{ $post->user->username }}')">
+                    <span style="font-size: 13px; font-weight: 700;">Trả lời</span>
                 </div>
                 @endif
             </div>

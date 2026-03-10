@@ -72,43 +72,56 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'content' => 'required|max:500',
-            'link_url' => 'nullable|url',
-            'media.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,mp4,mov,avi,webm,webp|max:10240',
-        ]);
+        ini_set('memory_limit', '512M');
+        ini_set('max_execution_time', '300');
+        
+        try {
+            $request->validate([
+                'content' => 'required|max:500',
+                'link_url' => 'nullable', // Bớt gắt gao URL validation
+                'group_id' => 'nullable|exists:social_groups,id',
+                'media.*' => 'nullable|file|max:102400', // Tăng max size lên 100MB
+            ]);
 
-        $post = Post::create([
-            'user_id' => auth()->id(),
-            'group_id' => $request->group_id,
-            'content' => $request->content,
-            'link_url' => $request->link_url,
-        ]);
+            $post = Post::create([
+                'user_id' => auth()->id(),
+                'group_id' => $request->filled('group_id') ? $request->group_id : null,
+                'content' => $request->content,
+                'link_url' => $request->link_url,
+            ]);
 
-        // Xử lý upload nhiều file (ảnh, video, gif)
-        if ($request->hasFile('media')) {
-            foreach ($request->file('media') as $file) {
-                $path = $file->store('posts', 'public');
-                $extension = strtolower($file->getClientOriginalExtension());
+            // Xử lý upload nhiều file (ảnh, gif, file khác)
+            if ($request->hasFile('media')) {
+                foreach ($request->file('media') as $file) {
+                    $originalName = $file->getClientOriginalName();
+                    $extension = strtolower($file->getClientOriginalExtension());
+                    
+                    // Xác định loại media
+                    if ($extension === 'gif') {
+                        $mediaType = 'gif';
+                        $path = $file->store('posts/images', 'public');
+                    } elseif (in_array($extension, ['jpg', 'jpeg', 'png', 'webp', 'bmp', 'svg'])) {
+                        $mediaType = 'image';
+                        $path = $file->store('posts/images', 'public');
+                    } else {
+                        $mediaType = 'file';
+                        $path = $file->store('posts/files', 'public');
+                    }
 
-                // Xác định loại media
-                if (in_array($extension, ['mp4', 'mov', 'avi', 'webm'])) {
-                    $mediaType = 'video';
-                } elseif ($extension === 'gif') {
-                    $mediaType = 'gif';
-                } else {
-                    $mediaType = 'image';
+                    \App\Models\PostMedia::create([
+                        'post_id' => $post->id,
+                        'media_url' => '/storage/' . $path,
+                        'file_name' => $originalName,
+                        'media_type' => $mediaType,
+                    ]);
                 }
-
-                \App\Models\PostMedia::create([
-                    'post_id' => $post->id,
-                    'media_url' => '/storage/' . $path,
-                    'media_type' => $mediaType,
-                ]);
             }
-        }
 
-        return redirect()->back();
+            return redirect()->back()->with('status', 'Bài viết đã được đăng!');
+        } catch (\Exception $e) {
+            \Log::error("Post creation failed: " . $e->getMessage());
+            return redirect()->back()->withErrors(['content' => 'Đã xảy ra lỗi khi đăng bài: ' . $e->getMessage()])->withInput();
+        }
     }
 
     /**
@@ -116,9 +129,9 @@ class PostController extends Controller
      */
     public function show(Post $post)
     {
-        // Tải bài gốc và các bình luận cấp 1, cấp 2 từ bảng comments
-        $post->load(['user', 'media', 'likes', 'rootComments' => function($query) {
-            $query->with(['user', 'replies.user'])->oldest();
+        // Tải bài gốc và tất cả các bình luận để xử lý phân cấp
+        $post->load(['user', 'media', 'likes', 'comments' => function($query) {
+            $query->with(['user', 'parent.user'])->oldest();
         }]);
         
         return view('posts.show', compact('post'));

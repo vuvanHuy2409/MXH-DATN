@@ -255,7 +255,25 @@ class ConversationController extends Controller
 
     public function getMedia(Conversation $conversation)
     {
-        $media = $conversation->messages()->whereIn('message_type', ['image', 'video', 'file'])->latest()->get();
+        $media = $conversation->messages()
+            ->where(function($query) {
+                $query->whereIn('message_type', ['image', 'video', 'file', 'link'])
+                      ->orWhere(function($q) {
+                          $q->where('message_type', 'text')
+                            ->where(function($inner) {
+                                $inner->where('content', 'like', '%http%')
+                                      ->orWhere('content', 'like', '%.com%')
+                                      ->orWhere('content', 'like', '%.vn%')
+                                      ->orWhere('content', 'like', '%.net%')
+                                      ->orWhere('content', 'like', '%.org%')
+                                      ->orWhere('content', 'like', '%.edu%')
+                                      ->orWhere('content', 'like', '%.gov%');
+                            });
+                      });
+            })
+            ->latest()
+            ->get();
+            
         return response()->json($media);
     }
 
@@ -403,5 +421,15 @@ class ConversationController extends Controller
         if ($conversation->creator_id !== auth()->id()) abort(403);
         $conversation->update(['join_code' => Conversation::generateUniqueJoinCode()]);
         return back();
+    }
+
+    public function getMembers(Conversation $conversation)
+    {
+        if (!$conversation->users()->where('users.id', auth()->id())->exists()) {
+            abort(403);
+        }
+
+        $members = $conversation->users()->withPivot('role', 'status', 'joined_at')->get();
+        return response()->json($members);
     }
 }

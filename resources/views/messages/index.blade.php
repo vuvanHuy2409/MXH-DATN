@@ -133,12 +133,17 @@
                         @endif
                     </div>
                     <div style="flex-grow: 1; overflow: hidden;">
-                        <div style="display: flex; justify-content: space-between; align-items: baseline;">
-                            <span style="font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70%;">{{ $convName }}</span>
-                            <span style="font-size: 11px; opacity: 0.6;">{{ $conv->updated_at->diffForHumans(null, true) }}</span>
+                        <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 5px;">
+                            <div style="display: flex; align-items: center; gap: 6px; min-width: 0;">
+                                <span style="font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $convName }}</span>
+                                @if($convIsGroup)
+                                    <span style="background: rgba(0,113,227,0.1); color: var(--accent-color); font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 6px; text-transform: uppercase; flex-shrink: 0; letter-spacing: 0.5px;">Nhóm</span>
+                                @endif
+                            </div>
+                            <span style="font-size: 11px; opacity: 0.6; flex-shrink: 0;">{{ $conv->updated_at->diffForHumans(null, true) }}</span>
                         </div>
                         <div style="font-size: 13px; color: var(--secondary-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 3px; font-weight: {{ $convUnread ? '700' : '400' }}">
-                            {{ $conv->lastMessage ? ($conv->lastMessage->sender_id === auth()->id() ? 'Bạn: ' : '') . ($conv->lastMessage->message_type === 'text' ? $conv->lastMessage->content : 'Đã gửi một file') : 'Bắt đầu trò chuyện...' }}
+                            {{ $conv->lastMessage ? ($conv->lastMessage->sender_id === auth()->id() ? 'Bạn: ' : '') . ($conv->lastMessage->message_type === 'text' ? $conv->lastMessage->content : ($conv->lastMessage->message_type === 'image' ? 'Đã gửi một ảnh' : ($conv->lastMessage->message_type === 'video' ? 'Đã gửi một video' : 'Đã gửi một tài liệu'))) : 'Bắt đầu trò chuyện...' }}
                         </div>
                     </div>
                     @if($convUnread)

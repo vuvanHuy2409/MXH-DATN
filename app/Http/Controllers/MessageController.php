@@ -10,6 +10,10 @@ class MessageController extends Controller
 {
     public function store(Request $request, Conversation $conversation)
     {
+        // Tăng giới hạn tài nguyên cho upload file lớn
+        ini_set('memory_limit', '512M');
+        ini_set('max_execution_time', '300');
+
         $user = auth()->user();
         // Check if user is participant
         if (!$conversation->users()->where('users.id', $user->id)->exists()) {
@@ -34,55 +38,64 @@ class MessageController extends Controller
         $request->validate([
             'content' => 'nullable|string|max:1000',
             'message_type' => 'nullable|in:text,image,video,file,call_log,post_share',
-            'image' => 'nullable|image|max:10240',
-            'video' => 'nullable|mimetypes:video/mp4,video/quicktime|max:20480',
-            'file' => 'nullable|file|max:51200',
+            'image' => 'nullable|file|max:40960',
+            'video' => 'nullable|file|max:102400',
+            'file' => 'nullable|file|max:102400',
             'metadata' => 'nullable|array',
         ]);
 
-        $messageType = $request->message_type ?? 'text';
-        $content = $request->content;
-        $metadata = $request->metadata;
+        try {
+            $messageType = $request->message_type ?? 'text';
+            $content = $request->content;
+            $metadata = $request->metadata;
 
-        // Handle File Uploads
-        if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('messages/images', 'public');
-            $content = 'storage/' . $path;
-            $messageType = 'image';
-        } elseif ($request->hasFile('video')) {
-            $path = $request->file('video')->store('messages/videos', 'public');
-            $content = 'storage/' . $path;
-            $messageType = 'video';
-        } elseif ($request->hasFile('file')) {
-            $file = $request->file('file');
-            $path = $file->store('messages/files', 'public');
-            $content = 'storage/' . $path;
-            $messageType = 'file';
-            $metadata = [
-                'file_name' => $file->getClientOriginalName(),
-                'file_size' => $file->getSize(),
-            ];
+            // Handle File Uploads
+            if ($request->hasFile('image')) {
+                $file = $request->file('image');
+                $path = $file->store('messages/images', 'public');
+                $content = 'storage/' . $path;
+                $messageType = 'image';
+                $metadata = [
+                    'file_name' => $file->getClientOriginalName(),
+                    'file_size' => $file->getSize(),
+                ];
+            } elseif ($request->hasFile('file')) {
+                $file = $request->file('file');
+                $path = $file->store('messages/files', 'public');
+                $content = 'storage/' . $path;
+                $messageType = 'file';
+                $metadata = [
+                    'file_name' => $file->getClientOriginalName(),
+                    'file_size' => $file->getSize(),
+                ];
+            }
+
+            $message = Message::create([
+                'conversation_id' => $conversation->id,
+                'parent_id' => $request->parent_id,
+                'sender_id' => auth()->id(),
+                'message_type' => $messageType,
+                'content' => $content,
+                'metadata' => $metadata,
+                'created_at' => now(),
+            ]);
+
+            // Update conversation last message id
+            $conversation->update([
+                'last_message_id' => $message->id,
+            ]);
+
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json($message->load('sender'));
+            }
+
+            return back();
+        } catch (\Exception $e) {
+            \Log::error('Message Upload Error: ' . $e->getMessage());
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json(['error' => $e->getMessage()], 500);
+            }
+            return back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
         }
-
-        $message = Message::create([
-            'conversation_id' => $conversation->id,
-            'parent_id' => $request->parent_id,
-            'sender_id' => auth()->id(),
-            'message_type' => $messageType,
-            'content' => $content,
-            'metadata' => $metadata,
-            'created_at' => now(),
-        ]);
-
-        // Update conversation last message id
-        $conversation->update([
-            'last_message_id' => $message->id,
-        ]);
-
-        if (request()->ajax() || request()->wantsJson()) {
-            return response()->json($message->load('sender'));
-        }
-
-        return back();
     }
 }

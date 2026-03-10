@@ -23,6 +23,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Ẩn các thông báo Notice và Warning đè lên giao diện (ví dụ: Broken pipe khi dùng artisan serve)
+        if (app()->environment('local')) {
+            error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
+        }
+
         \Illuminate\Support\Carbon::setLocale('vi');
 
         View::composer('*', function ($view) {
