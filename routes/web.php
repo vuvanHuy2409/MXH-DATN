@@ -38,6 +38,20 @@ Route::middleware('auth')->group(function () {
     Route::post('/api/notifications/read', [NotificationController::class, 'markAllRead'])->name('api.notifications.read');
     Route::get('/api/unread-counts', [NotificationController::class, 'unreadCounts'])->name('api.unread_counts');
     
+    // Social Groups
+    Route::get('/groups/{slug?}', [App\Http\Controllers\SocialGroupController::class, 'index'])->name('groups.index');
+    Route::post('/groups', [App\Http\Controllers\SocialGroupController::class, 'store'])->name('groups.store');
+    Route::put('/groups/{group:slug}', [App\Http\Controllers\SocialGroupController::class, 'update'])->name('groups.update');
+    Route::delete('/groups/{group:slug}', [App\Http\Controllers\SocialGroupController::class, 'destroy'])->name('groups.destroy');
+    Route::post('/groups/join-by-code', [App\Http\Controllers\SocialGroupController::class, 'joinByCode'])->name('groups.join_by_code');
+    // Bỏ route groups.show riêng biệt vì đã gộp vào index
+    Route::get('/groups/view/{group:slug}', function($slug) { return redirect()->route('groups.index', $slug); })->name('groups.show');
+    Route::post('/groups/{group:slug}/join', [App\Http\Controllers\SocialGroupController::class, 'join'])->name('groups.join');
+    Route::post('/groups/{group:slug}/leave', [App\Http\Controllers\SocialGroupController::class, 'leave'])->name('groups.leave');
+    Route::get('/groups/{group:slug}/members', [App\Http\Controllers\SocialGroupController::class, 'getMembers'])->name('groups.members');
+    Route::get('/groups/{group:slug}/search-users', [App\Http\Controllers\SocialGroupController::class, 'searchUsers'])->name('groups.search_users');
+    Route::post('/groups/{group:slug}/add-member', [App\Http\Controllers\SocialGroupController::class, 'addMember'])->name('groups.add_member');
+
     Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
     Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show');
     Route::patch('/posts/{post}', [PostController::class, 'update'])->name('posts.update');

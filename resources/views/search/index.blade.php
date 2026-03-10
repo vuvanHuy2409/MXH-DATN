@@ -36,33 +36,56 @@
 
     <div style="margin-top: 10px;">
         @if(!$query)
-            <!-- Suggestions when no query -->
-            <div style="padding: 10px 20px;">
-                <h3 style="font-size: 16px; font-weight: 700; color: var(--secondary-text); margin-bottom: 15px;">Gợi ý cho bạn</h3>
-                @foreach($suggestions as $suggestUser)
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 0;">
-                        <div style="display: flex; align-items: center; gap: 15px; flex-grow: 1;">
-                            <a href="{{ route('profile.show', $suggestUser->username) }}" style="text-decoration: none;">
-                                <div class="avatar" style="background-image: url('{{ $suggestUser->avatar_url }}'); background-size: cover; width: 48px; height: 48px;"></div>
+            <!-- Modern Suggestions Section (Like FB/X/IG) -->
+            
+            <!-- Horizontal User Suggestions -->
+            @if($suggestions->isNotEmpty())
+            <div style="padding: 20px 0; border-bottom: 1px solid var(--glass-border); background: rgba(0,0,0,0.01);">
+                <div style="padding: 0 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="font-size: 16px; font-weight: 800; color: var(--text-color); margin: 0;">Những người bạn có thể biết</h3>
+                    <a href="#" style="font-size: 13px; color: var(--accent-color); text-decoration: none; font-weight: 600;">Xem tất cả</a>
+                </div>
+                
+                <div style="display: flex; gap: 15px; overflow-x: auto; padding: 0 20px 10px; scrollbar-width: none; -ms-overflow-style: none;">
+                    @foreach($suggestions as $suggestUser)
+                        <div class="glass-bubble" style="flex: 0 0 160px; padding: 20px 15px; text-align: center; border-radius: 20px; border: 1px solid var(--glass-border);">
+                            <a href="{{ route('profile.show', $suggestUser->username) }}" style="text-decoration: none; color: inherit; display: block;">
+                                <div class="avatar" style="background-image: url('{{ $suggestUser->avatar_url }}'); background-size: cover; width: 70px; height: 70px; margin: 0 auto 10px; border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.08);"></div>
+                                <div style="font-weight: 800; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $suggestUser->username }}</div>
+                                <div style="color: var(--secondary-text); font-size: 12px; margin-top: 4px; margin-bottom: 15px;">{{ $suggestUser->followers_count ?? 0 }} người theo dõi</div>
                             </a>
-                            <div style="overflow: hidden;">
-                                <a href="{{ route('profile.show', $suggestUser->username) }}" style="text-decoration: none; color: var(--text-color);">
-                                    <div style="font-weight: 700; font-size: 15px;">{{ $suggestUser->username }}</div>
-                                </a>
-                                <div style="color: var(--secondary-text); font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                    {{ $suggestUser->followers_count ?? 0 }} người theo dõi
-                                </div>
-                            </div>
+                            <form action="{{ route('users.follow', $suggestUser) }}" method="POST">
+                                @csrf
+                                <button type="submit" style="width: 100%; background: var(--text-color); color: var(--bg-main); border: none; padding: 8px 0; border-radius: 12px; font-weight: 700; font-size: 13px; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                    Theo dõi
+                                </button>
+                            </form>
                         </div>
-                        <form action="{{ route('users.follow', $suggestUser) }}" method="POST">
-                            @csrf
-                            <button type="submit" style="background: transparent; border: 1px solid var(--glass-border); color: var(--text-color); padding: 8px 18px; border-radius: 12px; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.05)'" onmouseout="this.style.background='transparent'">
-                                Theo dõi
-                            </button>
-                        </form>
-                    </div>
-                    <div class="post-divider" style="opacity: 0.3; margin-left: 63px;"></div>
-                @endforeach
+                    @endforeach
+                </div>
+            </div>
+            @endif
+
+            <!-- Suggested Posts Feed -->
+            <div style="padding: 20px 0;">
+                <div style="padding: 0 20px 10px;">
+                    <h3 style="font-size: 18px; font-weight: 800; color: var(--text-color); margin: 0; display: flex; align-items: center; gap: 8px;">
+                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="var(--accent-color)" stroke-width="2.5" fill="none"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                        Khám phá bài viết
+                    </h3>
+                    <p style="font-size: 13px; color: var(--secondary-text); margin-top: 5px;">Dựa trên sở thích của bạn</p>
+                </div>
+                
+                <div>
+                    @foreach($suggestedPosts as $post)
+                        <!-- Gắn nhãn Đề xuất cho bài viết -->
+                        <div style="padding: 10px 25px 0; display: flex; align-items: center; gap: 6px; color: var(--secondary-text); font-size: 12px; font-weight: 700; opacity: 0.7;">
+                            <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="3" fill="none"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                            Gợi ý cho bạn
+                        </div>
+                        @include('posts._item', ['post' => $post, 'prefix' => 'explore'])
+                    @endforeach
+                </div>
             </div>
         @else
             <!-- Search Results Content -->

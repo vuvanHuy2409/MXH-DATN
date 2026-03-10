@@ -28,7 +28,16 @@ class User extends Authenticatable
             : ($this->teacher->full_name ?? $this->username);
     }
 
-    public function posts() { return $this->hasMany(Post::class); }
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
+    }
+
+    public function socialGroups()
+    {
+        return $this->belongsToMany(SocialGroup::class, 'group_members', 'user_id', 'group_id')
+                    ->withPivot('role', 'joined_at');
+    }
     public function comments() { return $this->hasMany(Comment::class); }
     public function following() { return $this->belongsToMany(User::class, 'follows', 'follower_id', 'following_id'); }
     public function followers() { return $this->belongsToMany(User::class, 'follows', 'following_id', 'follower_id'); }

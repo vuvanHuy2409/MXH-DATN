@@ -51,6 +51,13 @@ class SearchController extends Controller
             ->limit(5)
             ->get();
 
-        return view('search.index', compact('users', 'posts', 'suggestions', 'query', 'type'));
+        $suggestedPosts = Post::with(['user', 'media', 'likes'])
+            ->withCount(['likes', 'comments'])
+            ->whereNotIn('user_id', [$me->id])
+            ->inRandomOrder()
+            ->limit(10)
+            ->get();
+
+        return view('search.index', compact('users', 'posts', 'suggestions', 'suggestedPosts', 'query', 'type'));
     }
 }

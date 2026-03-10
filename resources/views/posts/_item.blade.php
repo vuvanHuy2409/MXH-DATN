@@ -19,10 +19,10 @@
         </div>
 
         <!-- Right Side: Content -->
-        <div style="flex-grow: 1; min-width: 0;">
+        <div style="flex-grow: 1; min-width: 0; text-align: left; display: flex; flex-direction: column; align-items: flex-start;">
             <!-- Header -->
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
-                <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; width: 100%;">
+                <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; text-align: left;">
                     <a href="{{ route('profile.show', $post->user->username) }}" style="text-decoration: none; color: var(--text-color); font-weight: 750; font-size: 15px; letter-spacing: -0.2px;">{{ $post->user->username }}</a>
                     @if($post->user->user_type === 'teacher')
                         <svg viewBox="0 0 24 24" width="14" height="14" fill="var(--accent-color)" style="margin-left: -2px;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
@@ -45,32 +45,58 @@
                             @endif
                             <button class="danger" onclick="{{ $isCommentType ? "deleteComment($post->id)" : "deletePost($post->id)" }}"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg> Xóa</button>
                         @endif
+
+                        @if(!$isOwner)
+                            <button class="danger" onclick="alert('Cảm ơn bạn đã báo cáo. Chúng tôi sẽ xem xét {{ $isCommentType ? 'bình luận' : 'bài viết' }} này sớm nhất có thể.')">
+                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
+                                Báo cáo {{ $isCommentType ? 'bình luận' : 'bài viết' }}
+                            </button>
+                        @endif
+                        
+                        @if(!$isCommentType)
                         <button onclick="alert('Tính năng đang phát triển')"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg> Lưu bài viết</button>
+                        @endif
                     </div>
                 </div>
             </div>
 
             <!-- Content Body -->
-            <a href="{{ route('posts.show', $post->id) }}" style="text-decoration: none; color: inherit; display: block; margin-bottom: 12px;">
-                <div style="font-size: 15px; line-height: 1.55; color: var(--text-color); font-weight: 450; white-space: pre-wrap; word-break: break-word;">{{ $post->content }}</div>
-            </a>
+            <div onclick="if(event.target.tagName !== 'A') window.location.href='{{ route('posts.show', $post->id) }}'" style="cursor: pointer; margin-bottom: 12px; width: 100%; text-align: left;">
+                <div style="font-size: 15px; line-height: 1.55; color: var(--text-color); font-weight: 450; white-space: pre-wrap; word-break: break-word; text-align: left;">
+                    @php
+                        $content = e($post->content);
+                        // Regex nhận diện URL: http, https, www hoặc domain.com
+                        $urlRegex = '/(https?:\/\/[^\s]+|www\.[^\s]+|[a-z0-9.-]+\.[a-z]{2,}(\/[^\s]*)?)/i';
+                        $contentWithLinks = preg_replace_callback($urlRegex, function($matches) {
+                            $url = $matches[0];
+                            $href = $url;
+                            if (!preg_match('/^https?:\/\//i', $url)) {
+                                $href = 'https://' . $url;
+                            }
+                            // Thêm style: Màu sắc, Gạch chân, In nghiêng
+                            return '<a href="' . $href . '" target="_blank" onclick="event.stopPropagation()" style="color: var(--accent-color); text-decoration: underline; font-style: italic; font-weight: 600; cursor: pointer;">' . $url . '</a>';
+                        }, $content);
+                    @endphp
+                    {!! $contentWithLinks !!}
+                </div>
+            </div>
 
             <!-- Media -->
             @if(!$isCommentType && $post->media && $post->media->isNotEmpty())
-            <div style="margin-bottom: 15px;">
+            <div style="margin-bottom: 15px; width: 100%; display: flex; justify-content: flex-start;">
                 @if($post->media->count() === 1)
-                    <div style="border-radius: 18px; overflow: hidden; border: 1px solid var(--glass-border);">
+                    <div style="border-radius: 18px; overflow: hidden; border: 1px solid var(--glass-border); max-height: 450px; max-width: 550px; background: rgba(0,0,0,0.02); display: flex; justify-content: center; align-items: center;">
                         @php $media = $post->media->first(); @endphp
                         @if($media->media_type === 'video')
-                            <video src="{{ asset($media->media_url) }}" controls style="width: 100%; display: block;"></video>
+                            <video src="{{ asset($media->media_url) }}" controls style="width: 100%; max-height: 450px; display: block; object-fit: contain;"></video>
                         @else
-                            <img src="{{ asset($media->media_url) }}" onclick="openLightbox(this.src)" style="width: 100%; display: block; cursor: zoom-in;">
+                            <img src="{{ asset($media->media_url) }}" onclick="openLightbox(this.src)" style="width: 100%; max-height: 450px; display: block; cursor: zoom-in; object-fit: cover;">
                         @endif
                     </div>
                 @else
-                    <div class="media-horizontal-scroll" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none; -ms-overflow-style: none;">
+                    <div class="media-horizontal-scroll" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 12px; scrollbar-width: none; -ms-overflow-style: none; scroll-snap-type: x mandatory; max-width: 550px; width: 100%;">
                         @foreach($post->media as $media)
-                            <div style="flex: 0 0 auto; width: 180px; height: 180px; border-radius: 15px; overflow: hidden; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.02);">
+                            <div style="flex: 0 0 160px; height: 160px; border-radius: 16px; overflow: hidden; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.02); scroll-snap-align: start;">
                                 @if($media->media_type === 'video')
                                     <video src="{{ asset($media->media_url) }}" controls style="width: 100%; height: 100%; object-fit: cover;"></video>
                                 @else
@@ -113,22 +139,22 @@
     </div>
 </div>
 
-<div class="post-divider-v2"></div>
-
 <style>
     .post-card-v2 {
-        padding: 20px 25px;
+        padding: 25px;
         transition: all 0.2s ease;
         position: relative;
+        background: var(--glass-bg);
+        border: 1px solid rgba(0,0,0,0.1); /* Viền nhạt hơn */
+        border-radius: 28px;
+        margin-bottom: 20px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.02);
+        text-align: left; /* Đảm bảo text luôn căn trái */
     }
     .post-card-v2:hover {
-        background: rgba(255, 255, 255, 0.03);
-    }
-    .post-divider-v2 {
-        height: 1px;
-        background: var(--glass-border);
-        margin: 0 25px;
-        opacity: 0.3;
+        background: rgba(255, 255, 255, 0.05);
+        transform: translateY(-2px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
     }
     .action-btn-v2 {
         display: flex;
@@ -136,13 +162,18 @@
         gap: 6px;
         cursor: pointer;
         color: var(--secondary-text);
-        padding: 6px 10px;
-        border-radius: 10px;
+        padding: 8px 12px;
+        border-radius: 12px;
         transition: all 0.2s;
+        border: 1px solid transparent;
     }
     .action-btn-v2:hover {
         background: rgba(0,0,0,0.04);
         color: var(--text-color);
+        border-color: rgba(0,0,0,0.1);
+    }
+    [data-theme="dark"] .post-card-v2 {
+        border-color: rgba(255,255,255,0.2); /* Trong chế độ tối, viền đen sẽ mờ hơn hoặc chuyển sang trắng nhẹ để dễ nhìn */
     }
     [data-theme="dark"] .action-btn-v2:hover {
         background: rgba(255,255,255,0.08);

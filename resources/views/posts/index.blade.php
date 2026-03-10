@@ -165,26 +165,20 @@
         const div = document.createElement('div');
         div.className = 'comment-item';
         const isNested = c.parent_id && c.parent_id != activePanelPostId;
-        div.style.cssText = `display: flex; gap: 12px; position: relative; margin-left: ${isNested ? '45px' : '0px'}; margin-bottom: 20px;`;
+        div.style.cssText = `display: flex; gap: 12px; position: relative; margin-left: ${isNested ? '45px' : '0px'}; margin-bottom: 15px; background: rgba(0,0,0,0.02); padding: 15px; border-radius: 22px; border: 1px solid rgba(0,0,0,0.1);`;
         const authorBadge = c.user_id === activePanelAuthorId ? '<span class="author-badge">Tác giả</span>' : '';
         const isLiked = c.is_liked_by_me;
         div.innerHTML = `
-            ${!isNested && c.reply_count > 0 ? '<div class="comment-thread-line" style="left: 16px; top: 35px; bottom: -15px;"></div>' : ''}
-            <div class="avatar" style="width: 34px; height: 34px; background-image: url(\'${c.user.avatar_url}\'); background-size: cover; flex-shrink: 0; z-index: 2; border-radius: 50%; border: 2px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.05);"></div>
+            <div class="avatar" style="width: 34px; height: 34px; background-image: url(\'${c.user.avatar_url}\'); background-size: cover; flex-shrink: 0; z-index: 2; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1);"></div>
             <div style="flex-grow: 1; z-index: 2;">
-                <div style="background: rgba(0,0,0,0.03); padding: 12px 16px; border-radius: 20px; border: 1px solid var(--glass-border);">
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
-                        <div style="display: flex; align-items: center;">
-                            <strong style="font-size: 13.5px; font-weight: 750;">${c.user.username}</strong>
-                            ${authorBadge}
-                        </div>
-                        <span style="font-size: 11px; opacity: 0.5;">${new Date(c.created_at).toLocaleDateString()}</span>
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                    <div style="display: flex; align-items: center;">
+                        <strong style="font-size: 13.5px; font-weight: 750;">${c.user.username}</strong>
+                        ${authorBadge}
                     </div>
-                    <div style="font-size: 14px; line-height: 1.5; color: var(--text-color);">${escapeHtml(c.content)}</div>
+                    <span style="font-size: 11px; opacity: 0.5;">${new Date(c.created_at).toLocaleDateString()}</span>
                 </div>
-                <div style="margin-top: 4px; font-size: 11px; color: var(--secondary-text); padding-left: 8px; opacity: 0.6;">
-                    ${new Date(c.created_at).toLocaleDateString()}
-                </div>
+                <div style="font-size: 14px; line-height: 1.5; color: var(--text-color);">${escapeHtml(c.content)}</div>
             </div>
         `;
         return div;

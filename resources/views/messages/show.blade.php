@@ -90,6 +90,11 @@
         background: var(--text-color);
         color: white;
     }
+
+    /* Message Actions Hover */
+    .message-content-wrapper:hover .message-actions {
+        display: block !important;
+    }
 </style>
 
 <div class="chat-layout">
@@ -206,7 +211,7 @@
                             <div class="avatar" style="width: 28px; height: 28px; background-image: url('{{ $message->sender->avatar_url }}'); background-size: cover; align-self: flex-end; flex-shrink: 0;"></div>
                         @endif
                         
-                        <div style="display: flex; flex-direction: column; align-items: {{ $isMe ? 'flex-end' : 'flex-start' }};">
+                        <div style="display: flex; flex-direction: column; align-items: {{ $isMe ? 'flex-end' : 'flex-start' }}; position: relative;" class="message-content-wrapper">
                             <div class="{{ $isMedia ? '' : 'bubble' }}" style="{{ $isMe && !$isMedia ? 'background:'.$themeColor.'; color: white;' : (!$isMedia ? 'background: rgba(0,0,0,0.05);' : '') }} border-radius: 18px; padding: {{ $isMedia ? '0' : '10px 16px' }}; font-size: 14.5px; position: relative;">
                                 @if($message->message_type === 'image')
                                     <img src="{{ asset($message->content) }}" onclick="openLightbox(this.src)" style="max-width: 250px; border-radius: 15px; cursor: zoom-in;">
@@ -214,6 +219,14 @@
                                     <video src="{{ asset($message->content) }}" controls style="max-width: 250px; border-radius: 15px;"></video>
                                 @else
                                     {!! nl2br(e($message->content)) !!}
+                                @endif
+
+                                @if(!$isMe)
+                                <div class="message-actions" style="position: absolute; right: -35px; top: 50%; transform: translateY(-50%); display: none;">
+                                    <div onclick="alert('Cảm ơn bạn đã báo cáo tin nhắn này. Chúng tôi sẽ xem xét nội dung sớm nhất.')" title="Báo cáo tin nhắn" style="cursor: pointer; color: #ff3b30; opacity: 0.6; padding: 5px;">
+                                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
+                                    </div>
+                                </div>
                                 @endif
                             </div>
                             <span style="font-size: 10px; opacity: 0.5; margin-top: 4px;">{{ $message->created_at->format('H:i') }}</span>

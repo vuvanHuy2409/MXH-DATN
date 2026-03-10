@@ -57,14 +57,28 @@
         }
 
         .logo {
-            width: 60px;
-            height: 60px;
-            background: #000;
-            border-radius: 15px;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
             margin: 0 auto 25px;
+            overflow: hidden;
+            border: 2px solid var(--glass-border);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
             display: flex;
             align-items: center;
             justify-content: center;
+            background: #fff;
+            transition: transform 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.05) rotate(3deg);
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         h1 {
@@ -189,9 +203,7 @@
 <body>
     <div class="login-container">
         <div class="logo">
-            <svg viewBox="0 0 24 24" width="35" height="35" fill="white">
-                <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" />
-            </svg>
+            <img src="{{ asset('images/logo.png') }}" alt="Logo">
         </div>
         <h1>{{ __('Welcome back') }}</h1>
         <p class="subtitle">{{ __('Login to your EAUT account') }}</p>

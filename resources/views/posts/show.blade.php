@@ -18,6 +18,12 @@
         @include('posts._item', ['post' => $post, 'prefix' => 'main'])
     </div>
 
+    <!-- Separator -->
+    <div style="padding: 20px 25px 10px; display: flex; align-items: center; gap: 10px; text-align: left;">
+        <span style="font-size: 13px; font-weight: 800; color: var(--secondary-text); text-transform: uppercase; letter-spacing: 1px;">Bình luận</span>
+        <div style="flex-grow: 1; height: 1px; background: var(--glass-border); opacity: 0.3;"></div>
+    </div>
+
     <!-- Replies List (Danh sách bình luận - Nhỏ hơn) -->
     <div id="replies-container" style="padding: 10px 0;">
         @foreach($post->rootComments as $reply)
@@ -249,36 +255,38 @@
 
 <style>
     .comment-section {
-        margin-bottom: 5px;
-        padding: 0 10px;
+        margin-bottom: 8px;
+        padding: 0 15px;
     }
 
     .comment-bubble {
-        background: rgba(255, 255, 255, 0.03) !important;
-        border: 1px solid var(--glass-border) !important;
+        background: rgba(0, 0, 0, 0.02) !important;
+        border: 1px solid rgba(0,0,0,0.1) !important;
         border-radius: 20px !important;
-        margin-bottom: 5px !important;
-        padding: 12px 20px 12px 12px !important;
+        margin-bottom: 8px !important;
+        padding: 10px 16px !important;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.02);
     }
 
-    .post-small .post-text {
+    .comment-bubble div[style*="font-size: 15px"] {
         font-size: 14px !important;
     }
 
-    .post-small .post-header a {
-        font-size: 14px !important;
+    [data-theme="dark"] .comment-bubble {
+        border-color: rgba(255,255,255,0.2) !important;
     }
 
     .nested-replies {
-        margin-left: 45px;
+        margin-left: 40px;
         border-left: 1.5px solid var(--glass-border);
-        padding-left: 5px;
+        padding-left: 12px;
     }
 
     .comment-bubble.nested {
-        background: transparent !important;
-        border: none !important;
-        padding: 5px 10px !important;
+        background: rgba(0, 0, 0, 0.01) !important;
+        border: 1px solid rgba(0,0,0,0.3) !important;
+        padding: 8px 14px !important;
+        border-radius: 16px !important;
     }
 </style>
 @endsection

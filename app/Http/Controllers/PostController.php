@@ -15,10 +15,12 @@ class PostController extends Controller
         $userId = auth()->id();
         $followingIds = auth()->user()->following()->pluck('users.id')->toArray();
 
-        // 1. DÀNH CHO BẠN: Lấy tất cả bài viết gốc
-        $posts = Post::with(['user', 'media', 'likes'])
+        // 1. DÀNH CHO BẠN: Lấy tất cả bài viết gốc không thuộc nhóm
+        $posts = Post::whereNull('group_id')
+            ->with(['user', 'media', 'likes'])
             ->withCount(['reposts'])
-            ->orderByRaw('DATE(created_at) DESC, RAND()')
+            ->orderByRaw('user_id = ? DESC', [$userId]) // Ưu tiên bài viết của mình lên đầu
+            ->orderByRaw('DATE(created_at) DESC, RAND()') // Giữ nguyên xắp xếp cũ cho các bài viết khác
             ->get();
 
         // Thêm thông tin người theo dõi đã repost cho tab Dành cho bạn
@@ -46,6 +48,7 @@ class PostController extends Controller
         $allFollowingPostIds = array_unique(array_merge($followingOriginalPostIds, $repostedPostIds));
 
         $followingPosts = Post::whereIn('id', $allFollowingPostIds)
+            ->whereNull('group_id')
             ->with(['user', 'media', 'likes'])
             ->withCount(['reposts'])
             ->orderBy('created_at', 'desc')
@@ -77,6 +80,7 @@ class PostController extends Controller
 
         $post = Post::create([
             'user_id' => auth()->id(),
+            'group_id' => $request->group_id,
             'content' => $request->content,
             'link_url' => $request->link_url,
         ]);
