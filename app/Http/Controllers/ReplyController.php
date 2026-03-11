@@ -14,17 +14,33 @@ class ReplyController extends Controller
      */
     public function store(Request $request, Post $post)
     {
+        // Kiểm tra cơ bản
         $request->validate([
-            'content' => 'required|max:500',
-            // parent_id có thể null (bình luận bài viết) hoặc phải tồn tại trong bảng comments (trả lời bình luận)
-            'parent_id' => 'nullable' 
+            'content' => 'nullable|max:500',
+            'parent_id' => 'nullable',
+            'image' => 'nullable|image|max:10240',
         ]);
+
+        // Kiểm tra ít nhất có 1 trong 2
+        if (!$request->filled('content') && !$request->hasFile('image')) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['error' => 'Vui lòng nhập nội dung hoặc chọn ảnh'], 422);
+            }
+            return back()->with('error', 'Vui lòng nhập nội dung hoặc chọn ảnh');
+        }
+
+        $imageUrl = null;
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('comments/images', 'public');
+            $imageUrl = '/storage/' . $path;
+        }
 
         $comment = Comment::create([
             'user_id' => Auth::id(),
             'post_id' => $post->id,
-            'parent_id' => $request->parent_id ?: null, // Đảm bảo lưu null nếu trống
-            'content' => $request->content,
+            'parent_id' => $request->parent_id ?: null,
+            'content' => $request->content ?? '',
+            'image_url' => $imageUrl,
         ]);
 
         // Tăng số lượng bình luận cho bài viết gốc

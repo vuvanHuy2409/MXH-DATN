@@ -26,7 +26,7 @@ class Post extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function socialGroup()
+    public function group()
     {
         return $this->belongsTo(SocialGroup::class, 'group_id');
     }

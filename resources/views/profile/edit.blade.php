@@ -54,14 +54,15 @@
 
             <!-- Link URL Field -->
             <div class="form-group">
-                <label style="display: block; margin-bottom: 10px; font-weight: 700; font-size: 14px; color: var(--secondary-text); text-transform: uppercase; letter-spacing: 0.5px; padding-left: 5px;">Liên kết (Link)</label>
-                <div style="position: relative; display: flex; align-items: center;">
-                    <div style="position: absolute; left: 16px; color: var(--secondary-text); opacity: 0.5;">
+                <label style="display: block; margin-bottom: 10px; font-weight: 700; font-size: 14px; color: var(--secondary-text); text-transform: uppercase; letter-spacing: 0.5px; padding-left: 5px;">Các liên kết (Link) - Mỗi dòng một liên kết</label>
+                <div style="position: relative; display: flex; align-items: flex-start;">
+                    <div style="position: absolute; left: 16px; top: 16px; color: var(--secondary-text); opacity: 0.5;">
                         <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
                     </div>
-                    <input type="url" name="link_url" value="{{ old('link_url', $user->link_url) }}" placeholder="https://example.com" 
-                        style="width: 100%; padding: 14px 16px 14px 45px; border: 1px solid var(--glass-border); border-radius: 18px; background: rgba(0,0,0,0.02); color: inherit; font-size: 15px; outline: none; transition: all 0.2s;">
+                    <textarea name="link_url" rows="3" placeholder="https://facebook.com&#10;https://google.com" 
+                        style="width: 100%; padding: 14px 16px 14px 45px; border: 1px solid var(--glass-border); border-radius: 18px; background: rgba(0,0,0,0.02); color: inherit; font-size: 15px; outline: none; transition: all 0.2s; resize: vertical; min-height: 80px;">{{ old('link_url', $user->link_url) }}</textarea>
                 </div>
+                <div style="font-size: 11px; color: var(--secondary-text); margin-top: 6px; padding-left: 5px; opacity: 0.7;">Nhấn Enter để thêm một liên kết khác.</div>
                 @error('link_url')
                     <div style="color: #ff3b30; font-size: 12px; margin-top: 6px; padding-left: 5px; font-weight: 600;">{{ $message }}</div>
                 @enderror

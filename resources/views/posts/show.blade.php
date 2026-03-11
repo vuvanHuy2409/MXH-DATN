@@ -26,24 +26,6 @@
 
     <!-- Replies List (Danh sách bình luận - Nhỏ hơn) -->
     <div id="replies-container" style="padding: 10px 0;">
-        @php
-            // Nhóm bình luận theo parent_id
-            $commentsByParent = $post->comments->groupBy('parent_id');
-            $rootComments = $commentsByParent->get(null) ?? collect();
-
-            // Hàm thu thập tất cả bình luận con thành mảng phẳng
-            if (!function_exists('getFlatReplies')) {
-                function getFlatReplies($parentId, $commentsByParent, &$allReplies, $depth = 1) {
-                    if ($depth > 100) return;
-                    $replies = $commentsByParent->get($parentId) ?? collect();
-                    foreach($replies as $reply) {
-                        $allReplies[] = $reply;
-                        getFlatReplies($reply->id, $commentsByParent, $allReplies, $depth + 1);
-                    }
-                }
-            }
-        @endphp
-
         @foreach($rootComments as $reply)
             <div class="comment-section">
                 <!-- Bình luận gốc (Cấp 1) -->
@@ -59,12 +41,11 @@
                     'class' => 'comment-bubble'
                 ])
 
-                <!-- Các phản hồi -->
-                @if($commentsByParent->has($reply->id))
+                <!-- Các phản hồi (Dữ liệu đã được gom phẳng từ Controller) -->
+                @if(!empty($reply->all_flat_replies))
                     <div class="nested-replies" id="nested-container-{{ $reply->id }}">
                         @php
-                            $allFlatReplies = [];
-                            getFlatReplies($reply->id, $commentsByParent, $allFlatReplies);
+                            $allFlatReplies = $reply->all_flat_replies;
                             $firstReply = array_shift($allFlatReplies);
                         @endphp
                         
@@ -122,7 +103,11 @@
         </div>
     </div>
     <div style="position: sticky; bottom: 0; background: var(--glass-bg); backdrop-filter: blur(20px); padding: 15px 20px; border-top: 1px solid var(--glass-border); z-index: 100;">
-        <form onsubmit="submitReply(event)" style="max-width: 650px; margin: 0 auto;">
+        <div id="commentImagePreviewContainer" style="display: none; padding: 10px; background: rgba(0,0,0,0.02); border-radius: 12px; margin-bottom: 10px; position: relative; max-width: 650px; margin-left: auto; margin-right: auto;">
+            <img id="commentImagePreview" src="" style="max-height: 100px; border-radius: 8px;">
+            <span onclick="removeCommentImage()" style="position: absolute; top: 5px; right: 5px; cursor: pointer; background: rgba(0,0,0,0.5); color: white; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px;">&times;</span>
+        </div>
+        <form onsubmit="submitReply(event)" style="max-width: 650px; margin: 0 auto;" enctype="multipart/form-data">
             @csrf
             <!-- Luôn giữ ID của bài viết gốc -->
             <input type="hidden" id="rootPostId" value="{{ $post->id }}">
@@ -131,8 +116,12 @@
 
             <div style="display: flex; gap: 12px; align-items: center;">
                 <div class="avatar" style="width: 35px; height: 35px; background-image: url('{{ auth()->user()->avatar_url }}'); background-size: cover; flex-shrink: 0;"></div>
-                <div style="flex-grow: 1; background: rgba(0,0,0,0.05); border: 1px solid var(--glass-border); border-radius: 20px; padding: 5px 15px;">
-                    <input type="text" id="replyContent" placeholder="Viết câu trả lời..." style="background: transparent; border: none; width: 100%; color: var(--text-color); outline: none; padding: 8px 0; font-size: 14px;" required autocomplete="off">
+                <div style="flex-grow: 1; background: rgba(0,0,0,0.05); border: 1px solid var(--glass-border); border-radius: 20px; padding: 5px 15px; display: flex; align-items: center; gap: 10px;">
+                    <input type="text" id="replyContent" name="content" placeholder="Viết câu trả lời..." style="background: transparent; border: none; flex-grow: 1; color: var(--text-color); outline: none; padding: 8px 0; font-size: 14px;" autocomplete="off">
+                    <label style="cursor: pointer; opacity: 0.6; display: flex; align-items: center;">
+                        <input type="file" id="commentImageInput" name="image" accept="image/*" style="display: none;" onchange="previewCommentImage(this)">
+                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                    </label>
                 </div>
                 <button type="submit" class="btn-post" style="padding: 6px 15px; font-size: 13px;">Gửi</button>
             </div>
@@ -155,18 +144,44 @@
         document.getElementById('replyContent').placeholder = "Viết câu trả lời...";
     }
 
+    function previewCommentImage(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('commentImagePreview').src = e.target.result;
+                document.getElementById('commentImagePreviewContainer').style.display = 'block';
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function removeCommentImage() {
+        document.getElementById('commentImageInput').value = '';
+        document.getElementById('commentImagePreviewContainer').style.display = 'none';
+        document.getElementById('commentImagePreview').src = '';
+    }
+
     function submitReply(event) {
         event.preventDefault();
-        const content = document.getElementById('replyContent').value.trim();
+        const contentInput = document.getElementById('replyContent');
+        const content = contentInput.value.trim();
         const rootPostId = document.getElementById('rootPostId').value;
         const parentId = document.getElementById('parentCommentId').value;
+        const imageFile = document.getElementById('commentImageInput').files[0];
 
-        if (!content) return;
+        if (!content && !imageFile) {
+            alert('Vui lòng nhập nội dung hoặc chọn ảnh');
+            return;
+        }
 
         const formData = new FormData();
-        formData.append('content', content);
+        formData.append('content', content); // Luôn gửi content (có thể là chuỗi rỗng)
+        
         if (parentId) {
             formData.append('parent_id', parentId);
+        }
+        if (imageFile) {
+            formData.append('image', imageFile);
         }
 
         fetch(`/posts/${rootPostId}/reply`, {
@@ -179,6 +194,7 @@
         }).then(res => {
             if (res.ok) {
                 document.getElementById('replyContent').value = '';
+                removeCommentImage();
                 location.reload();
             } else {
                 return res.json().then(data => {

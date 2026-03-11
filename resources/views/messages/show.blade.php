@@ -306,6 +306,27 @@
 
         <!-- Messages Container -->
         <div id="messages-container" style="flex-grow: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px;">
+            @php
+                if (!function_exists('getFileIconInfo')) {
+                    function getFileIconInfo($fileName) {
+                        $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+                        $icons = [
+                            'pdf' => ['color' => '#ff3b30', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M9 15l2 2 4-4"></path>'],
+                            'doc' => ['color' => '#0071e3', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line>'],
+                            'docx' => ['color' => '#0071e3', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line>'],
+                            'xls' => ['color' => '#28a745', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><line x1="8" y1="9" x2="10" y2="9"></line>'],
+                            'xlsx' => ['color' => '#28a745', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><line x1="8" y1="9" x2="10" y2="9"></line>'],
+                            'ppt' => ['color' => '#fd7e14', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M9 13l3 3 3-3"></path>'],
+                            'pptx' => ['color' => '#fd7e14', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M9 13l3 3 3-3"></path>'],
+                            'zip' => ['color' => '#6c757d', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M12 12v6"></path><path d="M10 16l2 2 2-2"></path>'],
+                            'rar' => ['color' => '#6c757d', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M12 12v6"></path><path d="M10 16l2 2 2-2"></path>'],
+                            'txt' => ['color' => '#000', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line>'],
+                        ];
+
+                        return $icons[$ext] ?? ['color' => '#6e6e73', 'icon' => '<path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline>'];
+                    }
+                }
+            @endphp
             @foreach($messages as $message)
                 @php
                     $isMe = $message->sender_id === auth()->id();
@@ -339,13 +360,17 @@
                                         Trình duyệt của bạn không hỗ trợ phát video. <a href="{{ asset($message->content) }}" download>Tải về</a>
                                     </video>
                                 @elseif($message->message_type === 'file')
-                                    <a href="{{ asset($message->content) }}" download="{{ $message->metadata['file_name'] ?? 'file' }}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 10px; padding: 5px;">
-                                        <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center;">
-                                            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+                                    @php 
+                                        $fileName = $message->metadata['file_name'] ?? 'file';
+                                        $fileInfo = getFileIconInfo($fileName);
+                                    @endphp
+                                    <a href="{{ asset($message->content) }}" download="{{ $fileName }}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 10px; padding: 5px;">
+                                        <div style="width: 40px; height: 40px; border-radius: 10px; background: {{ $isMe ? 'rgba(255,255,255,0.2)' : $fileInfo['color'].'15' }}; display: flex; align-items: center; justify-content: center; color: {{ $isMe ? 'white' : $fileInfo['color'] }};">
+                                            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none">{!! $fileInfo['icon'] !!}</svg>
                                         </div>
                                         <div style="overflow: hidden; flex-grow: 1;">
-                                            <div style="font-weight: 700; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;">{{ $message->metadata['file_name'] ?? 'Tài liệu' }}</div>
-                                            <div style="font-size: 11px; opacity: 0.7;">{{ isset($message->metadata['file_size']) ? round($message->metadata['file_size'] / 1024, 1) . ' KB' : 'Tải về' }}</div>
+                                            <div style="font-weight: 700; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;">{{ $fileName }}</div>
+                                            <div style="font-size: 11px; opacity: 0.7;">{{ isset($message->metadata['file_size']) ? round($message->metadata['file_size'] / 1024, 1) . ' KB' : 'Tải về' }} ({{ strtoupper(pathinfo($fileName, PATHINFO_EXTENSION)) }})</div>
                                         </div>
                                     </a>
                                 @else

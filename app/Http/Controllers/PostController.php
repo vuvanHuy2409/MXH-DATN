@@ -13,58 +13,65 @@ class PostController extends Controller
     public function index()
     {
         $userId = auth()->id();
-        $followingIds = auth()->user()->following()->pluck('users.id')->toArray();
+        $user = auth()->user();
+        $followingIds = $user->following()->pluck('users.id')->toArray();
 
-        // 1. DÀNH CHO BẠN: Lấy tất cả bài viết gốc không thuộc nhóm
-        $posts = Post::whereNull('group_id')
-            ->with(['user', 'media', 'likes'])
+        // Lấy danh sách ID các nhóm mà người dùng hiện tại đã tham gia
+        $myGroupIds = \App\Models\GroupMember::where('user_id', $userId)->pluck('group_id')->toArray();
+
+        // 1. DÀNH CHO BẠN: Lấy bài viết cá nhân, nhóm công khai, và nhóm riêng tư mình đã tham gia
+        $posts = Post::where(function($query) use ($myGroupIds) {
+                $query->whereNull('group_id') // Bài viết cá nhân
+                      ->orWhereHas('group', function($q) use ($myGroupIds) {
+                          $q->where('privacy', 'public'); // Nhóm công khai
+                      })
+                      ->orWhereIn('group_id', $myGroupIds); // Nhóm mình tham gia (bao gồm cả riêng tư)
+            })
+            ->with(['user', 'media', 'likes', 'group', 'reposts' => function($query) use ($followingIds) {
+                $query->whereIn('user_id', $followingIds)->with('user');
+            }])
             ->withCount(['reposts'])
-            ->orderByRaw('user_id = ? DESC', [$userId]) // Ưu tiên bài viết của mình lên đầu
-            ->orderByRaw('DATE(created_at) DESC, RAND()') // Giữ nguyên xắp xếp cũ cho các bài viết khác
+            ->orderByRaw('user_id = ? DESC', [$userId]) 
+            ->orderBy('created_at', 'DESC') 
+            ->limit(50) 
             ->get();
 
-        // Thêm thông tin người theo dõi đã repost cho tab Dành cho bạn
-        foreach ($posts as $post) {
-            $post->followed_reposters = \App\Models\Repost::where('post_id', $post->id)
-                ->whereIn('user_id', $followingIds)
-                ->with('user')
-                ->get()
-                ->pluck('user.username')
-                ->toArray();
-        }
-
         // 2. ĐANG THEO DÕI: 
-        // Lấy IDs của các bài viết từ người đang theo dõi
-        $followingOriginalPostIds = Post::whereIn('user_id', $followingIds)
-            ->pluck('id')
-            ->toArray();
-
-        // Lấy IDs của các bài viết được repost bởi người đang theo dõi
         $repostedPostIds = \App\Models\Repost::whereIn('user_id', $followingIds)
             ->pluck('post_id')
             ->toArray();
 
-        // Gộp tất cả IDs bài viết cần hiển thị
-        $allFollowingPostIds = array_unique(array_merge($followingOriginalPostIds, $repostedPostIds));
-
-        $followingPosts = Post::whereIn('id', $allFollowingPostIds)
-            ->whereNull('group_id')
-            ->with(['user', 'media', 'likes'])
+        $followingPosts = Post::where(function($query) use ($followingIds, $repostedPostIds, $myGroupIds) {
+                $query->whereIn('user_id', $followingIds) // Người mình theo dõi
+                      ->orWhereIn('id', $repostedPostIds) // Bài được repost bởi người mình theo dõi
+                      ->orWhereIn('group_id', $myGroupIds); // Bài trong nhóm mình tham gia
+            })
+            ->with(['user', 'media', 'likes', 'group', 'reposts' => function($query) use ($followingIds) {
+                $query->whereIn('user_id', $followingIds)->with('user');
+            }])
             ->withCount(['reposts'])
             ->orderBy('created_at', 'desc')
+            ->limit(50)
             ->get();
 
-        // Gắn danh sách người theo dõi đã repost vào từng bài
         foreach ($followingPosts as $post) {
-            $post->followed_reposters = \App\Models\Repost::where('post_id', $post->id)
-                ->whereIn('user_id', $followingIds)
-                ->with('user')
-                ->get()
-                ->pluck('user.username')
-                ->toArray();
+            $post->followed_reposters = $post->reposts->pluck('user.username')->toArray();
         }
 
         return view('posts.index', compact('posts', 'followingPosts'));
+    }
+
+    /**
+     * Get comments for a post in chronological order.
+     */
+    public function getComments(Post $post)
+    {
+        $comments = $post->comments()
+            ->with(['user'])
+            ->oldest()
+            ->get();
+            
+        return response()->json($comments);
     }
 
     /**
@@ -129,12 +136,36 @@ class PostController extends Controller
      */
     public function show(Post $post)
     {
-        // Tải bài gốc và tất cả các bình luận để xử lý phân cấp
         $post->load(['user', 'media', 'likes', 'comments' => function($query) {
             $query->with(['user', 'parent.user'])->oldest();
         }]);
+
+        $commentsByParent = $post->comments->groupBy('parent_id');
+        $rootComments = $commentsByParent->get(null) ?? collect();
+
+        foreach ($rootComments as $root) {
+            $allFlatReplies = [];
+            $visited = [];
+            $this->collectReplies($root->id, $commentsByParent, $allFlatReplies, $visited);
+            $root->all_flat_replies = $allFlatReplies;
+        }
         
-        return view('posts.show', compact('post'));
+        return view('posts.show', compact('post', 'rootComments'));
+    }
+
+    /**
+     * Hàm hỗ trợ đệ quy an toàn để gom bình luận
+     */
+    private function collectReplies($parentId, $commentsByParent, &$allReplies, &$visited)
+    {
+        if (isset($visited[$parentId]) || count($allReplies) > 500) return;
+        $visited[$parentId] = true;
+
+        $replies = $commentsByParent->get($parentId) ?? [];
+        foreach ($replies as $reply) {
+            $allReplies[] = $reply;
+            $this->collectReplies($reply->id, $commentsByParent, $allReplies, $visited);
+        }
     }
 
     public function update(Request $request, Post $post)

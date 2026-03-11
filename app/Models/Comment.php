@@ -14,6 +14,7 @@ class Comment extends Model
         'post_id',
         'parent_id',
         'content',
+        'image_url',
         'reply_count',
     ];
 

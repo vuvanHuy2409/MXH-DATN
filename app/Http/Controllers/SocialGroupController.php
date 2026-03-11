@@ -50,6 +50,11 @@ class SocialGroupController extends Controller
             'class_name' => 'required_if:type,class|string|max:50',
         ]);
 
+        // Kiểm tra quyền: Chỉ giáo viên mới được tạo nhóm lớp
+        if ($request->type === 'class' && Auth::user()->user_type !== 'teacher') {
+            return back()->withErrors(['type' => 'Chỉ giáo viên mới có quyền tạo cộng đồng theo lớp học.'])->withInput();
+        }
+
         $group = DB::transaction(function () use ($request) {
             $privacy = $request->type === 'class' ? 'private' : $request->privacy;
             

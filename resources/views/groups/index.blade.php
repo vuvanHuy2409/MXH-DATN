@@ -215,6 +215,16 @@
                         <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                         Thành viên nhóm
                     </div>
+                    <div onclick="copyJoinCode('{{ $activeGroup->join_code }}')" style="padding: 12px 18px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.2s; font-size: 14px; font-weight: 600; border-top: 1px solid var(--glass-border);" onmouseover="this.style.background='rgba(0,113,227,0.1)'; this.style.color='var(--accent-color)'" onmouseout="this.style.background='transparent'; this.style.color='inherit'">
+                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        Mã nhóm: <span style="font-family: monospace; letter-spacing: 1px; margin-left: auto;">{{ $activeGroup->join_code }}</span>
+                    </div>
+                    @if(auth()->id() !== $activeGroup->creator_id)
+                    <div onclick="openReportModal('group', {{ $activeGroup->id }}, '{{ $activeGroup->name }}')" style="padding: 12px 18px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.2s; font-size: 14px; font-weight: 600; border-top: 1px solid var(--glass-border); color: #ff3b30;" onmouseover="this.style.background='rgba(255,59,48,0.1)'" onmouseout="this.style.background='transparent'">
+                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                        Báo cáo cộng đồng
+                    </div>
+                    @endif
                 </div>
             </div>
 
@@ -238,7 +248,7 @@
                 </div>
                 <div style="padding-bottom: 8px; z-index: 5;">
                     <h1 style="margin: 0; font-size: 24px; font-weight: 800; color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.3);">{{ $activeGroup->name }}</h1>
-                    <div style="display: flex; align-items: center; gap: 10px; color: rgba(255,255,255,0.95); font-size: 13px; font-weight: 700; margin-top: 4px;">
+                    <div style="display: flex; align-items: center; gap: 10px; color: #00d2ff; font-size: 13px; font-weight: 700; margin-top: 4px;">
                         <span style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 6px; backdrop-filter: blur(5px);">{{ $activeGroup->privacy === 'public' ? 'Công khai' : 'Riêng tư' }}</span>
                         <span>•</span>
                         <span>{{ $activeGroup->members_count }} thành viên</span>
@@ -326,9 +336,11 @@
                 <div onclick="setGroupType('community')" id="type-community" style="flex: 1; padding: 12px; border-radius: 15px; border: 2px solid var(--accent-color); cursor: pointer; text-align: center; background: rgba(0,113,227,0.05);">
                     <div style="font-weight: 800; font-size: 14px; color: var(--accent-color);">Cộng đồng</div>
                 </div>
+                @if(auth()->user()->user_type === 'teacher')
                 <div onclick="setGroupType('class')" id="type-class" style="flex: 1; padding: 12px; border-radius: 15px; border: 2px solid var(--glass-border); cursor: pointer; text-align: center;">
                     <div style="font-weight: 800; font-size: 14px; color: var(--secondary-text);">Nhóm lớp</div>
                 </div>
+                @endif
                 <input type="hidden" name="type" id="groupTypeInput" value="community">
             </div>
             <div style="margin-bottom: 15px;"><label class="input-label">Tên nhóm</label><input type="text" name="name" id="groupNameInput" required class="modern-input" placeholder="Tên nhóm..."></div>
@@ -774,5 +786,87 @@
             }
         }
     };
+
+    let currentReport = { type: '', id: '' };
+
+    function openReportModal(type, id, name) {
+        currentReport = { type, id };
+        document.getElementById('reportTargetType').innerText = type === 'group' ? 'Cộng đồng' : 'Nội dung';
+        document.getElementById('reportTargetName').innerText = name;
+        document.getElementById('reportModal').style.display = 'flex';
+        document.body.classList.add('modal-open');
+    }
+
+    function closeReportModal() {
+        document.getElementById('reportModal').style.display = 'none';
+        document.body.classList.remove('modal-open');
+    }
+
+    function submitReport() {
+        const reason = document.getElementById('reportReason').value;
+        const details = document.getElementById('reportDetails').value;
+        const btn = document.getElementById('submitReportBtn');
+        
+        btn.disabled = true;
+        btn.innerText = "Đang gửi...";
+
+        fetch('{{ route('reports.store') }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                reported_id: currentReport.id,
+                type: currentReport.type,
+                reason: reason,
+                details: details
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            alert(data.message);
+            closeReportModal();
+            btn.disabled = false;
+            btn.innerText = "Gửi báo cáo";
+        })
+        .catch(err => {
+            alert('Có lỗi xảy ra, vui lòng thử lại.');
+            btn.disabled = false;
+            btn.innerText = "Gửi báo cáo";
+        });
+    }
 </script>
+
+<!-- Modal Báo cáo -->
+<div id="reportModal" class="modal" style="display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.4); backdrop-filter: blur(10px); z-index: 6000;">
+    <div class="modal-content glass-bubble" style="max-width: 450px; width: 90%; padding: 25px; border-radius: 25px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="margin: 0; font-size: 18px; font-weight: 800;">Báo cáo <span id="reportTargetType"></span></h3>
+            <span onclick="closeReportModal()" style="cursor: pointer; font-size: 24px; opacity: 0.5;">&times;</span>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <p style="font-size: 14px; color: var(--secondary-text); margin-bottom: 15px;">Bạn đang báo cáo: <strong id="reportTargetName" style="color: var(--text-color);"></strong></p>
+            
+            <label class="input-label" style="display: block; font-size: 14px; font-weight: 700; margin-bottom: 8px;">Lý do báo cáo</label>
+            <select id="reportReason" style="width: 100%; margin-bottom: 15px; padding: 12px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.03); outline: none;">
+                <option value="Spam">Spam / Nội dung rác</option>
+                <option value="Quấy rối">Quấy rối / Bắt nạt</option>
+                <option value="Nội dung không phù hợp">Nội dung không phù hợp</option>
+                <option value="Ngôn từ thù ghét">Ngôn từ thù ghét</option>
+                <option value="Vi phạm bản quyền">Vi phạm bản quyền</option>
+                <option value="Khác">Lý do khác</option>
+            </select>
+            
+            <label class="input-label" style="display: block; font-size: 14px; font-weight: 700; margin-bottom: 8px;">Chi tiết thêm (tùy chọn)</label>
+            <textarea id="reportDetails" style="width: 100%; height: 100px; resize: none; padding: 12px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.03); outline: none;" placeholder="Cung cấp thêm thông tin để chúng tôi xử lý nhanh hơn..."></textarea>
+        </div>
+        
+        <div style="display: flex; gap: 10px;">
+            <button onclick="closeReportModal()" style="flex: 1; padding: 12px; border-radius: 12px; border: 1px solid var(--glass-border); background: transparent; font-weight: 700; cursor: pointer;">Hủy</button>
+            <button onclick="submitReport()" id="submitReportBtn" style="flex: 2; padding: 12px; border-radius: 12px; border: none; background: #ff3b30; color: white; font-weight: 700; cursor: pointer;">Gửi báo cáo</button>
+        </div>
+    </div>
+</div>
 @endsection

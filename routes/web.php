@@ -150,3 +150,4 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });
+Route::post('/reports', [\App\Http\Controllers\ReportController::class, 'store'])->name('reports.store')->middleware('auth');

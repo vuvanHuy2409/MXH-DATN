@@ -82,7 +82,7 @@
                 <div class="avatar" style="width: 80px; height: 80px; background-image: url('{{ $group->avatar_url }}'); background-size: cover; border-radius: 20px; border: 4px solid var(--bg-main); box-shadow: 0 8px 20px rgba(0,0,0,0.15);"></div>
                 <div style="padding-bottom: 5px;">
                     <h1 style="margin: 0; font-size: 22px; font-weight: 800; color: white; text-shadow: 0 2px 8px rgba(0,0,0,0.2);">{{ $group->name }}</h1>
-                    <div style="display: flex; align-items: center; gap: 10px; color: rgba(255,255,255,0.9); font-size: 13px; font-weight: 600; margin-top: 4px;">
+                    <div style="display: flex; align-items: center; gap: 10px; color: #00d2ff; font-size: 13px; font-weight: 600; margin-top: 4px;">
                         <span>{{ $group->privacy === 'public' ? 'Công khai' : 'Riêng tư' }} • {{ $group->members_count }} thành viên</span>
                         <div style="display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 6px; cursor: pointer;" onclick="copyJoinCode('{{ $group->join_code }}')" title="Sao chép mã nhóm">
                             <span style="font-family: monospace; font-weight: 800;">#{{ $group->join_code }}</span>

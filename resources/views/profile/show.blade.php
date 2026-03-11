@@ -99,13 +99,27 @@
         </p>
 
         @if($user->link_url)
-        <a href="{{ $user->link_url }}" target="_blank" style="display: inline-flex; align-items: center; gap: 6px; color: var(--accent-color); text-decoration: none; font-size: 14px; font-weight: 600; margin-bottom: 15px;">
-            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none">
-                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-            </svg>
-            {{ preg_replace('(^https?://)', '', $user->link_url) }}
-        </a>
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px;">
+            @php
+                // Tách chuỗi theo dòng và lọc bỏ các dòng trống
+                $links = array_filter(explode("\n", str_replace("\r", "", $user->link_url)));
+            @endphp
+            @foreach($links as $link)
+                @php 
+                    $link = trim($link); 
+                    if(empty($link)) continue;
+                    // Tự động thêm http:// nếu thiếu
+                    $url = (parse_url($link, PHP_URL_SCHEME) === null) ? 'http://' . $link : $link;
+                @endphp
+                <a href="{{ $url }}" target="_blank" style="display: inline-flex; align-items: center; gap: 8px; color: var(--accent-color); text-decoration: none; font-size: 14px; font-weight: 600; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">
+                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                    </svg>
+                    <span>{{ preg_replace('(^https?://)', '', $link) }}</span>
+                </a>
+            @endforeach
+        </div>
         @endif
 
         <div style="display: flex; gap: 25px; padding-top: 15px; border-top: 1px solid var(--glass-border);">

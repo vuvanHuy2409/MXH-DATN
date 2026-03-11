@@ -82,6 +82,12 @@
             <!-- Comments will be rendered here -->
         </div>
 
+        <!-- Image Preview for Panel -->
+        <div id="panelImagePreviewContainer" style="display: none; padding: 10px 25px; background: rgba(0,0,0,0.02); position: relative;">
+            <img id="panelImagePreview" src="" style="max-height: 80px; border-radius: 8px;">
+            <span onclick="removePanelImage()" style="position: absolute; top: 5px; right: 30px; cursor: pointer; background: rgba(0,0,0,0.5); color: white; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px;">&times;</span>
+        </div>
+
         <!-- Reply Indicator -->
         <div id="panelReplyIndicator" style="display: none; padding: 10px 25px; background: rgba(0,113,227,0.05); border-top: 1px solid var(--glass-border); align-items: center; justify-content: space-between;">
             <div style="font-size: 12px; font-weight: 700; color: var(--accent-color);">Đang trả lời <span id="panelReplyUser"></span></div>
@@ -93,6 +99,10 @@
             <div style="display: flex; gap: 12px; align-items: center; background: rgba(0,0,0,0.03); border: 1px solid var(--glass-border); border-radius: 24px; padding: 8px 18px;">
                 <div class="avatar" style="background-image: url('{{ auth()->user()->avatar_url }}'); background-size: cover; width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;"></div>
                 <input type="text" id="panelCommentInput" placeholder="Viết bình luận..." style="flex-grow: 1; background: transparent; border: none; outline: none; padding: 10px 0; font-size: 14px; color: var(--text-color);">
+                <label style="cursor: pointer; opacity: 0.6; display: flex; align-items: center;">
+                    <input type="file" id="panelCommentImageInput" accept="image/*" style="display: none;" onchange="previewPanelImage(this)">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                </label>
                 <button onclick="submitPanelComment()" style="background: none; border: none; color: var(--accent-color); font-weight: 800; cursor: pointer; padding: 5px 10px; font-size: 14px;">Đăng</button>
             </div>
         </div>
@@ -165,23 +175,51 @@
         const div = document.createElement('div');
         div.className = 'comment-item';
         const isNested = c.parent_id && c.parent_id != activePanelPostId;
-        div.style.cssText = `display: flex; gap: 12px; position: relative; margin-left: ${isNested ? '45px' : '0px'}; margin-bottom: 15px; background: rgba(0,0,0,0.02); padding: 15px; border-radius: 22px; border: 1px solid rgba(0,0,0,0.1);`;
+        div.style.cssText = `display: flex; gap: 12px; position: relative; margin-left: ${isNested ? '45px' : '0px'}; margin-bottom: 15px; background: rgba(0,0,0,0.02); padding: 15px; border-radius: 22px; border: 1px solid rgba(0,0,0,0.1); flex-direction: column;`;
         const authorBadge = c.user_id === activePanelAuthorId ? '<span class="author-badge">Tác giả</span>' : '';
-        const isLiked = c.is_liked_by_me;
+        const imageHtml = c.image_url ? `
+            <div style="margin-top: 10px; border-radius: 12px; overflow: hidden; border: 1px solid var(--glass-border); max-width: 200px;">
+                <img src="${c.image_url}" style="width: 100%; display: block; cursor: pointer;" onclick="openLightbox('${c.image_url}')">
+            </div>
+        ` : '';
+        
         div.innerHTML = `
-            <div class="avatar" style="width: 34px; height: 34px; background-image: url(\'${c.user.avatar_url}\'); background-size: cover; flex-shrink: 0; z-index: 2; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1);"></div>
-            <div style="flex-grow: 1; z-index: 2;">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
-                    <div style="display: flex; align-items: center;">
-                        <strong style="font-size: 13.5px; font-weight: 750;">${c.user.username}</strong>
-                        ${authorBadge}
+            <div style="display: flex; gap: 12px;">
+                <div class="avatar" style="width: 34px; height: 34px; background-image: url(\'${c.user.avatar_url}\'); background-size: cover; flex-shrink: 0; z-index: 2; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1);"></div>
+                <div style="flex-grow: 1; z-index: 2;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                        <div style="display: flex; align-items: center;">
+                            <strong style="font-size: 13.5px; font-weight: 750;">${c.user.username}</strong>
+                            ${authorBadge}
+                        </div>
+                        <span style="font-size: 11px; opacity: 0.5;">${new Date(c.created_at).toLocaleDateString()}</span>
                     </div>
-                    <span style="font-size: 11px; opacity: 0.5;">${new Date(c.created_at).toLocaleDateString()}</span>
+                    <div style="font-size: 14px; line-height: 1.5; color: var(--text-color);">${escapeHtml(c.content)}</div>
+                    ${imageHtml}
+                    <div style="margin-top: 8px; display: flex; gap: 15px; align-items: center;">
+                        <span onclick="preparePanelReply(${c.id}, \'${c.user.username}\')" style="font-size: 12px; font-weight: 700; color: var(--accent-color); cursor: pointer; opacity: 0.8; transition: opacity 0.2s;" onmouseover="this.style.opacity=\'1\'" onmouseout="this.style.opacity=\'0.8\'">Trả lời</span>
+                    </div>
                 </div>
-                <div style="font-size: 14px; line-height: 1.5; color: var(--text-color);">${escapeHtml(c.content)}</div>
             </div>
         `;
         return div;
+    }
+
+    function previewPanelImage(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('panelImagePreview').src = e.target.result;
+                document.getElementById('panelImagePreviewContainer').style.display = 'block';
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function removePanelImage() {
+        document.getElementById('panelCommentImageInput').value = '';
+        document.getElementById('panelImagePreviewContainer').style.display = 'none';
+        document.getElementById('panelImagePreview').src = '';
     }
 
     function preparePanelReply(id, user) {
@@ -199,16 +237,36 @@
     function submitPanelComment() {
         const input = document.getElementById('panelCommentInput');
         const content = input.value.trim();
-        if (!content) return;
-        fetch(`/posts/${activeParentCommentId}/reply`, {
+        const imageFile = document.getElementById('panelCommentImageInput').files[0];
+
+        if (!content && !imageFile) return;
+
+        const formData = new FormData();
+        formData.append('content', content);
+        if (imageFile) {
+            formData.append('image', imageFile);
+        }
+        if (activeParentCommentId && activeParentCommentId != activePanelPostId) {
+            formData.append('parent_id', activeParentCommentId);
+        }
+
+        fetch(`/posts/${activePanelPostId}/reply`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' },
-            body: JSON.stringify({ content: content })
+            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' },
+            body: formData
         }).then(res => res.json()).then(reply => {
-            input.value = ''; cancelPanelReply();
+            input.value = ''; 
+            removePanelImage();
+            cancelPanelReply();
             const list = document.getElementById('panelActualComments');
             if (list.innerText.includes('Chưa có bình luận')) list.innerHTML = '';
+            
+            // Append at the bottom for chronological order
             list.appendChild(createPanelCommentElement(reply));
+            
+            // Scroll to bottom
+            list.scrollTop = list.scrollHeight;
+
             document.querySelectorAll(`.comment-count-display[data-post-id="${activePanelPostId}"]`).forEach(el => { el.innerText = parseInt(el.innerText || 0) + 1; });
         });
     }

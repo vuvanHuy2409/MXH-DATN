@@ -4,6 +4,27 @@
     $isCommentType = $post instanceof \App\Models\Comment;
     $hasLiked = (!$isCommentType) ? $post->likes->contains('user_id', auth()->id()) : false;
     $uniqueId = ($prefix ?? 'p') . '-' . $post->id;
+
+    // Helper function to get icon and color based on file extension
+    if (!function_exists('getFileIconInfo')) {
+        function getFileIconInfo($fileName) {
+            $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+            $icons = [
+                'pdf' => ['color' => '#ff3b30', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M9 15l2 2 4-4"></path>'],
+                'doc' => ['color' => '#0071e3', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line>'],
+                'docx' => ['color' => '#0071e3', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line>'],
+                'xls' => ['color' => '#28a745', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><line x1="8" y1="9" x2="10" y2="9"></line>'],
+                'xlsx' => ['color' => '#28a745', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><line x1="8" y1="9" x2="10" y2="9"></line>'],
+                'ppt' => ['color' => '#fd7e14', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M9 13l3 3 3-3"></path>'],
+                'pptx' => ['color' => '#fd7e14', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M9 13l3 3 3-3"></path>'],
+                'zip' => ['color' => '#6c757d', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M12 12v6"></path><path d="M10 16l2 2 2-2"></path>'],
+                'rar' => ['color' => '#6c757d', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M12 12v6"></path><path d="M10 16l2 2 2-2"></path>'],
+                'txt' => ['color' => '#000', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line>'],
+            ];
+
+            return $icons[$ext] ?? ['color' => '#6e6e73', 'icon' => '<path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline>'];
+        }
+    }
 @endphp
 
 <div class="post-card-v2 {{ $class ?? '' }}" id="post-{{ $uniqueId }}">
@@ -20,6 +41,14 @@
 
         <!-- Right Side: Content -->
         <div style="flex-grow: 1; min-width: 0; text-align: left; display: flex; flex-direction: column; align-items: flex-start;">
+            <!-- Group Info (If belongs to group) -->
+            @if(isset($post->group) && $post->group)
+            <div style="margin-bottom: 8px; display: flex; align-items: center; gap: 8px; background: rgba(0,113,227,0.05); padding: 4px 12px; border-radius: 10px; border: 1px solid rgba(0,113,227,0.1); width: fit-content;">
+                <div class="avatar" style="background-image: url('{{ $post->group->avatar_url }}'); background-size: cover; width: 18px; height: 18px; border-radius: 4px;"></div>
+                <a href="{{ route('groups.index', $post->group->slug) }}" style="text-decoration: none; color: var(--accent-color); font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">{{ $post->group->name }}</a>
+            </div>
+            @endif
+
             <!-- Header -->
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; width: 100%;">
                 <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; text-align: left;">
@@ -74,6 +103,15 @@
                 <div style="font-size: 15px; line-height: 1.55; color: var(--text-color); font-weight: 450; white-space: pre-wrap; word-break: break-word; text-align: left;">{{ trim($post->content) }}</div>
             </div>
 
+            <!-- Comment Image -->
+            @if($isCommentType && $post->image_url)
+            <div style="margin-bottom: 15px; width: 100%; display: flex; justify-content: flex-start;">
+                <div style="border-radius: 18px; overflow: hidden; border: 1px solid var(--glass-border); max-height: 300px; max-width: 400px; background: rgba(0,0,0,0.02); display: flex; justify-content: center; align-items: center;">
+                    <img src="{{ asset($post->image_url) }}" onclick="openLightbox(this.src)" style="width: 100%; max-height: 300px; display: block; cursor: zoom-in; object-fit: cover;">
+                </div>
+            </div>
+            @endif
+
             <!-- Media -->
             @if(!$isCommentType && $post->media && $post->media->isNotEmpty())
             <div style="margin-bottom: 15px; width: 100%; display: flex; justify-content: flex-start;">
@@ -85,13 +123,14 @@
                         @elseif($media->media_type === 'image' || $media->media_type === 'gif')
                             <img src="{{ asset($media->media_url) }}" onclick="openLightbox(this.src)" style="width: 100%; max-height: 450px; display: block; cursor: zoom-in; object-fit: cover;">
                         @else
+                            @php $fileInfo = getFileIconInfo($media->file_name); @endphp
                             <a href="{{ asset($media->media_url) }}" download="{{ $media->file_name }}" style="text-decoration: none; display: flex; align-items: center; gap: 12px; padding: 20px; background: white; border-radius: 14px; width: 100%; border: 1px solid var(--glass-border); box-shadow: 0 4px 12px rgba(0,0,0,0.05); transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-                                <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(0,113,227,0.1); display: flex; align-items: center; justify-content: center; color: var(--accent-color); flex-shrink: 0;">
-                                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+                                <div style="width: 44px; height: 44px; border-radius: 12px; background: {{ $fileInfo['color'] }}15; display: flex; align-items: center; justify-content: center; color: {{ $fileInfo['color'] }}; flex-shrink: 0;">
+                                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2.5" fill="none">{!! $fileInfo['icon'] !!}</svg>
                                 </div>
                                 <div style="flex-grow: 1; overflow: hidden;">
                                     <div style="font-size: 14px; font-weight: 700; color: var(--text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $media->file_name ?? 'Tài liệu đính kèm' }}</div>
-                                    <div style="font-size: 11px; font-weight: 600; color: var(--accent-color); text-transform: uppercase; margin-top: 2px;">Nhấn để tải về</div>
+                                    <div style="font-size: 11px; font-weight: 600; color: {{ $fileInfo['color'] }}; text-transform: uppercase; margin-top: 2px;">Nhấn để tải về ({{ strtoupper(pathinfo($media->file_name, PATHINFO_EXTENSION)) }})</div>
                                 </div>
                                 <svg viewBox="0 0 24 24" width="20" height="20" stroke="var(--secondary-text)" stroke-width="2.5" fill="none" style="opacity: 0.5;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                             </a>
@@ -106,9 +145,13 @@
                                 @elseif($media->media_type === 'image' || $media->media_type === 'gif')
                                     <img src="{{ asset($media->media_url) }}" onclick="openLightbox(this.src)" style="width: 100%; height: 100%; object-fit: cover; cursor: zoom-in;">
                                 @else
+                                    @php $fileInfo = getFileIconInfo($media->file_name); @endphp
                                     <a href="{{ asset($media->media_url) }}" download="{{ $media->file_name }}" style="text-decoration: none; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px; text-align: center; background: white;">
-                                        <svg viewBox="0 0 24 24" width="32" height="32" stroke="var(--accent-color)" stroke-width="2.5" fill="none" style="margin-bottom: 8px;"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+                                        <div style="width: 48px; height: 48px; border-radius: 12px; background: {{ $fileInfo['color'] }}15; display: flex; align-items: center; justify-content: center; color: {{ $fileInfo['color'] }}; margin-bottom: 8px;">
+                                            <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2.5" fill="none">{!! $fileInfo['icon'] !!}</svg>
+                                        </div>
                                         <div style="font-size: 11px; font-weight: 700; color: var(--text-color); word-break: break-all; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">{{ $media->file_name ?? 'Tài liệu' }}</div>
+                                        <div style="font-size: 9px; font-weight: 800; color: {{ $fileInfo['color'] }}; margin-top: 4px;">{{ strtoupper(pathinfo($media->file_name, PATHINFO_EXTENSION)) }}</div>
                                     </a>
                                 @endif
                             </div>

@@ -27,7 +27,7 @@ class ProfileController extends Controller
 
         $request->validate([
             'bio' => ['nullable', 'string', 'max:160'],
-            'link_url' => ['nullable', 'url', 'max:512'],
+            'link_url' => ['nullable', 'string'],
             'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
         ]);
 
