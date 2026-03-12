@@ -19,13 +19,23 @@ class PostController extends Controller
         // Lấy danh sách ID các nhóm mà người dùng hiện tại đã tham gia
         $myGroupIds = \App\Models\GroupMember::where('user_id', $userId)->pluck('group_id')->toArray();
 
-        // 1. DÀNH CHO BẠN: Lấy bài viết cá nhân, nhóm công khai, và nhóm riêng tư mình đã tham gia
-        $posts = Post::where(function($query) use ($myGroupIds) {
-                $query->whereNull('group_id') // Bài viết cá nhân
-                      ->orWhereHas('group', function($q) use ($myGroupIds) {
-                          $q->where('privacy', 'public'); // Nhóm công khai
-                      })
-                      ->orWhereIn('group_id', $myGroupIds); // Nhóm mình tham gia (bao gồm cả riêng tư)
+        // 1. DÀNH CHO BẠN: Lấy bài viết cá nhân (công khai), nhóm công khai, và nhóm riêng tư mình đã tham gia
+        $posts = Post::where(function($query) use ($myGroupIds, $followingIds, $userId) {
+                // Bài viết cá nhân
+                $query->where(function($q) use ($followingIds, $userId) {
+                    $q->whereNull('group_id')
+                      ->whereHas('user', function($u) use ($followingIds, $userId) {
+                          $u->where('is_private', false)    // Tài khoản công khai
+                            ->orWhereIn('id', $followingIds) // Hoặc người mình theo dõi
+                            ->orWhere('id', $userId);       // Hoặc chính mình
+                      });
+                })
+                // HOẶC Bài viết trong cộng đồng (Vẫn hiển thị bình thường ngoài trang chủ)
+                ->orWhereHas('group', function($q) {
+                    $q->where('privacy', 'public'); // Nhóm công khai
+                })
+                // HOẶC Bài viết trong nhóm mình đã tham gia
+                ->orWhereIn('group_id', $myGroupIds);
             })
             ->with(['user', 'media', 'likes', 'group', 'reposts' => function($query) use ($followingIds) {
                 $query->whereIn('user_id', $followingIds)->with('user');
@@ -72,6 +82,12 @@ class PostController extends Controller
             ->get();
             
         return response()->json($comments);
+    }
+
+    public function getLikes(Post $post)
+    {
+        $likes = $post->likes()->with('user')->get()->pluck('user');
+        return response()->json($likes);
     }
 
     /**

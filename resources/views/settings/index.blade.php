@@ -35,6 +35,19 @@
                 </div>
                 <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
             </div>
+
+            <!-- Quyền riêng tư -->
+            <div onclick="togglePrivacy()" class="settings-item">
+                <div class="settings-item-left">
+                    <div class="icon-box" style="background: rgba(255, 45, 85, 0.1); color: #ff2d55;">
+                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    </div>
+                    <span>Tài khoản riêng tư</span>
+                </div>
+                <div id="privacy-toggle" style="width: 40px; height: 22px; background: {{ auth()->user()->is_private ? '#34c759' : '#e9e9eb' }}; border-radius: 20px; position: relative; transition: all 0.3s;">
+                    <div id="privacy-switch-thumb" style="width: 18px; height: 18px; background: white; border-radius: 50%; position: absolute; top: 2px; left: {{ auth()->user()->is_private ? '20' : '2' }}px; transition: all 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.2);"></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -273,6 +286,34 @@
     function closeAboutAuthorModal() {
         document.getElementById('aboutAuthorModal').style.display = 'none';
         document.body.classList.remove('modal-open');
+    }
+
+    function togglePrivacy() {
+        fetch('{{ route('settings.privacy') }}', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const toggle = document.getElementById('privacy-toggle');
+                const thumb = document.getElementById('privacy-switch-thumb');
+                
+                if (data.is_private) {
+                    toggle.style.background = '#34c759';
+                    thumb.style.left = '20px';
+                } else {
+                    toggle.style.background = '#e9e9eb';
+                    thumb.style.left = '2px';
+                }
+                
+                // Hiển thị toast hoặc alert nhỏ (tùy chọn)
+                console.log(data.message);
+            }
+        });
     }
 </script>
 

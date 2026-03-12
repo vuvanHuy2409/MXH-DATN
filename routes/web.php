@@ -60,6 +60,7 @@ Route::middleware('auth')->group(function () {
 
     // Tương tác bài viết
     Route::post('/posts/{post}/like', [LikeController::class, 'toggle'])->name('posts.like');
+    Route::get('/posts/{post}/likes', [PostController::class, 'getLikes'])->name('posts.likes');
     Route::get('/posts/{post}/comments', [PostController::class, 'getComments'])->name('posts.comments');
     Route::post('/posts/{post}/reply', [ReplyController::class, 'store'])->name('posts.reply');
     Route::delete('/comments/{comment}', [PostController::class, 'destroyComment'])->name('comments.destroy');
@@ -100,6 +101,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/name', [ConversationController::class, 'updateName'])->name('messages.update_name');
         Route::post('/refresh-code', [ConversationController::class, 'refreshJoinCode'])->name('messages.refresh_code');
         Route::post('/color', [ConversationController::class, 'updateThemeColor'])->name('messages.update_color');
+        Route::delete('/chat', [ConversationController::class, 'deleteChat'])->name('messages.delete_chat');
         Route::post('/messages/{message}/pin', [ConversationController::class, 'togglePin'])->name('messages.toggle_pin');
         Route::delete('/messages/{message}', [ConversationController::class, 'deleteMessage'])->name('messages.delete_message');
         Route::post('/appointments', [ConversationController::class, 'createAppointment'])->name('messages.create_appointment');
@@ -116,7 +118,8 @@ Route::middleware('auth')->group(function () {
         $repostedIds = \App\Models\Repost::where('user_id', $user->id)->pluck('post_id');
         $reposts = \App\Models\Post::whereIn('id', $repostedIds)->with(['user', 'media', 'likes'])->withCount(['reposts'])->latest()->get();
 
-        return view('profile.show', compact('user', 'posts', 'replies', 'reposts'));
+        $canSeeContent = true;
+        return view('profile.show', compact('user', 'posts', 'replies', 'reposts', 'canSeeContent'));
     })->name('profile.me');
 
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -134,16 +137,26 @@ Route::middleware('auth')->group(function () {
             return redirect()->route('profile.me');
         }
 
-        $posts = $user->posts()->with(['user', 'media', 'likes'])->withCount(['reposts'])->latest()->get();
-        $replies = \App\Models\Comment::where('user_id', $user->id)->with(['user', 'post.user'])->latest()->get();
-        
-        $repostedIds = \App\Models\Repost::where('user_id', $user->id)->pluck('post_id');
-        $reposts = \App\Models\Post::whereIn('id', $repostedIds)->with(['user', 'media', 'likes'])->withCount(['reposts'])->latest()->get();
+        $isFollowing = auth()->user()->following->contains($user->id);
+        $canSeeContent = !$user->is_private || $isFollowing;
 
-        return view('profile.show', compact('user', 'posts', 'replies', 'reposts'));
+        $posts = collect();
+        $replies = collect();
+        $reposts = collect();
+
+        if ($canSeeContent) {
+            $posts = $user->posts()->with(['user', 'media', 'likes'])->withCount(['reposts'])->latest()->get();
+            $replies = \App\Models\Comment::where('user_id', $user->id)->with(['user', 'post.user'])->latest()->get();
+            
+            $repostedIds = \App\Models\Repost::where('user_id', $user->id)->pluck('post_id');
+            $reposts = \App\Models\Post::whereIn('id', $repostedIds)->with(['user', 'media', 'likes'])->withCount(['reposts'])->latest()->get();
+        }
+
+        return view('profile.show', compact('user', 'posts', 'replies', 'reposts', 'canSeeContent'));
     })->name('profile.show');
 
     Route::get('/settings', [App\Http\Controllers\SettingsController::class, 'index'])->name('settings');
+    Route::post('/settings/privacy', [App\Http\Controllers\SettingsController::class, 'togglePrivacy'])->name('settings.privacy');
     Route::get('/settings/help', [App\Http\Controllers\SettingsController::class, 'help'])->name('settings.help');
     Route::post('/settings/feedback', [App\Http\Controllers\SettingsController::class, 'sendFeedback'])->name('settings.feedback');
     Route::post('/settings/change-password', [App\Http\Controllers\SettingsController::class, 'changePassword'])->name('settings.change-password');

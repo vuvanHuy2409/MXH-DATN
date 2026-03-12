@@ -16,16 +16,58 @@
             --accent-color: #0071e3;
         }
 
+        [data-theme="dark"] {
+            --bg-main: #0a0a0a;
+            --glass-bg: rgba(28, 28, 30, 0.8);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-color: #f5f5f7;
+            --secondary-text: #98989d;
+            --accent-color: #0a84ff;
+        }
+
         body {
             margin: 0;
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-main);
+            background-image: radial-gradient(at 0% 0%, hsla(200, 100%, 90%, 1) 0, transparent 50%),
+                radial-gradient(at 100% 100%, hsla(190, 100%, 85%, 1) 0, transparent 50%);
+            background-attachment: fixed;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             padding: 20px;
             box-sizing: border-box;
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        [data-theme="dark"] body {
+            background-image: radial-gradient(at 0% 0%, hsla(240, 10%, 15%, 1) 0, transparent 50%),
+                radial-gradient(at 100% 100%, hsla(240, 10%, 10%, 1) 0, transparent 50%);
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 25px;
+            right: 25px;
+            width: 45px;
+            height: 45px;
+            border-radius: 15px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-color);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            transition: all 0.3s;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
         }
 
         .register-container {
@@ -38,6 +80,11 @@
             border: 1px solid var(--glass-border);
             border-radius: 35px;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        [data-theme="dark"] .register-container {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
 
         .logo {
@@ -71,6 +118,7 @@
             text-align: center;
             margin-bottom: 30px;
             letter-spacing: -1px;
+            color: var(--text-color);
         }
 
         .type-selector {
@@ -79,6 +127,10 @@
             padding: 5px;
             border-radius: 15px;
             margin-bottom: 25px;
+        }
+
+        [data-theme="dark"] .type-selector {
+            background: rgba(255, 255, 255, 0.05);
         }
 
         .type-option {
@@ -94,7 +146,7 @@
         }
 
         .type-option.active {
-            background: #fff;
+            background: var(--glass-bg);
             color: var(--text-color);
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
         }
@@ -118,16 +170,22 @@
             padding: 12px 18px;
             border-radius: 14px;
             border: 1px solid var(--glass-border);
-            background: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.2);
             font-size: 15px;
             box-sizing: border-box;
             outline: none;
             transition: all 0.3s;
+            color: var(--text-color);
+        }
+
+        [data-theme="dark"] input,
+        [data-theme="dark"] select {
+            background: rgba(0, 0, 0, 0.2);
         }
 
         input:focus,
         select:focus {
-            background: #fff;
+            background: var(--glass-bg);
             border-color: var(--accent-color);
         }
 
@@ -155,13 +213,18 @@
             padding: 16px;
             border-radius: 18px;
             border: none;
-            background: #000;
-            color: #fff;
+            background: var(--text-color);
+            color: var(--bg-main);
             font-size: 16px;
             font-weight: 700;
             cursor: pointer;
             transition: all 0.3s;
             margin-top: 10px;
+        }
+
+        .btn-register:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
         }
 
         .footer-links {
@@ -189,6 +252,10 @@
 </head>
 
 <body>
+    <div class="theme-toggle" id="themeToggle" onclick="toggleTheme()">
+        <!-- Icon will be injected by JS -->
+    </div>
+
     <div class="register-container">
         <div class="logo">
             <img src="{{ asset('images/logo.png') }}" alt="Logo">
@@ -251,10 +318,9 @@
             <!-- Teacher Fields -->
             <div id="teacher-fields" style="display: none;">
                 <div class="form-group">
-                    <label>{{ __('Teacher Email (Abbreviation)') }}</label>
+                    <label>{{ __('Teacher Email (Personal or School)') }}</label>
                     <div class="email-input-wrapper">
-                        <input type="text" name="teacher_email_prefix" value="{{ old('teacher_email_prefix') }}">
-                        <span class="email-suffix">@eaut.edu.vn</span>
+                        <input type="email" name="teacher_email" value="{{ old('teacher_email') }}" placeholder="example@gmail.com">
                     </div>
                 </div>
             </div>
@@ -291,6 +357,26 @@
         }
         @if(old('user_type') === 'teacher') setType('teacher');
         @endif
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const targetTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', targetTheme);
+            localStorage.setItem('theme', targetTheme);
+            updateThemeIcon(targetTheme);
+        }
+
+        function updateThemeIcon(theme) {
+            const toggle = document.getElementById('themeToggle');
+            const sunIcon = '<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>';
+            const moonIcon = '<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>';
+            toggle.innerHTML = theme === 'dark' ? sunIcon : moonIcon;
+        }
+
+        // Initialize theme
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        updateThemeIcon(savedTheme);
     </script>
 </body>
 

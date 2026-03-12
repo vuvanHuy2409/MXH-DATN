@@ -19,5 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (\Illuminate\Http\Exceptions\PostTooLargeException $e, $request) {
+            return back()->withErrors(['avatar' => 'Dung lượng ảnh hoặc dữ liệu quá lớn. Vui lòng chọn tệp nhỏ hơn (dưới 10MB).'])->withInput();
+        });
     })->create();

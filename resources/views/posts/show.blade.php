@@ -102,6 +102,14 @@
             <span onclick="cancelQuickReply()" style="cursor: pointer; opacity: 0.5; font-size: 18px;">&times;</span>
         </div>
     </div>
+    @php
+        $isMemberOfGroup = true;
+        if($post->group_id) {
+            $isMemberOfGroup = \App\Models\GroupMember::where('group_id', $post->group_id)->where('user_id', auth()->id())->exists();
+        }
+    @endphp
+
+    @if($isMemberOfGroup)
     <div style="position: sticky; bottom: 0; background: var(--glass-bg); backdrop-filter: blur(20px); padding: 15px 20px; border-top: 1px solid var(--glass-border); z-index: 100;">
         <div id="commentImagePreviewContainer" style="display: none; padding: 10px; background: rgba(0,0,0,0.02); border-radius: 12px; margin-bottom: 10px; position: relative; max-width: 650px; margin-left: auto; margin-right: auto;">
             <img id="commentImagePreview" src="" style="max-height: 100px; border-radius: 8px;">
@@ -117,16 +125,29 @@
             <div style="display: flex; gap: 12px; align-items: center;">
                 <div class="avatar" style="width: 35px; height: 35px; background-image: url('{{ auth()->user()->avatar_url }}'); background-size: cover; flex-shrink: 0;"></div>
                 <div style="flex-grow: 1; background: rgba(0,0,0,0.05); border: 1px solid var(--glass-border); border-radius: 20px; padding: 5px 15px; display: flex; align-items: center; gap: 10px;">
-                    <input type="text" id="replyContent" name="content" placeholder="Viết câu trả lời..." style="background: transparent; border: none; flex-grow: 1; color: var(--text-color); outline: none; padding: 8px 0; font-size: 14px;" autocomplete="off">
+                    <input type="text" id="replyContent" name="content" placeholder="Viết câu trả lời..." style="background: transparent; border: none; flex-grow: 1; color: var(--text-color); outline: none; padding: 8px 0; font-size: 14px;" autocomplete="off" oninput="validateCommentInput()">
                     <label style="cursor: pointer; opacity: 0.6; display: flex; align-items: center;">
-                        <input type="file" id="commentImageInput" name="image" accept="image/*" style="display: none;" onchange="previewCommentImage(this)">
+                        <input type="file" id="commentImageInput" name="image" accept="image/*" style="display: none;" onchange="previewCommentImage(this); validateCommentInput()">
                         <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
                     </label>
                 </div>
-                <button type="submit" class="btn-post" style="padding: 6px 15px; font-size: 13px;">Gửi</button>
+                <button type="submit" id="commentSendBtn" disabled style="background: var(--glass-bg); border: 1.5px solid var(--text-color); color: var(--text-color); padding: 8px 18px; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: not-allowed; opacity: 0.4; transition: all 0.2s; flex-shrink: 0;">
+                    Gửi
+                </button>
             </div>
         </form>
     </div>
+    @else
+    <div style="position: sticky; bottom: 0; background: var(--glass-bg); backdrop-filter: blur(20px); padding: 20px; border-top: 1px solid var(--glass-border); z-index: 100; text-align: center;">
+        <div style="max-width: 650px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+            <p style="margin: 0; font-size: 14px; font-weight: 600; color: var(--secondary-text);">Bạn cần tham gia cộng đồng này để có thể bình luận.</p>
+            <form action="{{ route('groups.join', $post->group->slug) }}" method="POST">
+                @csrf
+                <button type="submit" class="btn-post" style="padding: 8px 25px; border-radius: 12px; font-size: 14px; font-weight: 800;">Tham gia cộng đồng</button>
+            </form>
+        </div>
+    </div>
+    @endif
 </div>
 
 <script>
@@ -142,6 +163,23 @@
         document.getElementById('parentCommentId').value = '';
         document.getElementById('quickReplyIndicator').style.display = 'none';
         document.getElementById('replyContent').placeholder = "Viết câu trả lời...";
+        validateCommentInput();
+    }
+
+    function validateCommentInput() {
+        const content = document.getElementById('replyContent').value.trim();
+        const image = document.getElementById('commentImageInput').files.length > 0;
+        const btn = document.getElementById('commentSendBtn');
+        
+        if (content || image) {
+            btn.disabled = false;
+            btn.style.cursor = 'pointer';
+            btn.style.opacity = '1';
+        } else {
+            btn.disabled = true;
+            btn.style.cursor = 'not-allowed';
+            btn.style.opacity = '0.4';
+        }
     }
 
     function previewCommentImage(input) {

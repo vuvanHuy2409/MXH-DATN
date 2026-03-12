@@ -55,4 +55,17 @@ class SettingsController extends Controller
 
         return back()->with('status', __('Mật khẩu đã được thay đổi thành công.'));
     }
+
+    public function togglePrivacy(Request $request)
+    {
+        $user = Auth::user();
+        $user->is_private = !$user->is_private;
+        $user->save();
+
+        return response()->json([
+            'status' => 'success',
+            'is_private' => $user->is_private,
+            'message' => $user->is_private ? 'Tài khoản hiện đang ở chế độ riêng tư.' : 'Tài khoản hiện đang ở chế độ công khai.'
+        ]);
+    }
 }

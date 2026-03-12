@@ -63,11 +63,10 @@
         <form action="{{ route('password.email') }}" method="POST">
             @csrf
             <div class="form-group">
-                <label>{{ __('EAUT Email Account') }}</label>
+                <label>{{ __('Your Account Email') }}</label>
                 <div class="email-input-wrapper">
                     <input type="text" name="email_prefix" value="{{ old('email_prefix') }}" 
-                           placeholder="{{ __('8-digit ID or abbreviation') }}" required autofocus>
-                    <span class="email-suffix">@eaut.edu.vn</span>
+                           placeholder="{{ __('Enter ID or full email address') }}" required autofocus>
                 </div>
             </div>
             <button type="submit" class="btn-submit">{{ __('Send OTP') }}</button>

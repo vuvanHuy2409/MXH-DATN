@@ -43,9 +43,19 @@
         <div style="flex-grow: 1; min-width: 0; text-align: left; display: flex; flex-direction: column; align-items: flex-start;">
             <!-- Group Info (If belongs to group) -->
             @if(isset($post->group) && $post->group)
+            @php
+                $isMemberOfGroup = \App\Models\GroupMember::where('group_id', $post->group_id)->where('user_id', auth()->id())->exists();
+            @endphp
             <div style="margin-bottom: 8px; display: flex; align-items: center; gap: 8px; background: rgba(0,113,227,0.05); padding: 4px 12px; border-radius: 10px; border: 1px solid rgba(0,113,227,0.1); width: fit-content;">
                 <div class="avatar" style="background-image: url('{{ $post->group->avatar_url }}'); background-size: cover; width: 18px; height: 18px; border-radius: 4px;"></div>
                 <a href="{{ route('groups.index', $post->group->slug) }}" style="text-decoration: none; color: var(--accent-color); font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">{{ $post->group->name }}</a>
+                @if(!$isMemberOfGroup)
+                    <span style="color: var(--secondary-text); opacity: 0.4; font-size: 10px;">·</span>
+                    <form action="{{ route('groups.join', $post->group->slug) }}" method="POST" style="display: inline;">
+                        @csrf
+                        <button type="submit" style="background: none; border: none; padding: 0; color: #ff3b30; font-size: 10px; font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">Tham gia</button>
+                    </form>
+                @endif
             </div>
             @endif
 
@@ -53,6 +63,20 @@
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; width: 100%;">
                 <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; text-align: left;">
                     <a href="{{ route('profile.show', $post->user->username) }}" style="text-decoration: none; color: var(--text-color); font-weight: 750; font-size: 15px; letter-spacing: -0.2px;">{{ $post->user->username }}</a>
+                    
+                    @if(auth()->id() !== $post->user_id)
+                        @php
+                            $isActuallyFollowing = auth()->user()->following->contains($post->user_id);
+                        @endphp
+                        @if(!$isActuallyFollowing)
+                            <span style="color: var(--secondary-text); opacity: 0.4; font-size: 10px;">·</span>
+                            <form action="{{ route('users.follow', $post->user) }}" method="POST" style="display: inline;">
+                                @csrf
+                                <button type="submit" style="background: none; border: none; padding: 0; color: var(--accent-color); font-size: 12px; font-weight: 800; cursor: pointer; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">Theo dõi</button>
+                            </form>
+                        @endif
+                    @endif
+
                     @if($isCommentType && $post->parent_id && $post->parent)
                         <span style="color: var(--secondary-text); font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 4px; opacity: 0.8;">
                             <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="3" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -174,9 +198,15 @@
             <!-- Actions -->
             <div style="display: flex; gap: 20px; align-items: center;">
                 @if(!isset($hideLike))
-                <div class="action-btn-v2 like-btn {{ $hasLiked ? 'liked' : '' }}" onclick="toggleLike({{ $post->id }})" data-post-id="{{ $post->id }}" style="position: relative;">
-                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="{{ $hasLiked ? 'currentColor' : 'none' }}"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-                    <span class="like-count" style="font-size: 13px; font-weight: 600;">{{ $post->like_count }}</span>
+                <div class="action-btn-v2" style="position: relative; display: flex; align-items: center; gap: 6px;">
+                    <div class="like-btn {{ $hasLiked ? 'liked' : '' }}" onclick="toggleLike({{ $post->id }})" data-post-id="{{ $post->id }}" style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="{{ $hasLiked ? 'currentColor' : 'none' }}"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                    </div>
+                    @if(!$isCommentType)
+                        <span class="like-count" onclick="openLikesModal({{ $post->id }})" style="font-size: 13px; font-weight: 600; cursor: pointer;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">{{ $post->like_count }}</span>
+                    @else
+                        <span class="like-count" style="font-size: 13px; font-weight: 600;">{{ $post->like_count ?? 0 }}</span>
+                    @endif
                 </div>
                 @endif
 

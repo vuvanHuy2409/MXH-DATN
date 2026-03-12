@@ -41,12 +41,21 @@ class AuthController extends Controller
     public function sendOtpForgotPassword(Request $request)
     {
         $request->validate(['email_prefix' => 'required']);
-        $email = $request->email_prefix . '@eaut.edu.vn';
+        $input = $request->email_prefix;
         
-        if (!User::where('email', $email)->exists()) {
+        // Tìm user theo email gốc (cá nhân hoặc email trường đầy đủ)
+        $user = User::where('email', $input)->first();
+        
+        // Nếu không thấy, thử thêm đuôi trường (sinh viên)
+        if (!$user) {
+            $user = User::where('email', $input . '@eaut.edu.vn')->first();
+        }
+
+        if (!$user) {
             return back()->withErrors(['email_prefix' => __('Email không tồn tại trong hệ thống.')])->withInput();
         }
 
+        $email = $user->email;
         $otpCode = rand(100000, 999999);
         
         // Lưu vào Cache trong 1 phút
@@ -94,11 +103,22 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $request->validate(['email_prefix' => 'required', 'password' => 'required']);
-        $email = $request->email_prefix . '@eaut.edu.vn';
-        if (Auth::attempt(['email' => $email, 'password' => $request->password])) {
+        
+        $input = $request->email_prefix;
+        
+        // Thử đăng nhập với input gốc (dành cho giáo viên dùng email cá nhân hoặc username)
+        if (Auth::attempt(['email' => $input, 'password' => $request->password])) {
             $request->session()->regenerate();
             return redirect()->intended('/');
         }
+
+        // Thử đăng nhập với đuôi @eaut.edu.vn (dành cho sinh viên và giáo viên dùng email trường)
+        $emailWithSuffix = $input . '@eaut.edu.vn';
+        if (Auth::attempt(['email' => $emailWithSuffix, 'password' => $request->password])) {
+            $request->session()->regenerate();
+            return redirect()->intended('/');
+        }
+
         return back()->withErrors(['email_prefix' => __('Thông tin đăng nhập không chính xác.')])->withInput();
     }
 
@@ -126,10 +146,10 @@ class AuthController extends Controller
             $request->validate([
                 'full_name' => 'required|string|max:100',
                 'faculty_id' => 'required|exists:faculties,id',
-                'teacher_email_prefix' => 'required|string|max:50',
+                'teacher_email' => 'required|email|max:100',
                 'password' => 'required|min:6|confirmed',
             ]);
-            $email = $request->teacher_email_prefix . '@eaut.edu.vn';
+            $email = $request->teacher_email;
         }
 
         if (User::where('email', $email)->exists()) {

@@ -70,8 +70,10 @@
     /* Responsive */
     @media (max-width: 900px) {
         .chat-sidebar {
-            display: none; /* Ẩn sidebar trên mobile khi đang xem chat */
+            display: none;
+            /* Ẩn sidebar trên mobile khi đang xem chat */
         }
+
         .container {
             max-width: 650px !important;
         }
@@ -81,26 +83,26 @@
     .message-wrapper {
         position: relative;
     }
-    
+
     .message-actions-trigger {
         opacity: 0;
         transition: opacity 0.2s;
         cursor: pointer;
         padding: 5px;
         border-radius: 50%;
-        background: rgba(0,0,0,0.03);
+        background: rgba(0, 0, 0, 0.03);
         display: flex;
         align-items: center;
         justify-content: center;
         align-self: center;
     }
-    
+
     .message-wrapper:hover .message-actions-trigger {
         opacity: 1;
     }
 
     .bubble {
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
         transition: transform 0.2s ease;
     }
 
@@ -109,22 +111,27 @@
         text-decoration: underline;
         font-weight: 700;
     }
-    
+
     .message-wrapper.me .bubble a {
         color: #fff;
     }
-    
+
     .message-wrapper.me .bubble {
         border-bottom-right-radius: 4px !important;
     }
-    
+
     .message-wrapper.other .bubble {
         border-bottom-left-radius: 4px !important;
     }
 
     @keyframes spin {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
     }
 
     /* Action Dropdown */
@@ -136,14 +143,19 @@
         backdrop-filter: blur(20px);
         border: 1px solid var(--glass-border);
         border-radius: 12px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         z-index: 100;
         min-width: 120px;
         overflow: hidden;
     }
-    
-    .message-wrapper.me .msg-action-menu { right: 0; }
-    .message-wrapper.other .msg-action-menu { left: 0; }
+
+    .message-wrapper.me .msg-action-menu {
+        right: 0;
+    }
+
+    .message-wrapper.other .msg-action-menu {
+        left: 0;
+    }
 
     .msg-action-item {
         padding: 8px 12px;
@@ -155,15 +167,15 @@
         cursor: pointer;
         transition: background 0.2s;
     }
-    
+
     .msg-action-item:hover {
-        background: rgba(0,0,0,0.05);
+        background: rgba(0, 0, 0, 0.05);
     }
 
     /* Reply Style */
     .reply-preview {
         padding: 10px 15px;
-        background: rgba(0,0,0,0.03);
+        background: rgba(0, 0, 0, 0.03);
         border-left: 4px solid var(--accent-color);
         display: none;
         justify-content: space-between;
@@ -172,7 +184,7 @@
     }
 
     .replied-message-info {
-        background: rgba(0,0,0,0.05);
+        background: rgba(0, 0, 0, 0.05);
         padding: 5px 10px;
         border-radius: 8px;
         font-size: 12px;
@@ -190,10 +202,34 @@
         opacity: 0.5;
         border-bottom: 2px solid transparent;
     }
+
     .settings-tab.active {
         opacity: 1;
         border-bottom-color: var(--accent-color);
         color: var(--accent-color);
+    }
+
+    .input-action-bubble {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid var(--glass-border);
+        flex-shrink: 0;
+    }
+
+    .input-action-bubble:hover {
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        filter: brightness(1.05);
+    }
+
+    .input-action-bubble:active {
+        transform: translateY(-1px) scale(0.95);
     }
 </style>
 
@@ -204,56 +240,64 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                 <h2 style="margin: 0; font-size: 20px; font-weight: 800;">Tin nhắn</h2>
                 <button onclick="window.location.href='{{ route('messages.index') }}'" style="background: none; border: none; cursor: pointer; color: var(--accent-color);">
-                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
                 </button>
             </div>
-            
+
             <!-- Search Mini -->
             <div style="position: relative; margin-bottom: 15px;">
-                <input type="text" placeholder="Tìm kiếm..." style="width: 100%; padding: 10px 15px 10px 35px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.03); font-size: 14px; outline: none;">
-                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: 0.5;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" placeholder="Tìm kiếm..." style="width: 90%; padding: 10px 15px 10px 35px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.03); font-size: 14px; outline: none;">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: 0.5;">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
             </div>
         </div>
 
         <div class="conversation-list-container">
             @foreach($conversations as $conv)
-                @php
-                    $convIsGroup = $conv->type === 'group';
-                    $convName = $conv->name;
-                    $convAvatar = $conv->avatar_url;
-                    if (!$convIsGroup) {
-                        $other = $conv->users->where('id', '!=', auth()->id())->first();
-                        $convName = $other ? $other->username : 'Người dùng';
-                        $convAvatar = $other ? $other->avatar_url : null;
-                    }
-                    $isCurrent = $conv->id === $conversation->id;
-                    $convUnread = $conv->lastMessage && !$conv->lastMessage->is_read && $conv->lastMessage->sender_id !== auth()->id();
-                @endphp
-                <a href="{{ route('messages.show', $conv->id) }}" class="conversation-item-sidebar {{ $isCurrent ? 'active' : '' }}">
-                    <div style="position: relative; flex-shrink: 0;">
-                        <div class="avatar" style="background-image: url('{{ $convAvatar ?? asset('default-avatar.png') }}'); background-size: cover; width: 48px; height: 48px; border: {{ $convIsGroup ? '1.5px solid var(--accent-color)' : 'none' }}"></div>
-                        @if(!$convIsGroup && $other && $other->is_online)
-                            <div style="position: absolute; bottom: 1px; right: 1px; width: 12px; height: 12px; background: #34c759; border: 2px solid white; border-radius: 50%;"></div>
-                        @endif
-                    </div>
-                    <div style="flex-grow: 1; overflow: hidden;">
-                        <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 5px;">
-                            <div style="display: flex; align-items: center; gap: 6px; min-width: 0;">
-                                <span style="font-weight: 700; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $convName }}</span>
-                                @if($convIsGroup)
-                                    <span style="background: rgba(0,113,227,0.1); color: var(--accent-color); font-size: 8px; font-weight: 800; padding: 1px 4px; border-radius: 4px; text-transform: uppercase; flex-shrink: 0;">Nhóm</span>
-                                @endif
-                            </div>
-                            <span style="font-size: 11px; opacity: 0.6; flex-shrink: 0;">{{ $conv->updated_at->diffForHumans(null, true) }}</span>
-                        </div>
-                        <div style="font-size: 13px; color: var(--secondary-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; font-weight: {{ $convUnread ? '700' : '400' }}">
-                            {{ $conv->lastMessage ? ($conv->lastMessage->sender_id === auth()->id() ? 'Bạn: ' : '') . ($conv->lastMessage->message_type === 'text' ? $conv->lastMessage->content : ($conv->lastMessage->message_type === 'image' ? 'Đã gửi một ảnh' : ($conv->lastMessage->message_type === 'video' ? 'Đã gửi một video' : 'Đã gửi một tài liệu'))) : 'Bắt đầu trò chuyện...' }}
-                        </div>
-                    </div>
-                    @if($convUnread)
-                        <div style="width: 8px; height: 8px; background: var(--accent-color); border-radius: 50%; flex-shrink: 0;"></div>
+            @php
+            $convIsGroup = $conv->type === 'group';
+            $convName = $conv->name;
+            $convAvatar = $conv->avatar_url;
+            if (!$convIsGroup) {
+            $other = $conv->users->where('id', '!=', auth()->id())->first();
+            $convName = $other ? $other->username : 'Người dùng';
+            $convAvatar = $other ? $other->avatar_url : null;
+            }
+            $isCurrent = $conv->id === $conversation->id;
+            $convUnread = $conv->lastMessage && !$conv->lastMessage->is_read && $conv->lastMessage->sender_id !== auth()->id();
+            @endphp
+            <a href="{{ route('messages.show', $conv->id) }}" class="conversation-item-sidebar {{ $isCurrent ? 'active' : '' }}">
+                <div style="position: relative; flex-shrink: 0;">
+                    <div class="avatar" style="background-image: url('{{ $convAvatar ?? asset('default-avatar.png') }}'); background-size: cover; width: 48px; height: 48px; border: {{ $convIsGroup ? '1.5px solid var(--accent-color)' : 'none' }}"></div>
+                    @if(!$convIsGroup && $other && $other->is_online)
+                    <div style="position: absolute; bottom: 1px; right: 1px; width: 12px; height: 12px; background: #34c759; border: 2px solid white; border-radius: 50%;"></div>
                     @endif
-                </a>
+                </div>
+                <div style="flex-grow: 1; overflow: hidden;">
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 5px;">
+                        <div style="display: flex; align-items: center; gap: 6px; min-width: 0;">
+                            <span style="font-weight: 700; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $convName }}</span>
+                            @if($convIsGroup)
+                            <span style="background: rgba(0,113,227,0.1); color: var(--accent-color); font-size: 8px; font-weight: 800; padding: 1px 4px; border-radius: 4px; text-transform: uppercase; flex-shrink: 0;">Nhóm</span>
+                            @endif
+                        </div>
+                        <span style="font-size: 11px; opacity: 0.6; flex-shrink: 0;">{{ $conv->updated_at->diffForHumans(null, true) }}</span>
+                    </div>
+                    <div style="font-size: 13px; color: var(--secondary-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; font-weight: {{ $convUnread ? '700' : '400' }}">
+                        {{ $conv->lastMessage ? ($conv->lastMessage->sender_id === auth()->id() ? 'Bạn: ' : '') . ($conv->lastMessage->message_type === 'text' ? $conv->lastMessage->content : ($conv->lastMessage->message_type === 'image' ? 'Đã gửi một ảnh' : ($conv->lastMessage->message_type === 'video' ? 'Đã gửi một video' : 'Đã gửi một tài liệu'))) : 'Bắt đầu trò chuyện...' }}
+                    </div>
+                </div>
+                @if($convUnread)
+                <div style="width: 8px; height: 8px; background: var(--accent-color); border-radius: 50%; flex-shrink: 0;"></div>
+                @endif
+            </a>
             @endforeach
         </div>
     </div>
@@ -261,35 +305,44 @@
     <!-- Cột phải: Nội dung chat -->
     <div class="chat-main">
         @php
-            $themeColor = $conversation->theme_color ?? '#0071e3';
+        $themeColor = $conversation->theme_color ?? '#0071e3';
         @endphp
-        
+
         <!-- Chat Header -->
         <div style="padding: 15px 20px; border-bottom: 1px solid var(--glass-border); display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.02);">
             <a href="{{ route('messages.index') }}" class="mobile-only" style="text-decoration: none; color: inherit; opacity: 0.7; display: none;">
-                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
             </a>
             <div class="avatar" style="width: 40px; height: 40px; background-image: url('{{ $conversation->type === 'direct' ? ($otherUser->avatar_url ?? '') : ($conversation->avatar_url ?? '') }}'); background-size: cover; border: 2px solid {{ $themeColor }};"></div>
             <div style="flex-grow: 1;">
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <div style="font-weight: 800; font-size: 16px;">{{ $conversation->type === 'direct' ? ($otherUser->username ?? 'Người dùng') : ($conversation->name ?? 'Nhóm') }}</div>
                     @if($conversation->type === 'group')
-                        <span style="background: rgba(0,113,227,0.1); color: var(--accent-color); font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Nhóm</span>
+                    <span style="background: rgba(0,113,227,0.1); color: var(--accent-color); font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Nhóm</span>
                     @else
-                        <span style="background: rgba(52,199,89,0.1); color: #34c759; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Bạn bè</span>
+                    <span style="background: rgba(52,199,89,0.1); color: #34c759; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Bạn bè</span>
                     @endif
                 </div>
                 <div style="font-size: 12px; color: var(--secondary-text); font-weight: 500;">
                     {{ $conversation->type === 'group' ? $conversation->users()->count() . ' thành viên' : ($otherUser && $otherUser->is_online ? 'Đang hoạt động' : 'Ngoại tuyến') }}
                 </div>
             </div>
-            
+
             <div style="display: flex; gap: 10px;">
                 <div onclick="toggleSearch()" style="cursor: pointer; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.03);">
-                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
                 </div>
                 <div onclick="openGroupSettingsModal()" style="cursor: pointer; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.03);">
-                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
                 </div>
             </div>
         </div>
@@ -297,8 +350,8 @@
         <!-- Integrated Search Panel -->
         <div id="msgSearchPanel" style="display: none; padding: 10px 20px; background: rgba(0,0,0,0.02); border-bottom: 1px solid var(--glass-border);">
             <div style="position: relative;">
-                <input type="text" id="msgSearchInput" placeholder="Tìm tin nhắn..." 
-                       style="width: 100%; border-radius: 10px; padding: 8px 35px 8px 12px; background: white; border: 1px solid var(--glass-border); outline:none; font-size: 14px;">
+                <input type="text" id="msgSearchInput" placeholder="Tìm tin nhắn..."
+                    style="width: 100%; border-radius: 10px; padding: 8px 35px 8px 12px; background: white; border: 1px solid var(--glass-border); outline:none; font-size: 14px;">
                 <div onclick="toggleSearch()" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; opacity: 0.5;">&times;</div>
             </div>
             <div id="msgSearchResults" class="glass-bubble" style="display: none; margin-top: 10px; max-height: 300px; overflow-y: auto; border-radius: 12px; z-index: 2000; position: absolute; left: 20px; right: 20px;"></div>
@@ -307,163 +360,229 @@
         <!-- Messages Container -->
         <div id="messages-container" style="flex-grow: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px;">
             @php
-                if (!function_exists('getFileIconInfo')) {
-                    function getFileIconInfo($fileName) {
-                        $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-                        $icons = [
-                            'pdf' => ['color' => '#ff3b30', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M9 15l2 2 4-4"></path>'],
-                            'doc' => ['color' => '#0071e3', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line>'],
-                            'docx' => ['color' => '#0071e3', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line>'],
-                            'xls' => ['color' => '#28a745', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><line x1="8" y1="9" x2="10" y2="9"></line>'],
-                            'xlsx' => ['color' => '#28a745', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><line x1="8" y1="9" x2="10" y2="9"></line>'],
-                            'ppt' => ['color' => '#fd7e14', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M9 13l3 3 3-3"></path>'],
-                            'pptx' => ['color' => '#fd7e14', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M9 13l3 3 3-3"></path>'],
-                            'zip' => ['color' => '#6c757d', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M12 12v6"></path><path d="M10 16l2 2 2-2"></path>'],
-                            'rar' => ['color' => '#6c757d', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M12 12v6"></path><path d="M10 16l2 2 2-2"></path>'],
-                            'txt' => ['color' => '#000', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line>'],
-                        ];
+            if (!function_exists('getFileIconInfo')) {
+            function getFileIconInfo($fileName) {
+            $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+            $icons = [
+            'pdf' => ['color' => '#ff3b30', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <path d="M9 15l2 2 4-4"></path>'],
+            'doc' => ['color' => '#0071e3', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <line x1="10" y1="9" x2="8" y2="9"></line>'],
+            'docx' => ['color' => '#0071e3', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <line x1="10" y1="9" x2="8" y2="9"></line>'],
+            'xls' => ['color' => '#28a745', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="8" y1="13" x2="16" y2="13"></line>
+            <line x1="8" y1="17" x2="16" y2="17"></line>
+            <line x1="8" y1="9" x2="10" y2="9"></line>'],
+            'xlsx' => ['color' => '#28a745', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="8" y1="13" x2="16" y2="13"></line>
+            <line x1="8" y1="17" x2="16" y2="17"></line>
+            <line x1="8" y1="9" x2="10" y2="9"></line>'],
+            'ppt' => ['color' => '#fd7e14', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <path d="M9 13l3 3 3-3"></path>'],
+            'pptx' => ['color' => '#fd7e14', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <path d="M9 13l3 3 3-3"></path>'],
+            'zip' => ['color' => '#6c757d', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <path d="M12 12v6"></path>
+            <path d="M10 16l2 2 2-2"></path>'],
+            'rar' => ['color' => '#6c757d', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <path d="M12 12v6"></path>
+            <path d="M10 16l2 2 2-2"></path>'],
+            'txt' => ['color' => '#000', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <line x1="10" y1="9" x2="8" y2="9"></line>'],
+            ];
 
-                        return $icons[$ext] ?? ['color' => '#6e6e73', 'icon' => '<path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline>'];
-                    }
-                }
+            return $icons[$ext] ?? ['color' => '#6e6e73', 'icon' => '<path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+            <polyline points="13 2 13 9 20 9"></polyline>'];
+            }
+            }
             @endphp
             @foreach($messages as $message)
-                @php
-                    $isMe = $message->sender_id === auth()->id();
-                    $isMedia = in_array($message->message_type, ['image', 'video']);
-                    $isSystem = $message->message_type === 'system';
-                @endphp
+            @php
+            $isMe = $message->sender_id === auth()->id();
+            $isMedia = in_array($message->message_type, ['image', 'video']);
+            $isSystem = $message->message_type === 'system';
+            @endphp
 
-                @if($isSystem)
-                    <div style="align-self: center; padding: 6px 15px; background: rgba(0,0,0,0.04); border-radius: 12px; font-size: 12px; color: var(--secondary-text); margin: 5px 0;">
-                        {!! $message->content !!}
-                    </div>
-                @else
-                    <div class="message-wrapper {{ $isMe ? 'me' : 'other' }}" id="msg-{{ $message->id }}" style="display: flex; gap: 10px; flex-direction: {{ $isMe ? 'row-reverse' : 'row' }}; max-width: 85%; align-self: {{ $isMe ? 'flex-end' : 'flex-start' }}; animation: fadeIn 0.3s ease;">
-                        @if(!$isMe)
-                            <div class="avatar" style="width: 32px; height: 32px; background-image: url('{{ $message->sender->avatar_url }}'); background-size: cover; align-self: flex-end; flex-shrink: 0; border-radius: 10px !important;"></div>
-                        @endif
-                        
-                        <div style="display: flex; flex-direction: column; align-items: {{ $isMe ? 'flex-end' : 'flex-start' }}; position: relative;" class="message-content-wrapper">
-                            @if($message->parent_id)
-                                <div class="replied-message-info">
-                                    <strong>{{ $message->parent->sender->username }}</strong>: 
-                                    {{ $message->parent->message_type === 'text' ? (mb_strlen($message->parent->content) > 30 ? mb_substr($message->parent->content, 0, 30).'...' : $message->parent->content) : '[Phương tiện]' }}
-                                </div>
-                            @endif
-
-                            <div class="{{ $isMedia ? '' : 'bubble' }}" style="{{ $isMe && !$isMedia ? 'background: '.$themeColor.'; color: white;' : (!$isMedia ? 'background: rgba(0,0,0,0.05); color: var(--text-color);' : '') }} border-radius: 20px; padding: {{ $isMedia ? '0' : '12px 18px' }}; font-size: 15px; line-height: 1.4; position: relative; font-weight: 500;">
-                                @if($message->message_type === 'image')
-                                    <img src="{{ asset($message->content) }}" onclick="openLightbox(this.src)" style="max-width: 280px; border-radius: 18px; cursor: zoom-in; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
-                                @elseif($message->message_type === 'video')
-                                    <video src="{{ asset($message->content) }}" controls playsinline style="max-width: 280px; border-radius: 18px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
-                                        Trình duyệt của bạn không hỗ trợ phát video. <a href="{{ asset($message->content) }}" download>Tải về</a>
-                                    </video>
-                                @elseif($message->message_type === 'file')
-                                    @php 
-                                        $fileName = $message->metadata['file_name'] ?? 'file';
-                                        $fileInfo = getFileIconInfo($fileName);
-                                    @endphp
-                                    <a href="{{ asset($message->content) }}" download="{{ $fileName }}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 10px; padding: 5px;">
-                                        <div style="width: 40px; height: 40px; border-radius: 10px; background: {{ $isMe ? 'rgba(255,255,255,0.2)' : $fileInfo['color'].'15' }}; display: flex; align-items: center; justify-content: center; color: {{ $isMe ? 'white' : $fileInfo['color'] }};">
-                                            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none">{!! $fileInfo['icon'] !!}</svg>
-                                        </div>
-                                        <div style="overflow: hidden; flex-grow: 1;">
-                                            <div style="font-weight: 700; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;">{{ $fileName }}</div>
-                                            <div style="font-size: 11px; opacity: 0.7;">{{ isset($message->metadata['file_size']) ? round($message->metadata['file_size'] / 1024, 1) . ' KB' : 'Tải về' }} ({{ strtoupper(pathinfo($fileName, PATHINFO_EXTENSION)) }})</div>
-                                        </div>
-                                    </a>
-                                @else
-                                    @php
-                                        $content = e($message->content);
-                                        // 1. Nhận diện URL bắt đầu bằng http/https
-                                        $content = preg_replace('/(https?:\/\/[^\s]+)/', '<a href="$1" target="_blank">$1</a>', $content);
-                                        // 2. Nhận diện URL bắt đầu bằng www
-                                        $content = preg_replace('/(?<!href=")(www\.[^\s]+)/', '<a href="http://$1" target="_blank">$1</a>', $content);
-                                        // 3. Nhận diện các tên miền phổ biến chưa được gắn link (naked domains)
-                                        $content = preg_replace('/(?<![">])\b([a-zA-Z0-9.-]+\.(?:com|net|org|vn|edu|gov|io|info|me))\b/i', '<a href="http://$1" target="_blank">$1</a>', $content);
-                                    @endphp
-                                    {!! nl2br($content) !!}
-                                @endif
-                            </div>
-                            <span style="font-size: 10px; opacity: 0.5; margin-top: 4px;">{{ $message->created_at->format('H:i') }}</span>
-                        </div>
-
-                        <!-- Three dots trigger -->
-                        <div style="position: relative; align-self: center;">
-                            <div class="message-actions-trigger" onclick="toggleMsgMenu({{ $message->id }})">
-                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
-                            </div>
-                            
-                            <!-- Action Menu -->
-                            <div id="msg-menu-{{ $message->id }}" class="msg-action-menu">
-                                <div class="msg-action-item" onclick="replyToMessage({{ $message->id }}, '{{ $message->sender->username }}', '{{ $message->message_type === 'text' ? addslashes($message->content) : '[Phương tiện]' }}')">
-                                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="9 17 4 12 9 7"></polyline><path d="M20 18v-2a4 4 0 0 0-4-4H4"></path></svg>
-                                    Trả lời
-                                </div>
-                                @if($isMe)
-                                    <div class="msg-action-item" style="color: #ff3b30;" onclick="deleteMessage({{ $message->id }})">
-                                        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                                        Xóa
-                                    </div>
-                                @else
-                                    <div class="msg-action-item" style="color: #ff9500;" onclick="alert('Đã báo cáo tin nhắn này.')">
-                                        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
-                                        Báo cáo
-                                    </div>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
+            @if($isSystem)
+            <div style="align-self: center; padding: 6px 15px; background: rgba(0,0,0,0.04); border-radius: 12px; font-size: 12px; color: var(--secondary-text); margin: 5px 0;">
+                {!! $message->content !!}
+            </div>
+            @else
+            <div class="message-wrapper {{ $isMe ? 'me' : 'other' }}" id="msg-{{ $message->id }}" style="display: flex; gap: 10px; flex-direction: {{ $isMe ? 'row-reverse' : 'row' }}; max-width: 85%; align-self: {{ $isMe ? 'flex-end' : 'flex-start' }}; animation: fadeIn 0.3s ease;">
+                @if(!$isMe)
+                <div class="avatar" style="width: 32px; height: 32px; background-image: url('{{ $message->sender->avatar_url }}'); background-size: cover; align-self: flex-end; flex-shrink: 0; border-radius: 10px !important;"></div>
                 @endif
+
+                <div style="display: flex; flex-direction: column; align-items: {{ $isMe ? 'flex-end' : 'flex-start' }}; position: relative;" class="message-content-wrapper">
+                    @if($message->parent_id)
+                    <div class="replied-message-info">
+                        <strong>{{ $message->parent->sender->username }}</strong>:
+                        {{ $message->parent->message_type === 'text' ? (mb_strlen($message->parent->content) > 30 ? mb_substr($message->parent->content, 0, 30).'...' : $message->parent->content) : '[Phương tiện]' }}
+                    </div>
+                    @endif
+
+                    <div class="{{ $isMedia ? '' : 'bubble' }}" style="{{ $isMe && !$isMedia ? 'background: '.$themeColor.'; color: white;' : (!$isMedia ? 'background: rgba(0,0,0,0.05); color: var(--text-color);' : '') }} border-radius: 20px; padding: {{ $isMedia ? '0' : '12px 18px' }}; font-size: 15px; line-height: 1.4; position: relative; font-weight: 500;">
+                        @if($message->message_type === 'image')
+                        <img src="{{ asset($message->content) }}" onclick="openLightbox(this.src)" style="max-width: 280px; border-radius: 18px; cursor: zoom-in; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                        @elseif($message->message_type === 'video')
+                        <video src="{{ asset($message->content) }}" controls playsinline style="max-width: 280px; border-radius: 18px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                            Trình duyệt của bạn không hỗ trợ phát video. <a href="{{ asset($message->content) }}" download>Tải về</a>
+                        </video>
+                        @elseif($message->message_type === 'file')
+                        @php
+                        $fileName = $message->metadata['file_name'] ?? 'file';
+                        $fileInfo = getFileIconInfo($fileName);
+                        @endphp
+                        <a href="{{ asset($message->content) }}" download="{{ $fileName }}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 10px; padding: 5px;">
+                            <div style="width: 40px; height: 40px; border-radius: 10px; background: {{ $isMe ? 'rgba(255,255,255,0.2)' : $fileInfo['color'].'15' }}; display: flex; align-items: center; justify-content: center; color: {{ $isMe ? 'white' : $fileInfo['color'] }};">
+                                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none">{!! $fileInfo['icon'] !!}</svg>
+                            </div>
+                            <div style="overflow: hidden; flex-grow: 1;">
+                                <div style="font-weight: 700; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;">{{ $fileName }}</div>
+                                <div style="font-size: 11px; opacity: 0.7;">{{ isset($message->metadata['file_size']) ? round($message->metadata['file_size'] / 1024, 1) . ' KB' : 'Tải về' }} ({{ strtoupper(pathinfo($fileName, PATHINFO_EXTENSION)) }})</div>
+                            </div>
+                        </a>
+                        @else
+                        @php
+                        $content = e($message->content);
+                        // 1. Nhận diện URL bắt đầu bằng http/https
+                        $content = preg_replace('/(https?:\/\/[^\s]+)/', '<a href="$1" target="_blank">$1</a>', $content);
+                        // 2. Nhận diện URL bắt đầu bằng www
+                        $content = preg_replace('/(?<!href=")(www\.[^\s]+) /', '<a href="http://$1" target="_blank">$1</a>' , $content);
+                            // 3. Nhận diện các tên miền phổ biến chưa được gắn link (naked domains)
+                            $content=preg_replace('/(?<![">])\b([a-zA-Z0-9.-]+\.(?:com|net|org|vn|edu|gov|io|info|me))\b/i', '<a href="http://$1" target="_blank">$1</a>', $content);
+                            @endphp
+                            {!! nl2br($content) !!}
+                            @endif
+                    </div>
+                    <span style="font-size: 10px; opacity: 0.5; margin-top: 4px;">{{ $message->created_at->format('H:i') }}</span>
+                </div>
+
+                <!-- Three dots trigger -->
+                <div style="position: relative; align-self: center;">
+                    <div class="message-actions-trigger" onclick="toggleMsgMenu({{ $message->id }})">
+                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none">
+                            <circle cx="12" cy="12" r="1"></circle>
+                            <circle cx="12" cy="5" r="1"></circle>
+                            <circle cx="12" cy="19" r="1"></circle>
+                        </svg>
+                    </div>
+
+                    <!-- Action Menu -->
+                    <div id="msg-menu-{{ $message->id }}" class="msg-action-menu">
+                        <div class="msg-action-item" onclick="replyToMessage({{ $message->id }}, '{{ $message->sender->username }}', '{{ $message->message_type === 'text' ? addslashes($message->content) : '[Phương tiện]' }}')">
+                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none">
+                                <polyline points="9 17 4 12 9 7"></polyline>
+                                <path d="M20 18v-2a4 4 0 0 0-4-4H4"></path>
+                            </svg>
+                            Trả lời
+                        </div>
+                        @if($isMe)
+                        <div class="msg-action-item" style="color: #ff3b30;" onclick="deleteMessage({{ $message->id }})">
+                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                            Xóa
+                        </div>
+                        @else
+                        <div class="msg-action-item" style="color: #ff9500;" onclick="alert('Đã báo cáo tin nhắn này.')">
+                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none">
+                                <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+                                <line x1="4" y1="22" x2="4" y2="15"></line>
+                            </svg>
+                            Báo cáo
+                        </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            @endif
             @endforeach
         </div>
 
         <!-- Input Area -->
         <div style="padding: 20px; border-top: 1px solid var(--glass-border); background: rgba(255,255,255,0.01);">
             @if($isFriend || $conversation->type === 'group')
-                <!-- Reply Preview -->
-                <div id="replyPreview" class="reply-preview">
-                    <div style="overflow: hidden;">
-                        <div style="font-size: 12px; font-weight: 800; color: var(--accent-color);">Đang trả lời <span id="replyUser"></span></div>
-                        <div id="replyText" style="font-size: 13px; opacity: 0.7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
+            <!-- Reply Preview -->
+            <div id="replyPreview" class="reply-preview">
+                <div style="overflow: hidden;">
+                    <div style="font-size: 12px; font-weight: 800; color: var(--accent-color);">Đang trả lời <span id="replyUser"></span></div>
+                    <div id="replyText" style="font-size: 13px; opacity: 0.7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
+                </div>
+                <div onclick="cancelReply()" style="cursor: pointer; opacity: 0.5; padding: 5px;">&times;</div>
+            </div>
+
+            <!-- Media Preview -->
+            <div id="mediaMsgPreview" style="display: none; padding: 10px 15px; background: rgba(0,0,0,0.02); border-left: 4px solid var(--accent-color); border-radius: 12px 12px 0 0; border-bottom: 1px solid var(--glass-border); position: relative;">
+                <div id="mediaMsgPreviewContent" style="display: flex; align-items: center; gap: 12px;"></div>
+                <div onclick="clearMediaMsgPreview()" style="position: absolute; right: 10px; top: 10px; cursor: pointer; opacity: 0.5; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.05); border-radius: 50%;">&times;</div>
+            </div>
+
+            <form action="{{ route('messages.store', $conversation->id) }}" method="POST" enctype="multipart/form-data" id="chat-form" onsubmit="handleChatSubmit(event)">
+                @csrf
+                <input type="hidden" name="parent_id" id="replyParentId" value="">
+
+                <div style="display: flex; gap: 10px; align-items: flex-end;">
+                    <!-- Media Bubbles -->
+                    <div style="display: flex; gap: 8px; margin-bottom: 2px;">
+                        <label class="input-action-bubble" title="Gửi ảnh" style="background: rgba(0, 113, 227, 0.1); color: var(--accent-color);">
+                            <input type="file" name="image" id="msgImageInput" accept="image/*" style="display:none" onchange="previewMsgMedia(this, 'image')">
+                            <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2.2" fill="none">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                <polyline points="21 15 16 10 5 21"></polyline>
+                            </svg>
+                        </label>
+                        <label class="input-action-bubble" title="Gửi tài liệu" style="background: rgba(175, 82, 222, 0.1); color: #af52de;">
+                            <input type="file" name="file" id="msgFileInput" style="display:none" onchange="previewMsgMedia(this, 'file')">
+                            <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2.2" fill="none">
+                                <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                                <polyline points="13 2 13 9 20 9"></polyline>
+                            </svg>
+                        </label>
                     </div>
-                    <div onclick="cancelReply()" style="cursor: pointer; opacity: 0.5; padding: 5px;">&times;</div>
-                </div>
 
-                <!-- Media Preview -->
-                <div id="mediaMsgPreview" style="display: none; padding: 10px 15px; background: rgba(0,0,0,0.02); border-left: 4px solid var(--accent-color); border-radius: 12px 12px 0 0; border-bottom: 1px solid var(--glass-border); position: relative;">
-                    <div id="mediaMsgPreviewContent" style="display: flex; align-items: center; gap: 12px;"></div>
-                    <div onclick="clearMediaMsgPreview()" style="position: absolute; right: 10px; top: 10px; cursor: pointer; opacity: 0.5; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.05); border-radius: 50%;">&times;</div>
-                </div>
-
-                <form action="{{ route('messages.store', $conversation->id) }}" method="POST" enctype="multipart/form-data" id="chat-form" onsubmit="handleChatSubmit(event)">
-                    @csrf
-                    <input type="hidden" name="parent_id" id="replyParentId" value="">
-                    <div style="display: flex; gap: 8px; align-items: flex-end; background: white; border: 1.5px solid var(--glass-border); border-radius: 24px; padding: 8px 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: all 0.3s;" id="inputWrapper">
-                        <div style="display: flex; gap: 4px; padding-bottom: 4px;">
-                            <label style="cursor: pointer; opacity: 0.6; transition: all 0.2s;" onmouseover="this.style.opacity='1'; this.style.color='var(--accent-color)'" onmouseout="this.style.opacity='0.6'; this.style.color='inherit'" title="Ảnh">
-                                <input type="file" name="image" id="msgImageInput" accept="image/*" style="display:none" onchange="previewMsgMedia(this, 'image')">
-                                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                            </label>
-                            <label style="cursor: pointer; opacity: 0.6; transition: all 0.2s;" onmouseover="this.style.opacity='1'; this.style.color='#af52de'" onmouseout="this.style.opacity='0.6'; this.style.color='inherit'" title="Tài liệu">
-                                <input type="file" name="file" id="msgFileInput" style="display:none" onchange="previewMsgMedia(this, 'file')">
-                                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
-                            </label>
-                        </div>
-                        <textarea id="mainChatInput" name="content" placeholder="Nhập tin nhắn..." rows="1" 
-                                  style="flex-grow: 1; background: transparent; border: none; outline: none; padding: 10px 0; font-size: 15px; resize: none; max-height: 150px; font-weight: 500; color: var(--text-color);"></textarea>
-                        <button type="submit" id="sendBtn" style="background: var(--accent-color); border: none; color: white; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-bottom: 2px; transition: transform 0.2s; box-shadow: 0 4px 10px rgba(0,113,227,0.3);" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
-                            <svg id="sendIcon" viewBox="0 0 24 24" width="16" height="16" stroke="white" stroke-width="3" fill="none"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-                            <svg id="loadingIcon" style="display: none; animation: spin 1s linear infinite;" viewBox="0 0 24 24" width="16" height="16" stroke="white" stroke-width="3" fill="none"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a10 10 0 0 1 10 10"></path></svg>
+                    <!-- Main Input Wrapper -->
+                    <div style="flex-grow: 1; display: flex; gap: 8px; align-items: flex-end; background: var(--glass-bg); border: 1.5px solid var(--glass-border); border-radius: 24px; padding: 8px 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: all 0.3s;" id="inputWrapper">
+                        <textarea id="mainChatInput" name="content" placeholder="Nhập tin nhắn..." rows="1"
+                            style="flex-grow: 1; background: transparent; border: none; outline: none; padding: 10px 5px; font-size: 15px; resize: none; max-height: 150px; font-weight: 500; color: var(--text-color);" oninput="validateChatInput()"></textarea>
+                        <button type="submit" id="sendBtn" disabled style="background: var(--glass-bg); border: 1.5px solid var(--text-color); color: var(--text-color); padding: 8px 18px; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: not-allowed; opacity: 0.4; transition: all 0.2s; flex-shrink: 0; margin-bottom: 2px;">
+                            <span id="sendText">Gửi</span>
+                            <svg id="loadingIcon" style="display: none; animation: spin 1s linear infinite;" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M12 2a10 10 0 0 1 10 10"></path>
+                            </svg>
                         </button>
                     </div>
-                </form>
-            @else
-                <div style="text-align: center; font-size: 14px; color: #ff3b30; padding: 15px; background: rgba(255,59,48,0.05); border-radius: 15px; font-weight: 600;">
-                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" style="vertical-align: middle; margin-right: 5px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                    Bạn chỉ có thể nhắn tin cho bạn bè.
                 </div>
+            </form>
+            @else
+            <div style="text-align: center; font-size: 14px; color: #ff3b30; padding: 15px; background: rgba(255,59,48,0.05); border-radius: 15px; font-weight: 600;">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" style="vertical-align: middle; margin-right: 5px;">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                Bạn chỉ có thể nhắn tin cho bạn bè.
+            </div>
             @endif
         </div>
     </div>
@@ -482,7 +601,7 @@
         <div style="display: flex; justify-content: center; background: rgba(0,0,0,0.02); border-bottom: 1px solid var(--glass-border);">
             <div class="settings-tab active" id="tab-info" onclick="switchSettingsTab('info')">Thông tin</div>
             @if($conversation->type === 'group')
-                <div class="settings-tab" id="tab-members" onclick="switchSettingsTab('members')">Thành viên</div>
+            <div class="settings-tab" id="tab-members" onclick="switchSettingsTab('members')">Thành viên</div>
             @endif
             <div class="settings-tab" id="tab-tools" onclick="switchSettingsTab('tools')">Tiện ích</div>
         </div>
@@ -495,7 +614,7 @@
 
 <script>
     const container = document.getElementById('messages-container');
-    
+
     function scrollToBottom() {
         if (container) {
             container.scrollTop = container.scrollHeight;
@@ -514,7 +633,9 @@
     // MutationObserver to scroll when new messages are added (if any AJAX is used)
     const observer = new MutationObserver(scrollToBottom);
     if (container) {
-        observer.observe(container, { childList: true });
+        observer.observe(container, {
+            childList: true
+        });
     }
 
     function openGroupSettingsModal() {
@@ -531,7 +652,7 @@
     function switchSettingsTab(tab) {
         document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
         document.getElementById('tab-' + tab)?.classList.add('active');
-        
+
         const content = document.getElementById('settingsContent');
         if (tab === 'info') {
             renderInfoTab();
@@ -546,7 +667,7 @@
         const content = document.getElementById('settingsContent');
         const isGroup = '{{ $conversation->type }}' === 'group';
         const isAdmin = '{{ $conversation->creator_id }}' == '{{ auth()->id() }}';
-        
+
         let html = `
             <div style="text-align: center; margin-bottom: 30px;">
                 <div style="position: relative; display: inline-block;">
@@ -609,11 +730,11 @@
     function renderMembersTab() {
         const content = document.getElementById('settingsContent');
         content.innerHTML = '<div style="text-align: center; padding: 20px; opacity: 0.5;">Đang tải danh sách thành viên...</div>';
-        
-        fetch('{{ route('messages.members', $conversation->id) }}')
+
+        fetch('{{ route("messages.members", $conversation->id) }}')
             .then(res => res.json())
             .then(members => {
-                let html = `
+                    let html = `
                     <div style="display: flex; flex-direction: column; gap: 15px;">
                         ${members.map(m => `
                             <div style="display: flex; align-items: center; gap: 12px; justify-content: space-between;">
@@ -626,12 +747,12 @@
                                 </div>
                                 ${'{{ $conversation->creator_id }}' == '{{ auth()->id() }}' && m.id != '{{ auth()->id() }}' ? `
                                     <button onclick="kickMember(${m.id})" style="background: none; border: none; color: #ff3b30; cursor: pointer; font-size: 12px; font-weight: 700; opacity: 0.6;" onmouseover="this.style.opacity='1'">Mời ra</button>
-                                ` : ''}
-                            </div>
-                        `).join('')}
+                                `: ''
+                } <
+                /div>
+                `).join('')}
                     </div>
-                `;
-                content.innerHTML = html;
+                `; content.innerHTML = html;
             });
     }
 
@@ -661,10 +782,15 @@
     }
 
     function updateThemeColor(color) {
-        fetch('{{ route('messages.update_color', $conversation->id) }}', {
+        fetch('{{ route("messages.update_color", $conversation->id) }}', {
             method: 'POST',
-            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
-            body: JSON.stringify({ color: color })
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                color: color
+            })
         }).then(() => location.reload());
     }
 
@@ -673,31 +799,35 @@
     }
 
     function kickMember(userId) {
-        if(confirm('Mời thành viên này ra khỏi nhóm?')) {
+        if (confirm('Mời thành viên này ra khỏi nhóm?')) {
             fetch(`/messages/{{ $conversation->id }}/kick/` + userId, {
                 method: 'DELETE',
-                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
             }).then(() => renderMembersTab());
         }
     }
 
     function leaveChat() {
-        if(confirm('Bạn có chắc chắn muốn thực hiện hành động này?')) {
-            fetch('{{ route('messages.delete_chat', $conversation->id) }}', {
+        if (confirm('Bạn có chắc chắn muốn thực hiện hành động này?')) {
+            fetch('{{ route("messages.delete_chat", $conversation->id) }}', {
                 method: 'DELETE',
-                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
-            }).then(() => window.location.href = '{{ route('messages.index') }}');
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            }).then(() => window.location.href = '{{ route("messages.index") }}');
         }
     }
 
     function openMediaGallery(type = 'all') {
         const content = document.getElementById('settingsContent');
         content.innerHTML = '<div style="text-align: center; padding: 20px; opacity: 0.5;">Đang tải...</div>';
-        
-        fetch('{{ route('messages.media', $conversation->id) }}')
+
+        fetch('{{ route("messages.media", $conversation->id) }}')
             .then(res => res.json())
             .then(media => {
-                if(media.length === 0) {
+                if (media.length === 0) {
                     content.innerHTML = '<div style="text-align: center; padding: 40px 20px; opacity: 0.5;">Chưa có phương tiện nào.</div>';
                     return;
                 }
@@ -713,9 +843,9 @@
                     html += `<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 30px;">`;
                     photos.forEach(m => {
                         const src = m.content.startsWith('http') ? m.content : '{{ asset("") }}' + m.content;
-                        if(m.message_type === 'image') {
+                        if (m.message_type === 'image') {
                             html += `<img src="${src}" onclick="openLightbox(this.src)" style="width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; cursor: pointer; border: 1px solid var(--glass-border);">`;
-                        } else if(m.message_type === 'video') {
+                        } else if (m.message_type === 'video') {
                             html += `<div style="position: relative; width: 100%; aspect-ratio: 1;">
                                         <video src="${src}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px; border: 1px solid var(--glass-border);"></video>
                                         <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.2); border-radius: 12px; pointer-events: none;">
@@ -746,7 +876,7 @@
                             url = m.content.startsWith('http') || m.content.startsWith('/') ? m.content : '{{ asset("") }}' + m.content;
                             label = m.metadata?.file_name || 'Tệp đính kèm';
                         }
-                        
+
                         html += `
                             <a href="${url}" target="_blank" style="display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(0,0,0,0.02); border-radius: 14px; border: 1px solid var(--glass-border); text-decoration: none; color: inherit; transition: all 0.2s;" onmouseover="this.style.background='rgba(0,113,227,0.05)'" onmouseout="this.style.background='rgba(0,0,0,0.02)'">
                                 <div style="width: 36px; height: 36px; border-radius: 10px; background: ${isUrl ? '#0071e3' : '#8e44ad'}; color: white; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
@@ -785,13 +915,16 @@
     document.getElementById('msgSearchInput')?.addEventListener('input', function() {
         const q = this.value.trim();
         const results = document.getElementById('msgSearchResults');
-        if(q.length < 2) { results.style.display = 'none'; return; }
-        
-        fetch('{{ route('messages.search', $conversation->id) }}?q=' + encodeURIComponent(q))
+        if (q.length < 2) {
+            results.style.display = 'none';
+            return;
+        }
+
+        fetch('{{ route("messages.search", $conversation->id) }}?q=' + encodeURIComponent(q))
             .then(res => res.json())
             .then(messages => {
                 results.innerHTML = '';
-                if(messages.length === 0) {
+                if (messages.length === 0) {
                     results.innerHTML = '<div style="padding: 15px; text-align: center; opacity: 0.5;">Không tìm thấy tin nhắn.</div>';
                 } else {
                     messages.forEach(m => {
@@ -802,8 +935,11 @@
                         div.innerHTML = `<div style="font-weight:700; font-size:12px;">${m.sender.username}</div><div style="font-size:13px; opacity:0.8;">${m.content}</div>`;
                         div.onclick = () => {
                             const target = document.getElementById('msg-' + m.id);
-                            if(target) {
-                                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            if (target) {
+                                target.scrollIntoView({
+                                    behavior: 'smooth',
+                                    block: 'center'
+                                });
                                 target.style.background = 'rgba(0,113,227,0.1)';
                                 setTimeout(() => target.style.background = 'transparent', 2000);
                                 toggleSearch();
@@ -820,12 +956,12 @@
     function toggleMsgMenu(id) {
         // Close all other menus
         document.querySelectorAll('.msg-action-menu').forEach(m => {
-            if(m.id !== 'msg-menu-' + id) m.style.display = 'none';
+            if (m.id !== 'msg-menu-' + id) m.style.display = 'none';
         });
-        
+
         const menu = document.getElementById('msg-menu-' + id);
         menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-        
+
         // Prevent click from bubbling up
         event.stopPropagation();
     }
@@ -850,6 +986,34 @@
         document.getElementById('inputWrapper').style.borderRadius = '24px';
     }
 
+    function validateChatInput() {
+        const content = document.getElementById('mainChatInput').value.trim();
+        const hasMedia = document.getElementById('mediaMsgPreview').style.display !== 'none';
+        const btn = document.getElementById('sendBtn');
+
+        if (content || hasMedia) {
+            btn.disabled = false;
+            btn.style.cursor = 'pointer';
+            btn.style.opacity = '1';
+            btn.style.background = 'var(--glass-bg)';
+            btn.onmouseover = () => {
+                btn.style.background = 'var(--text-color)';
+                btn.style.color = 'var(--glass-bg)';
+            };
+            btn.onmouseout = () => {
+                btn.style.background = 'var(--glass-bg)';
+                btn.style.color = 'var(--text-color)';
+            };
+        } else {
+            btn.disabled = true;
+            btn.style.cursor = 'not-allowed';
+            btn.style.opacity = '0.4';
+            btn.style.background = 'var(--glass-bg)';
+            btn.onmouseover = null;
+            btn.onmouseout = null;
+        }
+    }
+
     function previewMsgMedia(input, type) {
         const file = input.files[0];
         if (!file) return;
@@ -864,7 +1028,7 @@
         const preview = document.getElementById('mediaMsgPreview');
         const content = document.getElementById('mediaMsgPreviewContent');
         const inputWrapper = document.getElementById('inputWrapper');
-        
+
         // Clear other inputs
         if (type !== 'image') document.getElementById('msgImageInput').value = '';
         if (type !== 'file') document.getElementById('msgFileInput').value = '';
@@ -884,6 +1048,7 @@
                                      </div>
                                      <div style="font-size: 13px; font-weight: 600; color: var(--text-color);">${file.name}</div>`;
             }
+            validateChatInput();
         };
         reader.readAsDataURL(file);
     }
@@ -893,32 +1058,12 @@
         document.getElementById('inputWrapper').style.borderRadius = '24px';
         document.getElementById('msgImageInput').value = '';
         document.getElementById('msgFileInput').value = '';
+        validateChatInput();
     }
-
-    // Enter để gửi
-    document.getElementById('mainChatInput')?.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            const input = this;
-            const form = input.closest('form');
-            if (!form) return;
-            
-            if (input.value.trim() !== '' || document.getElementById('mediaMsgPreview').style.display !== 'none') {
-                if (typeof form.requestSubmit === 'function') {
-                    form.requestSubmit();
-                } else {
-                    const event = new Event('submit', { cancelable: true, bubbles: true });
-                    if (form.dispatchEvent(event)) {
-                        handleChatSubmit({ target: form, preventDefault: () => {} });
-                    }
-                }
-            }
-        }
-    });
 
     function handleChatSubmit(event) {
         if (event && event.preventDefault) event.preventDefault();
-        
+
         const form = event.target || event.currentTarget || document.getElementById('chat-form');
         if (!(form instanceof HTMLFormElement)) {
             console.error('Submit target is not a form:', form);
@@ -926,11 +1071,11 @@
         }
 
         const sendBtn = document.getElementById('sendBtn');
-        const sendIcon = document.getElementById('sendIcon');
+        const sendText = document.getElementById('sendText');
         const loadingIcon = document.getElementById('loadingIcon');
-        
+
         console.log('Submitting form to:', form.action);
-        
+
         if (!form.action) {
             alert('Lỗi: Form thiếu action.');
             return;
@@ -938,69 +1083,73 @@
 
         const formData = new FormData(form);
         const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-        
+
         // Disable UI
         if (sendBtn) {
             sendBtn.disabled = true;
             sendBtn.style.opacity = '0.7';
         }
-        if (sendIcon) sendIcon.style.display = 'none';
+        if (sendText) sendText.style.display = 'none';
         if (loadingIcon) loadingIcon.style.display = 'block';
 
         fetch(form.action, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': token || ''
-            }
-        })
-        .then(async response => {
-            console.log('Response status:', response.status);
-            let data;
-            try {
-                const contentType = response.headers.get("content-type");
-                if (contentType && contentType.indexOf("application/json") !== -1) {
-                    data = await response.json();
-                } else {
-                    const text = await response.text();
-                    console.warn('Non-JSON response:', text);
-                    data = { message: "Lỗi máy chủ (500) hoặc phản hồi không đúng định dạng." };
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': token || ''
                 }
-            } catch (e) {
-                data = { message: "Lỗi xử lý phản hồi từ máy chủ." };
-            }
+            })
+            .then(async response => {
+                console.log('Response status:', response.status);
+                let data;
+                try {
+                    const contentType = response.headers.get("content-type");
+                    if (contentType && contentType.indexOf("application/json") !== -1) {
+                        data = await response.json();
+                    } else {
+                        const text = await response.text();
+                        console.warn('Non-JSON response:', text);
+                        data = {
+                            message: "Lỗi máy chủ (500) hoặc phản hồi không đúng định dạng."
+                        };
+                    }
+                } catch (e) {
+                    data = {
+                        message: "Lỗi xử lý phản hồi từ máy chủ."
+                    };
+                }
 
-            if (response.ok) {
-                form.reset();
-                if (typeof clearMediaMsgPreview === 'function') clearMediaMsgPreview();
-                if (typeof cancelReply === 'function') cancelReply();
-                location.reload(); 
-            } else {
-                throw new Error(data.error || data.message || 'Lỗi không xác định');
-            }
-        })
-        .catch(error => {
-            console.error('Upload Error Details:', error);
-            alert('Không thể gửi tin nhắn: ' + (error.message || 'Lỗi kết nối'));
-        })
-        .finally(() => {
-            if (sendBtn) {
-                sendBtn.disabled = false;
-                sendBtn.style.opacity = '1';
-            }
-            if (sendIcon) sendIcon.style.display = 'block';
-            if (loadingIcon) loadingIcon.style.display = 'none';
-        });
+                if (response.ok) {
+                    form.reset();
+                    if (typeof clearMediaMsgPreview === 'function') clearMediaMsgPreview();
+                    if (typeof cancelReply === 'function') cancelReply();
+                    location.reload();
+                } else {
+                    throw new Error(data.error || data.message || 'Lỗi không xác định');
+                }
+            })
+            .catch(error => {
+                console.error('Upload Error Details:', error);
+                alert('Không thể gửi tin nhắn: ' + (error.message || 'Lỗi kết nối'));
+            })
+            .finally(() => {
+                if (sendBtn) {
+                    sendBtn.disabled = false;
+                    sendBtn.style.opacity = '1';
+                }
+                if (sendIcon) sendIcon.style.display = 'block';
+                if (loadingIcon) loadingIcon.style.display = 'none';
+            });
     }
 
     function deleteMessage(id) {
-        if(confirm('Xóa tin nhắn này đối với mọi người?')) {
+        if (confirm('Xóa tin nhắn này đối với mọi người?')) {
             const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
             fetch(`/messages/{{ $conversation->id }}/messages/${id}`, {
                 method: 'DELETE',
-                headers: { 
+                headers: {
                     'X-CSRF-TOKEN': token || '',
                     'X-Requested-With': 'XMLHttpRequest'
                 }

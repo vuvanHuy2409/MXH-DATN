@@ -1019,6 +1019,45 @@
     </style>
 
     <script>
+        function openLikesModal(postId) {
+            const modal = document.getElementById('likesModal');
+            const list = document.getElementById('likesList');
+            if (!modal || !list) return;
+
+            list.innerHTML = '<div style="text-align:center; padding: 30px;"><div class="loading-spinner"></div></div>';
+            modal.style.display = 'flex';
+            document.body.classList.add('modal-open');
+
+            fetch(`/posts/${postId}/likes`)
+                .then(res => res.json())
+                .then(users => {
+                    if (users.length === 0) {
+                        list.innerHTML = '<div style="text-align:center; padding: 40px; opacity: 0.5;">Chưa có lượt thích nào.</div>';
+                        return;
+                    }
+                    list.innerHTML = '';
+                    users.forEach(u => {
+                        const item = document.createElement('div');
+                        item.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 0.5px solid var(--glass-border);';
+                        item.innerHTML = `
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <a href="/@${u.username}"><div class="avatar" style="width: 40px; height: 40px; border-radius: 50%; background-image: url('${u.avatar_url}'); background-size: cover;"></div></a>
+                                <div>
+                                    <a href="/@${u.username}" style="text-decoration: none; color: var(--text-color); font-weight: 700; font-size: 14px;">${u.username}</a>
+                                </div>
+                            </div>
+                            <a href="/@${u.username}" style="text-decoration: none; font-size: 12px; font-weight: 800; color: var(--accent-color);">Xem hồ sơ</a>
+                        `;
+                        list.appendChild(item);
+                    });
+                });
+        }
+
+        function closeLikesModal() {
+            document.getElementById('likesModal').style.display = 'none';
+            document.body.classList.remove('modal-open');
+        }
+
         function toggleLike(postId) {
             const btns = document.querySelectorAll(`.like-btn[data-post-id="${postId}"]`);
             const token = '{{ csrf_token() }}';
@@ -1198,17 +1237,23 @@
                         let itemBg = 'transparent';
                         if (n.type === 'follow') itemBg = 'rgba(142, 68, 173, 0.05)';
 
-                        item.style.cssText = `padding: 15px 0; display: flex; gap: 12px; border-bottom: 1px solid var(--glass-border); align-items: center; cursor: pointer; transition: background 0.2s; background: ${itemBg};`;
-                        item.onmouseover = () => item.style.background = n.type === 'follow' ? 'rgba(142, 68, 173, 0.1)' : 'rgba(0,0,0,0.02)';
-                        item.onmouseout = () => item.style.background = itemBg;
+                        const actor = n.aggregate_actors[0];
+                        const count = n.aggregate_count;
+                        let actorText = `<strong>${actor.username}</strong>`;
+                        if (count > 1) {
+                            actorText += `<span style="color: var(--secondary-text);"> và ${count - 1} người khác</span>`;
+                        }
 
                         let targetUrl = '#';
                         if (n.type === 'follow') {
-                            targetUrl = `/@${n.actor.username}`;
+                            targetUrl = `/@${actor.username}`;
                         } else if (n.post_id) {
                             targetUrl = `/posts/${n.post_id}`;
                         }
 
+                        item.style.cssText = `padding: 15px 0; display: flex; gap: 12px; border-bottom: 1px solid var(--glass-border); align-items: center; cursor: pointer; transition: background 0.2s; background: ${itemBg};`;
+                        item.onmouseover = () => item.style.background = n.type === 'follow' ? 'rgba(142, 68, 173, 0.1)' : 'rgba(0,0,0,0.02)';
+                        item.onmouseout = () => item.style.background = itemBg;
                         item.onclick = () => window.location.href = targetUrl;
 
                         let actionText = '';
@@ -1217,15 +1262,24 @@
                         else if (n.type === 'repost') actionText = 'đã đăng lại bài viết của bạn.';
                         else actionText = 'đã theo dõi bạn.';
 
+                        let groupBadge = '';
+                        if (n.post && n.post.group) {
+                            groupBadge = `
+                                <span style="display: inline-flex; align-items: center; gap: 4px; background: rgba(0,113,227,0.05); padding: 1px 6px; border-radius: 4px; margin-left: 4px; border: 1px solid rgba(0,113,227,0.1);">
+                                    <img src="${n.post.group.avatar_url}" style="width: 12px; height: 12px; border-radius: 2px;">
+                                    <span style="font-size: 10px; font-weight: 700; color: var(--accent-color);">${n.post.group.name}</span>
+                                </span>
+                            `;
+                        }
+
                         item.innerHTML = `
                             <div style="position: relative; flex-shrink: 0;">
-                                <div class="avatar" style="width: 40px; height: 40px; background-image: url('${n.actor.avatar_url}'); background-size: cover; border-radius: 50%;"></div>
+                                <div class="avatar" style="width: 40px; height: 40px; background-image: url('${actor.avatar_url}'); background-size: cover; border-radius: 50%;"></div>
                                 <div style="position: absolute; bottom: -2px; right: -2px; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: ${color}; color: white; border: 2px solid var(--glass-bg);">${icon}</div>
                             </div>
-                            <div style="flex-grow: 1;">
-                                <div style="font-size: 14px;">
-                                    <strong>${n.actor.username}</strong>
-                                    <span style="color: var(--secondary-text);">${actionText}</span>
+                            <div style="flex-grow: 1; min-width: 0;">
+                                <div style="font-size: 14px; line-height: 1.4;">
+                                    ${actorText} <span style="color: var(--secondary-text);">${actionText}</span> ${groupBadge}
                                 </div>
                                 <div style="color: var(--secondary-text); font-size: 12px; margin-top: 2px;">${n.created_at_human}</div>
                             </div>
@@ -1425,6 +1479,17 @@
             }
         });
     </script>
+    <!-- Likes Modal -->
+    <div id="likesModal" class="modal" onclick="if(event.target === this) closeLikesModal()">
+        <div class="modal-content glass-bubble" style="max-width: 400px; padding: 0; overflow: hidden; border-radius: 28px;">
+            <div style="padding: 20px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0; font-size: 18px; font-weight: 800;">Lượt thích</h3>
+                <span onclick="closeLikesModal()" style="cursor: pointer; opacity: 0.5; font-size: 24px;">&times;</span>
+            </div>
+            <div id="likesList" style="max-height: 400px; overflow-y: auto; padding: 0 20px;"></div>
+        </div>
+    </div>
+
     <!-- Edit Post Modal -->
     <div id="editPostModal" class="modal" style="display: none; background: rgba(0,0,0,0.3); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); align-items: center; justify-content: center; z-index: 6000;">
         <div class="modal-content glass-bubble" style="max-width: 550px; padding: 0; border-radius: 28px; width: 90%; overflow: hidden;">

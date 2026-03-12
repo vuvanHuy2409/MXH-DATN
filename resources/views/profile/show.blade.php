@@ -122,14 +122,14 @@
         </div>
         @endif
 
-        <div style="display: flex; gap: 25px; padding-top: 15px; border-top: 1px solid var(--glass-border);">
-            <div onclick="openFollowModal('followers')" style="cursor: pointer;">
-                <span style="font-weight: 800; font-size: 16px;">{{ $user->followers_count }}</span>
-                <span style="font-size: 14px; color: var(--secondary-text); margin-left: 4px;">Người theo dõi</span>
+        <div style="display: flex; gap: 20px; padding-top: 15px; border-top: 1px solid var(--glass-border); margin-top: 10px;">
+            <div onclick="openFollowModal('followers')" style="cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 12px; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.05)'" onmouseout="this.style.background='transparent'">
+                <span style="font-weight: 800; font-size: 17px; color: var(--text-color);">{{ $user->followers_count ?? 0 }}</span>
+                <span style="font-size: 14px; color: var(--secondary-text); font-weight: 500;">Người theo dõi</span>
             </div>
-            <div onclick="openFollowModal('following')" style="cursor: pointer;">
-                <span style="font-weight: 800; font-size: 16px;">{{ $user->following_count }}</span>
-                <span style="font-size: 14px; color: var(--secondary-text); margin-left: 4px;">Đang theo dõi</span>
+            <div onclick="openFollowModal('following')" style="cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 12px; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.05)'" onmouseout="this.style.background='transparent'">
+                <span style="font-weight: 800; font-size: 17px; color: var(--text-color);">{{ $user->following_count ?? 0 }}</span>
+                <span style="font-size: 14px; color: var(--secondary-text); font-weight: 500;">Đang theo dõi</span>
             </div>
         </div>
     </div>
@@ -144,13 +144,23 @@
 
     <!-- Content Area -->
     <div style="padding: 0 10px;">
-        <div id="content-posts" class="tab-content-area" style="animation: slideIn 0.4s ease-out;">
-            @forelse($posts as $post)
-            @include('posts._item', ['post' => $post, 'prefix' => 'v2-p'])
-            @empty
-            <div style="text-align: center; padding: 60px 20px; opacity: 0.5;">Không có bài đăng nào.</div>
-            @endforelse
-        </div>
+        @if($canSeeContent)
+            <div id="content-posts" class="tab-content-area" style="animation: slideIn 0.4s ease-out;">
+                @forelse($posts as $post)
+                @include('posts._item', ['post' => $post, 'prefix' => 'v2-p'])
+                @empty
+                <div style="text-align: center; padding: 60px 20px; opacity: 0.5;">Không có bài đăng nào.</div>
+                @endforelse
+            </div>
+        @else
+            <div style="text-align: center; padding: 80px 20px; background: rgba(0,0,0,0.02); border-radius: 30px; margin-top: 20px; border: 1px dashed var(--glass-border);">
+                <div style="width: 64px; height: 64px; background: rgba(0,0,0,0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                    <svg viewBox="0 0 24 24" width="32" height="32" stroke="var(--secondary-text)" stroke-width="2" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                </div>
+                <h3 style="margin: 0; font-size: 18px; font-weight: 800;">Tài khoản này là riêng tư</h3>
+                <p style="color: var(--secondary-text); margin-top: 8px; font-size: 14px; max-width: 300px; margin-left: auto; margin-right: auto;">Hãy theo dõi để xem bài viết và các hoạt động của họ.</p>
+            </div>
+        @endif
     </div>
 </div>
 
@@ -215,14 +225,44 @@
     .avatar-container .avatar {
         border-radius: 35px !important;
     }
+
+    .follow-list-item {
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        padding: 12px 16px; 
+        border-radius: 18px;
+        transition: background 0.2s;
+        margin: 4px 0;
+    }
+
+    .follow-list-item:hover {
+        background: rgba(0,0,0,0.03);
+    }
+
+    [data-theme="dark"] .follow-list-item:hover {
+        background: rgba(255,255,255,0.05);
+    }
+
+    .loading-spinner {
+        width: 30px;
+        height: 30px;
+        border: 3px solid var(--glass-border);
+        border-top: 3px solid var(--accent-color);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
 </style>
 
 <script>
-    const profileUserId = {
-        {
-            $user - > id
-        }
-    };
+    const profileUserId = {{ $user->id }};
+    const currentAuthId = {{ auth()->id() }};
 
     function handleMessageClick(isFriend, url) {
         if (isFriend) {
@@ -240,7 +280,7 @@
         if (!modal || !list || !title) return;
 
         title.innerText = type === 'followers' ? 'Người theo dõi' : 'Đang theo dõi';
-        list.innerHTML = '<div style="text-align:center; padding: 20px;">Đang tải...</div>';
+        list.innerHTML = '<div style="text-align:center; padding: 40px;"><div class="loading-spinner"></div><div style="margin-top:10px; opacity:0.6">Đang tải...</div></div>';
         modal.style.display = 'flex';
         document.body.classList.add('modal-open');
 
@@ -248,29 +288,47 @@
             .then(res => res.json())
             .then(users => {
                 if (users.length === 0) {
-                    list.innerHTML = '<div style="text-align:center; padding: 40px; opacity: 0.5;">Danh sách trống.</div>';
+                    list.innerHTML = `
+                        <div style="text-align:center; padding: 60px 20px; opacity: 0.5;">
+                            <svg viewBox="0 0 24 24" width="48" height="48" stroke="currentColor" stroke-width="1" fill="none" style="margin-bottom:15px;">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                            <div>Danh sách trống.</div>
+                        </div>`;
                     return;
                 }
                 list.innerHTML = '';
                 users.forEach(u => {
                     const item = document.createElement('div');
-                    item.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 0.5px solid var(--glass-border);';
+                    item.className = 'follow-list-item';
+                    
+                    const isMe = u.id === currentAuthId;
+                    
                     item.innerHTML = `
                         <div style="display: flex; align-items: center; gap: 12px;">
-                            <a href="/@${u.username}"><div class="avatar" style="width: 45px; height: 45px; border-radius: 15px !important; background-image: url('${u.avatar_url}'); background-size: cover;"></div></a>
-                            <div>
+                            <a href="/@${u.username}">
+                                <div class="avatar" style="width: 48px; height: 48px; border-radius: 16px !important; background-image: url('${u.avatar_url}'); background-size: cover; border: 1px solid var(--glass-border);"></div>
+                            </a>
+                            <div style="display: flex; flex-direction: column;">
                                 <a href="/@${u.username}" style="text-decoration: none; color: var(--text-color); font-weight: 700; font-size: 15px;">${u.username}</a>
-                                <div style="font-size: 12px; color: var(--secondary-text);">${u.followers_count} followers</div>
+                                <div style="font-size: 12px; color: var(--secondary-text); font-weight: 500;">${u.followers_count || 0} người theo dõi</div>
                             </div>
                         </div>
-                        <a href="/@${u.username}" style="text-decoration: none; font-size: 12px; font-weight: 800; color: var(--accent-color);">Xem</a>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            ${!isMe ? `
+                                <a href="/@${u.username}" class="glass-btn" style="padding: 6px 14px; border-radius: 12px; font-size: 13px; font-weight: 700; text-decoration: none; color: var(--text-color); border: 1px solid var(--glass-border); background: rgba(255,255,255,0.2);">Xem</a>
+                            ` : '<span style="font-size: 12px; color: var(--secondary-text); font-weight: 600; padding: 0 10px;">Bạn</span>'}
+                        </div>
                     `;
                     list.appendChild(item);
                 });
             })
             .catch(err => {
                 console.error(err);
-                list.innerHTML = '<div style="text-align:center; padding: 20px; color: red;">Có lỗi xảy ra khi tải dữ liệu.</div>';
+                list.innerHTML = '<div style="text-align:center; padding: 40px; color: #ff3b30; font-weight: 600;">Có lỗi xảy ra khi tải dữ liệu.</div>';
             });
     }
 
@@ -281,14 +339,17 @@
     }
 </script>
 
-<!-- Shared Modal (Nếu layout chưa có) -->
-<div id="followModal" class="modal" onclick="if(event.target === this) closeFollowModal()">
-    <div class="modal-content glass-bubble" style="max-width: 450px; padding: 0; overflow: hidden; border-radius: 30px;">
-        <div style="padding: 20px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center;">
-            <h3 id="followModalTitle" style="margin: 0; font-size: 18px; font-weight: 800;">Danh sách</h3>
-            <span onclick="closeFollowModal()" style="cursor: pointer; opacity: 0.5; font-size: 24px;">&times;</span>
+<!-- Shared Modal -->
+<div id="followModal" class="modal" onclick="if(event.target === this) closeFollowModal()" style="backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);">
+    <div class="modal-content glass-bubble" style="max-width: 450px; padding: 0; overflow: hidden; border-radius: 30px; border: 1px solid rgba(255,255,255,0.4);">
+        <div style="padding: 20px 24px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05);">
+            <h3 id="followModalTitle" style="margin: 0; font-size: 19px; font-weight: 800; letter-spacing: -0.5px;">Danh sách</h3>
+            <div onclick="closeFollowModal()" style="cursor: pointer; width: 32px; height: 32px; border-radius: 50%; background: rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.1)'" onmouseout="this.style.background='rgba(0,0,0,0.05)'">
+                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </div>
         </div>
-        <div id="followList" style="max-height: 400px; overflow-y: auto; padding: 0 20px;"></div>
+        <div id="followList" style="max-height: 500px; overflow-y: auto; padding: 12px 10px;"></div>
     </div>
 </div>
+
 @endsection

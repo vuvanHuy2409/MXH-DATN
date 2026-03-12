@@ -16,6 +16,15 @@
             --accent-color: #0071e3;
         }
 
+        [data-theme="dark"] {
+            --bg-main: #0a0a0a;
+            --glass-bg: rgba(28, 28, 30, 0.8);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-color: #f5f5f7;
+            --secondary-text: #98989d;
+            --accent-color: #0a84ff;
+        }
+
         body {
             margin: 0;
             padding: 0;
@@ -29,6 +38,36 @@
             justify-content: center;
             align-items: center;
             overflow: hidden;
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        [data-theme="dark"] body {
+            background-image: radial-gradient(at 0% 0%, hsla(240, 10%, 15%, 1) 0, transparent 50%),
+                radial-gradient(at 100% 100%, hsla(240, 10%, 10%, 1) 0, transparent 50%);
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 25px;
+            right: 25px;
+            width: 45px;
+            height: 45px;
+            border-radius: 15px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-color);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            transition: all 0.3s;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
         }
 
         .login-container {
@@ -42,18 +81,12 @@
             border-radius: 35px;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
             animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
         }
 
         @keyframes slideUp {
-            from {
-                transform: translateY(30px);
-                opacity: 0;
-            }
-
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
         .logo {
@@ -71,10 +104,6 @@
             transition: transform 0.3s ease;
         }
 
-        .logo:hover {
-            transform: scale(1.05) rotate(3deg);
-        }
-
         .logo img {
             width: 100%;
             height: 100%;
@@ -87,6 +116,7 @@
             text-align: center;
             margin-bottom: 10px;
             letter-spacing: -0.5px;
+            color: var(--text-color);
         }
 
         p.subtitle {
@@ -115,48 +145,26 @@
             align-items: center;
         }
 
-        .email-input-wrapper input {
-            padding-right: 130px;
+        .email-input-wrapper input, input[type="password"] {
             width: 100%;
             padding: 14px 18px;
             border-radius: 16px;
             border: 1px solid var(--glass-border);
-            background: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.2);
             font-size: 15px;
             box-sizing: border-box;
             outline: none;
             transition: all 0.3s;
+            color: var(--text-color);
         }
 
-        .email-input-wrapper input:focus {
-            background: #fff;
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1);
+        [data-theme="dark"] .email-input-wrapper input, 
+        [data-theme="dark"] input[type="password"] {
+            background: rgba(0, 0, 0, 0.2);
         }
 
-        .email-suffix {
-            position: absolute;
-            right: 18px;
-            color: var(--secondary-text);
-            font-weight: 600;
-            font-size: 15px;
-            pointer-events: none;
-        }
-
-        input[type="password"] {
-            width: 100%;
-            padding: 14px 18px;
-            border-radius: 16px;
-            border: 1px solid var(--glass-border);
-            background: rgba(255, 255, 255, 0.5);
-            font-size: 15px;
-            box-sizing: border-box;
-            outline: none;
-            transition: all 0.3s;
-        }
-
-        input[type="password"]:focus {
-            background: #fff;
+        .email-input-wrapper input:focus, input[type="password"]:focus {
+            background: var(--glass-bg);
             border-color: var(--accent-color);
             box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1);
         }
@@ -166,8 +174,8 @@
             padding: 15px;
             border-radius: 18px;
             border: none;
-            background: #000;
-            color: #fff;
+            background: var(--text-color);
+            color: var(--bg-main);
             font-size: 16px;
             font-weight: 700;
             cursor: pointer;
@@ -201,6 +209,10 @@
 </head>
 
 <body>
+    <div class="theme-toggle" id="themeToggle" onclick="toggleTheme()">
+        <!-- Icon will be injected by JS -->
+    </div>
+
     <div class="login-container">
         <div class="logo">
             <img src="{{ asset('images/logo.png') }}" alt="Logo">
@@ -215,11 +227,10 @@
         <form action="{{ route('login') }}" method="POST">
             @csrf
             <div class="form-group">
-                <label>{{ __('Email Prefix') }}</label>
+                <label>{{ __('Student ID or Full Email') }}</label>
                 <div class="email-input-wrapper">
                     <input type="text" name="email_prefix" value="{{ old('email_prefix') }}"
-                        placeholder="{{ __('8-digit student ID or username') }}" required autofocus>
-                    <span class="email-suffix"></span>
+                        placeholder="{{ __('Enter ID or email address') }}" required autofocus>
                 </div>
             </div>
             <div class="form-group">
@@ -236,6 +247,28 @@
             {{ __("Don't have an account?") }} <a href="{{ route('register') }}">{{ __('Join now') }}</a>
         </div>
     </div>
+
+    <script>
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const targetTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', targetTheme);
+            localStorage.setItem('theme', targetTheme);
+            updateThemeIcon(targetTheme);
+        }
+
+        function updateThemeIcon(theme) {
+            const toggle = document.getElementById('themeToggle');
+            const sunIcon = '<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>';
+            const moonIcon = '<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>';
+            toggle.innerHTML = theme === 'dark' ? sunIcon : moonIcon;
+        }
+
+        // Initialize theme
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        updateThemeIcon(savedTheme);
+    </script>
 </body>
 
 </html>

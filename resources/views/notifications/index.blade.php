@@ -63,9 +63,20 @@
 
         <div style="flex-grow: 1;">
             <div style="font-size: 14px;">
-                <a href="{{ route('profile.show', $n->actor->username) }}" style="text-decoration: none; color: var(--text-color);">
-                    <strong>{{ $n->actor->username }}</strong>
+                @php
+                    $actors = $n->aggregate_actors;
+                    $count = $n->aggregate_count;
+                    $firstActor = $actors->first();
+                @endphp
+                
+                <a href="{{ route('profile.show', $firstActor->username) }}" style="text-decoration: none; color: var(--text-color);">
+                    <strong>{{ $firstActor->username }}</strong>
                 </a>
+
+                @if($count > 1)
+                    <span style="color: var(--secondary-text);"> và {{ $count - 1 }} người khác</span>
+                @endif
+
                 <span style="color: var(--secondary-text);">
                     @if($n->type == 'like') đã thích bài viết của bạn.
                     @elseif($n->type == 'reply') đã bình luận bài viết của bạn.
@@ -73,12 +84,20 @@
                     @else đã theo dõi bạn.
                     @endif
                 </span>
+
+                @if($n->post && $n->post->group)
+                    <span style="display: inline-flex; align-items: center; gap: 4px; background: rgba(0,113,227,0.05); padding: 2px 8px; border-radius: 6px; margin-left: 5px; border: 1px solid rgba(0,113,227,0.1);">
+                        <img src="{{ $n->post->group->avatar_url }}" style="width: 14px; height: 14px; border-radius: 3px; object-fit: cover;">
+                        <span style="font-size: 11px; font-weight: 700; color: var(--accent-color);">{{ $n->post->group->name }}</span>
+                    </span>
+                @endif
+
                 <span style="color: var(--secondary-text); font-size: 12px; margin-left: 5px;">{{ $n->created_at->diffForHumans() }}</span>
             </div>
 
             @if($n->post)
             <a href="{{ route('posts.show', $n->post->id) }}" style="text-decoration: none;">
-                <div style="margin-top: 5px; color: var(--secondary-text); font-size: 14px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                <div style="margin-top: 5px; color: var(--secondary-text); font-size: 14px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; opacity: 0.8;">
                     {{ $n->post->content }}
                 </div>
             </a>
