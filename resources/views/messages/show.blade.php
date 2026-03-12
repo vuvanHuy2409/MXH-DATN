@@ -729,31 +729,97 @@
 
     function renderMembersTab() {
         const content = document.getElementById('settingsContent');
+        const isAdmin = '{{ $conversation->creator_id }}' == '{{ auth()->id() }}';
+        
         content.innerHTML = '<div style="text-align: center; padding: 20px; opacity: 0.5;">Đang tải danh sách thành viên...</div>';
 
         fetch('{{ route("messages.members", $conversation->id) }}')
             .then(res => res.json())
             .then(members => {
-                    let html = `
-                    <div style="display: flex; flex-direction: column; gap: 15px;">
-                        ${members.map(m => `
-                            <div style="display: flex; align-items: center; gap: 12px; justify-content: space-between;">
-                                <div style="display: flex; align-items: center; gap: 12px;">
-                                    <div class="avatar" style="width: 40px; height: 40px; background-image: url('${m.avatar_url}'); background-size: cover; border-radius: 12px;"></div>
-                                    <div>
-                                        <div style="font-weight: 700; font-size: 14px;">${m.username}</div>
-                                        <div style="font-size: 11px; opacity: 0.6; text-transform: uppercase; font-weight: 800;">${m.pivot.role === 'admin' ? 'Trưởng nhóm' : 'Thành viên'}</div>
-                                    </div>
+                let html = `
+                    <div style="display: flex; flex-direction: column; gap: 20px;">
+                        ${isAdmin ? `
+                            <div style="padding-bottom: 20px; border-bottom: 1px solid var(--glass-border);">
+                                <label style="display: block; font-size: 12px; font-weight: 800; color: var(--secondary-text); text-transform: uppercase; margin-bottom: 10px;">Mời thêm thành viên</label>
+                                <div style="position: relative;">
+                                    <input type="text" id="inviteMemberSearch" placeholder="Tìm tên bạn bè..." 
+                                        style="width: 100%; padding: 12px 15px 12px 40px; border-radius: 14px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.03); font-size: 14px; outline: none; font-weight: 600;"
+                                        oninput="searchFriendsToInvite(this.value)">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" style="position: absolute; left: 15px; top: 13px; opacity: 0.4;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                                 </div>
-                                ${'{{ $conversation->creator_id }}' == '{{ auth()->id() }}' && m.id != '{{ auth()->id() }}' ? `
-                                    <button onclick="kickMember(${m.id})" style="background: none; border: none; color: #ff3b30; cursor: pointer; font-size: 12px; font-weight: 700; opacity: 0.6;" onmouseover="this.style.opacity='1'">Mời ra</button>
-                                `: ''
-                } <
-                /div>
-                `).join('')}
+                                <div id="inviteResults" style="margin-top: 10px; max-height: 200px; overflow-y: auto;"></div>
+                            </div>
+                        ` : ''}
+
+                        <div>
+                            <label style="display: block; font-size: 12px; font-weight: 800; color: var(--secondary-text); text-transform: uppercase; margin-bottom: 15px;">Danh sách thành viên (${members.length})</label>
+                            <div style="display: flex; flex-direction: column; gap: 15px;">
+                                ${members.map(m => `
+                                    <div style="display: flex; align-items: center; gap: 12px; justify-content: space-between;">
+                                        <div style="display: flex; align-items: center; gap: 12px;">
+                                            <a href="/@${m.username}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 12px;">
+                                                <div class="avatar" style="width: 40px; height: 40px; background-image: url('${m.avatar_url || '/avatars/user.png'}'); background-size: cover; border-radius: 12px;"></div>
+                                                <div>
+                                                    <div style="font-weight: 700; font-size: 14px;">${m.username}</div>
+                                                    <div style="font-size: 11px; opacity: 0.6; text-transform: uppercase; font-weight: 800;">${m.pivot.role === 'admin' ? 'Trưởng nhóm' : 'Thành viên'}</div>
+                                                </div>
+                                            </a>
+                                        </div>
+                                        ${isAdmin && m.id != '{{ auth()->id() }}' ? `
+                                            <button onclick="kickMember(${m.id})" style="background: none; border: none; color: #ff3b30; cursor: pointer; font-size: 12px; font-weight: 700; opacity: 0.6;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">Mời ra</button>
+                                        ` : ''}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
                     </div>
-                `; content.innerHTML = html;
+                `;
+                content.innerHTML = html;
             });
+    }
+
+    function searchFriendsToInvite(q) {
+        const results = document.getElementById('inviteResults');
+        if (!q.trim()) {
+            results.innerHTML = '';
+            return;
+        }
+
+        fetch('{{ route("api.friends.search") }}?q=' + q)
+            .then(res => res.json())
+            .then(friends => {
+                if (friends.length === 0) {
+                    results.innerHTML = '<div style="padding: 10px; font-size: 13px; opacity: 0.5; text-align: center;">Không tìm thấy bạn bè nào</div>';
+                    return;
+                }
+
+                results.innerHTML = friends.map(u => `
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px; background: rgba(0,0,0,0.02); border-radius: 12px; margin-bottom: 5px;">
+                        <a href="/@${u.username}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 10px;">
+                            <div class="avatar" style="width: 32px; height: 32px; background-image: url('${u.avatar_url || '/avatars/user.png'}'); background-size: cover; border-radius: 8px;"></div>
+                            <span style="font-size: 13px; font-weight: 700;">${u.username}</span>
+                        </a>
+                        <button onclick="inviteMember(${u.id})" style="background: var(--accent-color); color: white; border: none; padding: 5px 12px; border-radius: 8px; font-weight: 700; font-size: 11px; cursor: pointer;">Mời</button>
+                    </div>
+                `).join('');
+            });
+    }
+
+    function inviteMember(userId) {
+        fetch('{{ route("messages.add_members", $conversation->id) }}', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                user_ids: [userId]
+            })
+        }).then(() => {
+            document.getElementById('inviteMemberSearch').value = '';
+            document.getElementById('inviteResults').innerHTML = '';
+            renderMembersTab();
+        });
     }
 
     function renderToolsTab() {

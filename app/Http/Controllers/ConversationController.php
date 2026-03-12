@@ -243,6 +243,11 @@ class ConversationController extends Controller
                 'content' => "📥 **{$u->username}** đã được thêm vào nhóm.",
             ]);
         }
+
+        if ($request->wantsJson()) {
+            return response()->json(['status' => 'success']);
+        }
+
         return back();
     }
 

@@ -9,28 +9,42 @@ use Illuminate\Support\Facades\Auth;
 
 class SearchController extends Controller
 {
-    /**
-     * Hiển thị trang tìm kiếm và gợi ý người dùng.
-     */
     public function index(Request $request)
     {
         $query = $request->input('q');
-        $type = $request->input('type', 'all'); // 'all', 'people', 'posts'
+        $type = $request->input('type', 'all');
         $users = collect();
         $posts = collect();
+        $me = Auth::user();
+        $meFollowerIds = $me->followers()->pluck('follower_id')->toArray();
 
         if ($query) {
+            // Tìm người dùng
             if ($type === 'all' || $type === 'people') {
-                // Tìm kiếm người dùng theo username
-                $users = User::where('username', 'LIKE', "%{$query}%")
-                    ->where('id', '!=', Auth::id())
-                    ->withCount(['followers'])
-                    ->limit(20)
-                    ->get();
+                $users = User::where(function($q) use ($query) {
+                    $q->where('username', 'LIKE', "%{$query}%")
+                      ->orWhere('email', 'LIKE', "%{$query}%")
+                      ->orWhereHas('student', function($sq) use ($query) {
+                          $sq->where('full_name', 'LIKE', "%{$query}%")
+                             ->orWhere('student_id', 'LIKE', "%{$query}%");
+                      })
+                      ->orWhereHas('teacher', function($tq) use ($query) {
+                          $tq->where('full_name', 'LIKE', "%{$query}%");
+                      });
+                })
+                ->where('id', '!=', $me->id)
+                ->with(['student', 'teacher'])
+                ->withCount(['followers'])
+                ->limit(20)
+                ->get();
+
+                foreach($users as $u) {
+                    $u->follows_me = in_array($u->id, $meFollowerIds);
+                }
             }
 
+            // Tìm bài viết
             if ($type === 'all' || $type === 'posts') {
-                // Tìm kiếm bài viết theo nội dung
                 $posts = Post::with(['user', 'media'])
                     ->withCount(['likes', 'reposts'])
                     ->where('content', 'LIKE', "%{$query}%")
@@ -40,24 +54,24 @@ class SearchController extends Controller
             }
         }
 
-        // Gợi ý người dùng (những người mà mình chưa theo dõi)
-        $me = Auth::user();
+        // Gợi ý đơn giản: Lấy 8 người mình chưa theo dõi
         $followingIds = $me->following()->pluck('following_id')->toArray();
         $followingIds[] = $me->id;
-
         $suggestions = User::whereNotIn('id', $followingIds)
             ->withCount(['followers'])
             ->inRandomOrder()
-            ->limit(5)
+            ->limit(8)
             ->get();
+        
+        foreach($suggestions as $s) {
+            $s->follows_me = in_array($s->id, $meFollowerIds);
+        }
 
-        $suggestedPosts = Post::with(['user', 'media', 'likes'])
-            ->withCount(['likes', 'comments'])
-            ->whereNotIn('user_id', [$me->id])
-            ->inRandomOrder()
-            ->limit(10)
-            ->get();
+        return view('search.index', compact('users', 'posts', 'suggestions', 'query', 'type'));
+    }
 
-        return view('search.index', compact('users', 'posts', 'suggestions', 'suggestedPosts', 'query', 'type'));
+    public function suggestions()
+    {
+        return response()->json([]);
     }
 }

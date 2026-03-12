@@ -64,6 +64,10 @@
                 <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; text-align: left;">
                     <a href="{{ route('profile.show', $post->user->username) }}" style="text-decoration: none; color: var(--text-color); font-weight: 750; font-size: 15px; letter-spacing: -0.2px;">{{ $post->user->username }}</a>
                     
+                    @if($isCommentType && isset($post->post) && $post->user_id === $post->post->user_id)
+                        <span class="author-badge" style="background: var(--accent-color); color: white; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 6px; text-transform: uppercase; margin-left: 2px;">Tác giả</span>
+                    @endif
+
                     @if(auth()->id() !== $post->user_id)
                         @php
                             $isActuallyFollowing = auth()->user()->following->contains($post->user_id);
@@ -72,7 +76,9 @@
                             <span style="color: var(--secondary-text); opacity: 0.4; font-size: 10px;">·</span>
                             <form action="{{ route('users.follow', $post->user) }}" method="POST" style="display: inline;">
                                 @csrf
-                                <button type="submit" style="background: none; border: none; padding: 0; color: var(--accent-color); font-size: 12px; font-weight: 800; cursor: pointer; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">Theo dõi</button>
+                                <button type="submit" style="background: none; border: none; padding: 0; color: var(--accent-color); font-size: 12px; font-weight: 800; cursor: pointer; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">
+                                    {{ $post->user->follows_me ? 'Theo dõi lại' : 'Theo dõi' }}
+                                </button>
                             </form>
                         @endif
                     @endif

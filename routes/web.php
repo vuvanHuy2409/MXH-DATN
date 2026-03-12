@@ -32,6 +32,7 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/', [PostController::class, 'index'])->name('home');
     Route::get('/search', [SearchController::class, 'index'])->name('search');
+    Route::get('/api/suggestions', [SearchController::class, 'suggestions'])->name('api.suggestions');
     // Notifications
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications');
     Route::get('/api/notifications', [NotificationController::class, 'apiIndex'])->name('api.notifications');
@@ -118,8 +119,13 @@ Route::middleware('auth')->group(function () {
         $repostedIds = \App\Models\Repost::where('user_id', $user->id)->pluck('post_id');
         $reposts = \App\Models\Post::whereIn('id', $repostedIds)->with(['user', 'media', 'likes'])->withCount(['reposts'])->latest()->get();
 
+        $photos = \App\Models\PostMedia::whereIn('post_id', $user->posts()->pluck('id'))
+            ->whereIn('media_type', ['image', 'gif'])
+            ->latest('id')
+            ->get();
+
         $canSeeContent = true;
-        return view('profile.show', compact('user', 'posts', 'replies', 'reposts', 'canSeeContent'));
+        return view('profile.show', compact('user', 'posts', 'replies', 'reposts', 'photos', 'canSeeContent'));
     })->name('profile.me');
 
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -138,21 +144,28 @@ Route::middleware('auth')->group(function () {
         }
 
         $isFollowing = auth()->user()->following->contains($user->id);
+        $followsMe = auth()->user()->followers->contains($user->id);
         $canSeeContent = !$user->is_private || $isFollowing;
 
         $posts = collect();
         $replies = collect();
         $reposts = collect();
+        $photos = collect();
 
         if ($canSeeContent) {
             $posts = $user->posts()->with(['user', 'media', 'likes'])->withCount(['reposts'])->latest()->get();
             $replies = \App\Models\Comment::where('user_id', $user->id)->with(['user', 'post.user'])->latest()->get();
-            
+
             $repostedIds = \App\Models\Repost::where('user_id', $user->id)->pluck('post_id');
             $reposts = \App\Models\Post::whereIn('id', $repostedIds)->with(['user', 'media', 'likes'])->withCount(['reposts'])->latest()->get();
+            
+            $photos = \App\Models\PostMedia::whereIn('post_id', $user->posts()->pluck('id'))
+                ->whereIn('media_type', ['image', 'gif'])
+                ->latest('id')
+                ->get();
         }
 
-        return view('profile.show', compact('user', 'posts', 'replies', 'reposts', 'canSeeContent'));
+        return view('profile.show', compact('user', 'posts', 'replies', 'reposts', 'photos', 'isFollowing', 'followsMe', 'canSeeContent'));
     })->name('profile.show');
 
     Route::get('/settings', [App\Http\Controllers\SettingsController::class, 'index'])->name('settings');

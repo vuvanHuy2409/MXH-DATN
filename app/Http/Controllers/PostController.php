@@ -64,8 +64,14 @@ class PostController extends Controller
             ->limit(50)
             ->get();
 
+        $meFollowerIds = auth()->user()->followers()->pluck('follower_id')->toArray();
+        foreach ($posts as $post) {
+            $post->user->follows_me = in_array($post->user_id, $meFollowerIds);
+        }
+
         foreach ($followingPosts as $post) {
             $post->followed_reposters = $post->reposts->pluck('user.username')->toArray();
+            $post->user->follows_me = in_array($post->user_id, $meFollowerIds);
         }
 
         return view('posts.index', compact('posts', 'followingPosts'));

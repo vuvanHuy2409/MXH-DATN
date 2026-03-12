@@ -28,7 +28,7 @@
                 <form action="{{ route('users.follow', $user) }}" method="POST">
                     @csrf
                     <button type="submit" style="background: var(--text-color); color: var(--bg-main); border: none; padding: 10px 25px; border-radius: 18px; font-weight: 700; font-size: 14px; cursor: pointer; transition: transform 0.2s;">
-                        {{ auth()->user()->following->contains($user->id) ? 'Đang theo dõi' : 'Theo dõi' }}
+                        {{ $isFollowing ? 'Đang theo dõi' : ($followsMe ? 'Theo dõi lại' : 'Theo dõi') }}
                     </button>
                 </form>
                 <button onclick="handleMessageClick({{ auth()->user()->following->contains($user->id) && $user->following->contains(auth()->id()) ? 'true' : 'false' }}, '{{ route('messages.direct', $user->id) }}')" class="glass-btn" style="width: 42px; height: 42px; border-radius: 15px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; cursor: pointer;">
@@ -136,21 +136,37 @@
 
     <!-- Minimalist Tabs -->
     <div style="margin: 30px 20px 10px; display: flex; gap: 30px; border-bottom: 1px solid var(--glass-border); padding: 0 10px;">
-        <div id="tab-posts" style="padding: 12px 5px; cursor: default; color: var(--text-color); font-weight: 800; position: relative; font-size: 15px;">
+        <div id="tab-posts" onclick="switchProfileTab('posts')" style="padding: 12px 5px; cursor: pointer; color: var(--text-color); font-weight: 800; position: relative; font-size: 15px;">
             Bài Viết
-            <div class="active-line" style="position: absolute; bottom: -1px; left: 0; width: 100%; height: 3px; background: var(--accent-color); border-radius: 3px;"></div>
+            <div id="line-posts" class="active-line" style="position: absolute; bottom: -1px; left: 0; width: 100%; height: 3px; background: var(--accent-color); border-radius: 3px;"></div>
+        </div>
+        <div id="tab-photos" onclick="switchProfileTab('photos')" style="padding: 12px 5px; cursor: pointer; color: var(--secondary-text); font-weight: 700; position: relative; font-size: 15px;">
+            Ảnh
+            <div id="line-photos" class="active-line" style="position: absolute; bottom: -1px; left: 0; width: 100%; height: 3px; background: var(--accent-color); border-radius: 3px; display: none;"></div>
         </div>
     </div>
 
     <!-- Content Area -->
     <div style="padding: 0 10px;">
         @if($canSeeContent)
-            <div id="content-posts" class="tab-content-area" style="animation: slideIn 0.4s ease-out;">
+            <div id="content-posts" class="profile-tab-content" style="animation: slideIn 0.4s ease-out;">
                 @forelse($posts as $post)
                 @include('posts._item', ['post' => $post, 'prefix' => 'v2-p'])
                 @empty
                 <div style="text-align: center; padding: 60px 20px; opacity: 0.5;">Không có bài đăng nào.</div>
                 @endforelse
+            </div>
+
+            <div id="content-photos" class="profile-tab-content" style="display: none; animation: slideIn 0.4s ease-out;">
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 10px;">
+                    @forelse($photos as $photo)
+                        <div style="aspect-ratio: 1/1; border-radius: 12px; overflow: hidden; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.02); cursor: pointer;" onclick="window.location.href='/posts/{{ $photo->post_id }}'">
+                            <img src="{{ asset($photo->media_url) }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                        </div>
+                    @empty
+                        <div style="grid-column: span 3; text-align: center; padding: 60px 20px; opacity: 0.5;">Chưa có ảnh nào được đăng.</div>
+                    @endforelse
+                </div>
             </div>
         @else
             <div style="text-align: center; padding: 80px 20px; background: rgba(0,0,0,0.02); border-radius: 30px; margin-top: 20px; border: 1px dashed var(--glass-border);">
@@ -336,6 +352,29 @@
         const modal = document.getElementById('followModal');
         if (modal) modal.style.display = 'none';
         document.body.classList.remove('modal-open');
+    }
+
+    function switchProfileTab(tab) {
+        // Hide all contents
+        document.querySelectorAll('.profile-tab-content').forEach(c => c.style.display = 'none');
+        // Show selected content
+        document.getElementById('content-' + tab).style.display = 'block';
+
+        // Reset all tabs style
+        const tabs = ['posts', 'photos'];
+        tabs.forEach(t => {
+            const tabEl = document.getElementById('tab-' + t);
+            const lineEl = document.getElementById('line-' + t);
+            if (t === tab) {
+                tabEl.style.color = 'var(--text-color)';
+                tabEl.style.fontWeight = '800';
+                lineEl.style.display = 'block';
+            } else {
+                tabEl.style.color = 'var(--secondary-text)';
+                tabEl.style.fontWeight = '700';
+                lineEl.style.display = 'none';
+            }
+        });
     }
 </script>
 

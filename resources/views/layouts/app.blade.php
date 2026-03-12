@@ -55,17 +55,18 @@
             display: flex;
             justify-content: center;
             min-height: 100vh;
+            overflow-x: hidden; /* Ngăn chặn cuộn ngang bất thường */
         }
 
         .container {
             width: 100%;
             max-width: 650px;
+            margin: 0 auto; /* Đảm bảo căn giữa tuyệt đối */
             min-height: 100vh;
-            background: rgba(255, 255, 255, 0.0);
-            /* Transparent to show gradient */
-            backdrop-filter: blur(0px);
-            /* Main container doesn't need blur */
+            background: transparent;
             border: none;
+            text-align: left;
+            position: relative;
         }
 
         /* Glass Sidebar */
@@ -150,14 +151,30 @@
 
         .main-wrapper {
             margin: 20px 0;
-            overflow: hidden;
+            min-height: calc(100vh - 40px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Subtle glass for the main content area */
+        .main-content-glass {
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 32px;
+            box-shadow: var(--glass-shadow);
+        }
+
+        [data-theme="dark"] .main-content-glass {
+            background: rgba(28, 28, 30, 0.4);
         }
 
         .post-divider {
-            height: 0.5px;
-            background: #000000;
+            height: 1px;
+            background: var(--glass-border);
             margin: 0;
-            opacity: 0.8;
+            opacity: 0.3;
         }
 
         /* Notifications Modal Styles */
@@ -842,20 +859,28 @@
     </nav>
 
     <div class="container">
-        <div class="glass-bubble main-wrapper">
+        <div class="main-wrapper {{ !request()->is('messages*') ? '' : 'main-content-glass' }}">
             @if(!request()->is('messages*'))
-            <header>
-                <div style="width: 30px;"></div>
-                <div></div>
-                <div style="width: 30px;"></div>
+            <header style="padding: 15px 25px; display: flex; align-items: center; border-bottom: 1px solid var(--glass-border); background: transparent;">
+                <h2 style="margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -0.5px;">
+                    @if(request()->is('/')) Trang chủ
+                    @elseif(request()->is('search*')) Tìm kiếm
+                    @elseif(request()->is('profile*') || request()->is('@*')) Hồ sơ
+                    @elseif(request()->is('notifications*')) Thông báo
+                    @elseif(request()->is('groups*')) Cộng đồng
+                    @else Trang chủ
+                    @endif
+                </h2>
             </header>
             @endif
 
-            <main>
+            <main style="flex-grow: 1;">
                 @yield('content')
             </main>
         </div>
     </div>
+
+    @yield('extra_content')
 
     <!-- Modal Window Đăng bài -->
     <div id="postModal" class="modal" style="backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);">
@@ -1063,21 +1088,37 @@
             const token = '{{ csrf_token() }}';
 
             btns.forEach(btn => {
-                const countSpan = btn.querySelector('.like-count');
+                const countSpan = btn.parentElement.querySelector('.like-count');
                 const svg = btn.querySelector('svg');
                 const isLiked = btn.classList.contains('liked');
-                let count = parseInt(countSpan.innerText) || 0;
+                let count = countSpan ? (parseInt(countSpan.innerText) || 0) : 0;
 
                 if (isLiked) {
                     btn.classList.remove('liked');
                     btn.style.color = 'inherit';
-                    svg.setAttribute('fill', 'none');
-                    countSpan.innerText = Math.max(0, count - 1);
+                    if (svg) svg.setAttribute('fill', 'none');
+                    if (countSpan) countSpan.innerText = Math.max(0, count - 1);
                 } else {
                     btn.classList.add('liked');
                     btn.style.color = '#ff3b30';
-                    svg.setAttribute('fill', 'currentColor');
-                    countSpan.innerText = count + 1;
+                    if (svg) svg.setAttribute('fill', 'currentColor');
+                    if (countSpan) countSpan.innerText = count + 1;
+                    
+                    // Sparkle effect
+                    const sparkle = document.createElement('div');
+                    sparkle.className = 'sparkle-effect';
+                    sparkle.style.left = '50%';
+                    sparkle.style.top = '50%';
+                    sparkle.style.transform = 'translate(-50%, -50%)';
+                    btn.appendChild(sparkle);
+                    setTimeout(() => sparkle.remove(), 500);
+                }
+
+                // Animation
+                if (svg) {
+                    svg.classList.remove('like-animate');
+                    void svg.offsetWidth;
+                    svg.classList.add('like-animate');
                 }
             });
 
@@ -1089,9 +1130,12 @@
                     }
                 })
                 .then(res => res.json()).then(data => {
-                    btns.forEach(btn => {
-                        if (btn.querySelector('.like-count')) btn.querySelector('.like-count').innerText = data.count;
-                    });
+                    if (data.count !== undefined) {
+                        btns.forEach(btn => {
+                            const span = btn.parentElement.querySelector('.like-count');
+                            if (span) span.innerText = data.count;
+                        });
+                    }
                 });
         }
 
@@ -1100,17 +1144,18 @@
             const token = '{{ csrf_token() }}';
 
             btns.forEach(btn => {
-                const countSpan = btn.querySelector('.repost-count');
+                const countSpan = btn.parentElement.querySelector('.repost-count');
                 const isReposted = btn.classList.contains('reposted');
-                let count = parseInt(countSpan.innerText) || 0;
+                let count = countSpan ? (parseInt(countSpan.innerText) || 0) : 0;
+                
                 if (isReposted) {
                     btn.classList.remove('reposted');
                     btn.style.color = 'inherit';
-                    countSpan.innerText = Math.max(0, count - 1);
+                    if (countSpan) countSpan.innerText = Math.max(0, count - 1);
                 } else {
                     btn.classList.add('reposted');
                     btn.style.color = '#00c300';
-                    countSpan.innerText = count + 1;
+                    if (countSpan) countSpan.innerText = count + 1;
                 }
             });
             fetch(`/posts/${id}/repost`, {
@@ -1121,9 +1166,12 @@
                     }
                 })
                 .then(res => res.json()).then(data => {
-                    btns.forEach(btn => {
-                        if (btn.querySelector('.repost-count')) btn.querySelector('.repost-count').innerText = data.count;
-                    });
+                    if (data.count !== undefined) {
+                        btns.forEach(btn => {
+                            const span = btn.parentElement.querySelector('.repost-count');
+                            if (span) span.innerText = data.count;
+                        });
+                    }
                 });
         }
 
