@@ -158,7 +158,7 @@ class PostController extends Controller
      */
     public function show(Post $post)
     {
-        $post->load(['user', 'media', 'likes', 'comments' => function($query) {
+        $post->load(['user', 'media', 'likes', 'group', 'comments' => function($query) {
             $query->with(['user', 'parent.user'])->oldest();
         }]);
 
@@ -215,7 +215,16 @@ class PostController extends Controller
      */
     public function destroy(Post $post)
     {
-        if ($post->user_id !== auth()->id()) {
+        $canDelete = $post->user_id === auth()->id();
+
+        // Nếu bài viết thuộc về một nhóm, cho phép admin của nhóm xóa
+        if (!$canDelete && $post->group_id && $post->group) {
+            if ($post->group->isAdmin(auth()->id())) {
+                $canDelete = true;
+            }
+        }
+
+        if (!$canDelete) {
             return response()->json(['message' => __('Không có quyền')], 403);
         }
 

@@ -68,12 +68,12 @@
         font-weight: 500;
         transition: all 0.2s ease;
         display: block;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
         -webkit-text-fill-color: #000000 !important;
     }
 
     /* Đảm bảo text trong select và option luôn đen và rõ nét */
-    select.modern-input, 
+    select.modern-input,
     select.modern-input option,
     #facultySelect,
     #classSelect,
@@ -85,13 +85,15 @@
         -webkit-text-fill-color: #000000 !important;
     }
 
-    input.modern-input:focus, select.modern-input:focus {
+    input.modern-input:focus,
+    select.modern-input:focus {
         border-color: var(--accent-color);
         background: #ffffff !important;
         box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1);
     }
 
-    input.modern-input, select.modern-input {
+    input.modern-input,
+    select.modern-input {
         height: 52px;
     }
 
@@ -113,7 +115,8 @@
         color: #000000 !important;
     }
 
-    input.modern-input:disabled, select.modern-input:disabled {
+    input.modern-input:disabled,
+    select.modern-input:disabled {
         opacity: 0.7;
         cursor: not-allowed;
         background: rgba(0, 0, 0, 0.05);
@@ -196,32 +199,51 @@
         <!-- Header/Cover -->
         <div style="height: 200px; background-image: url('{{ asset('images/pngtree-diverse-group-of-people-standing-in-front-a-city-skyline-image_20636604.webp') }}'); background-size: cover; background-position: center; position: relative; flex-shrink: 0; border-bottom: 1px solid var(--glass-border);">
             <div style="position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.6) 100%);"></div>
-            
+
             <!-- More Button (Three Dots) -->
             <div style="position: absolute; top: 20px; right: 25px; z-index: 10;">
                 <button onclick="toggleGroupMenu(event)" style="background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.3); color: white; width: 38px; height: 38px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
-                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none">
+                        <circle cx="12" cy="12" r="1"></circle>
+                        <circle cx="19" cy="12" r="1"></circle>
+                        <circle cx="5" cy="12" r="1"></circle>
+                    </svg>
                 </button>
-                
+
                 <!-- Dropdown Menu -->
                 <div id="groupManagementMenu" style="display: none; position: absolute; top: 45px; right: 0; width: 220px; background: var(--glass-bg); backdrop-filter: blur(30px); border: 1px solid var(--glass-border); border-radius: 18px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); overflow: hidden; animation: fadeIn 0.2s ease;">
                     @if(auth()->user()->id === $activeGroup->creator_id || (isset($isMember) && $activeGroup->members()->where('user_id', auth()->id())->first()->role === 'admin'))
                     <div onclick="editGroupInfo()" style="padding: 12px 18px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.2s; font-size: 14px; font-weight: 600;" onmouseover="this.style.background='rgba(0,113,227,0.1)'; this.style.color='var(--accent-color)'" onmouseout="this.style.background='transparent'; this.style.color='inherit'">
-                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1h1l9.5-9.5z"></path></svg>
+                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1h1l9.5-9.5z"></path>
+                        </svg>
                         Chỉnh sửa thông tin
                     </div>
                     @endif
                     <div onclick="openMembersModal()" style="padding: 12px 18px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.2s; font-size: 14px; font-weight: 600; border-top: 1px solid var(--glass-border);" onmouseover="this.style.background='rgba(0,113,227,0.1)'; this.style.color='var(--accent-color)'" onmouseout="this.style.background='transparent'; this.style.color='inherit'">
-                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
                         Thành viên nhóm
                     </div>
                     <div onclick="copyJoinCode('{{ $activeGroup->join_code }}')" style="padding: 12px 18px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.2s; font-size: 14px; font-weight: 600; border-top: 1px solid var(--glass-border);" onmouseover="this.style.background='rgba(0,113,227,0.1)'; this.style.color='var(--accent-color)'" onmouseout="this.style.background='transparent'; this.style.color='inherit'">
-                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
                         Mã nhóm: <span style="font-family: monospace; letter-spacing: 1px; margin-left: auto;">{{ $activeGroup->join_code }}</span>
                     </div>
                     @if(auth()->id() !== $activeGroup->creator_id)
                     <div onclick="openReportModal('group', {{ $activeGroup->id }}, '{{ $activeGroup->name }}')" style="padding: 12px 18px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.2s; font-size: 14px; font-weight: 600; border-top: 1px solid var(--glass-border); color: #ff3b30;" onmouseover="this.style.background='rgba(255,59,48,0.1)'" onmouseout="this.style.background='transparent'">
-                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
                         Báo cáo cộng đồng
                     </div>
                     @endif
@@ -231,10 +253,10 @@
             <div style="position: absolute; bottom: -30px; left: 30px; display: flex; align-items: flex-end; gap: 20px;">
                 <div class="avatar" style="width: 90px; height: 90px; background-image: url('{{ $activeGroup->avatar_url }}'); background-size: cover; border-radius: 24px; border: 5px solid var(--bg-main); box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 5; position: relative;">
                     @if(auth()->id() === $activeGroup->creator_id)
-                    <div onclick="document.getElementById('groupAvatarInput').click()" 
-                         style="position: absolute; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; cursor: pointer; border-radius: 19px;" 
-                         onmouseover="this.style.opacity='1'" 
-                         onmouseout="this.style.opacity='0'">
+                    <div onclick="document.getElementById('groupAvatarInput').click()"
+                        style="position: absolute; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; cursor: pointer; border-radius: 19px;"
+                        onmouseover="this.style.opacity='1'"
+                        onmouseout="this.style.opacity='0'">
                         <svg viewBox="0 0 24 24" width="24" height="24" stroke="white" stroke-width="2.5" fill="none">
                             <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
                             <circle cx="12" cy="13" r="4"></circle>
@@ -418,7 +440,11 @@
             <form action="{{ route('groups.leave', $activeGroup->slug) }}" method="POST" onsubmit="return confirm('Bạn chắc chắn muốn rời nhóm này?')">
                 @csrf
                 <button type="submit" style="width: 100%; padding: 12px; border-radius: 12px; background: none; border: 1.5px solid rgba(255,59,48,0.3); color: #ff3b30; font-weight: 800; cursor: pointer; transition: all 0.2s; font-size: 13px;" onmouseover="this.style.background='rgba(255,59,48,0.1)'" onmouseout="this.style.background='none'">
-                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" style="vertical-align: middle; margin-right: 5px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" style="vertical-align: middle; margin-right: 5px;">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
                     Rời khỏi cộng đồng
                 </button>
             </form>
@@ -428,7 +454,8 @@
 </div>
 
 <style>
-    .mini-tab, .mini-tab-active {
+    .mini-tab,
+    .mini-tab-active {
         padding: 6px 15px;
         border-radius: 10px;
         font-size: 12px;
@@ -437,14 +464,17 @@
         transition: all 0.2s;
         border: 1px solid transparent;
     }
+
     .mini-tab {
-        background: rgba(0,0,0,0.03);
+        background: rgba(0, 0, 0, 0.03);
         color: var(--secondary-text);
     }
+
     .mini-tab-active {
         background: var(--accent-color);
         color: white;
     }
+
     .member-row {
         padding: 12px 25px;
         display: flex;
@@ -452,8 +482,47 @@
         gap: 12px;
         transition: all 0.2s;
     }
+
     .member-row:hover {
-        background: rgba(0,0,0,0.02);
+        background: rgba(0, 0, 0, 0.02);
+    }
+
+    .member-dropdown {
+        position: absolute;
+        right: 25px;
+        top: 45px;
+        background: white;
+        border: 1px solid var(--glass-border);
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        min-width: 160px;
+        overflow: hidden;
+        display: none;
+    }
+
+    .member-dropdown button {
+        width: 100%;
+        padding: 10px 15px;
+        border: none;
+        background: none;
+        text-align: left;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--main-text);
+        transition: background 0.2s;
+    }
+
+    .member-dropdown button:hover {
+        background: rgba(0, 0, 0, 0.03);
+    }
+
+    .member-dropdown button.danger {
+        color: #ff3b30;
     }
 </style>
 
@@ -491,10 +560,27 @@
         menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
     }
 
+    function toggleMemberDropdown(event, userId) {
+        event.stopPropagation();
+        // Close all other member dropdowns
+        document.querySelectorAll('.member-dropdown').forEach(d => {
+            if (d.id !== `member-dropdown-${userId}`) d.style.display = 'none';
+        });
+
+        const menu = document.getElementById(`member-dropdown-${userId}`);
+        if (menu) {
+            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+        }
+    }
+
     // Close menu when clicking outside
     document.addEventListener('click', function() {
         const menu = document.getElementById('groupManagementMenu');
         if (menu) menu.style.display = 'none';
+
+        document.querySelectorAll('.member-dropdown').forEach(d => {
+            d.style.display = 'none';
+        });
     });
 
     function editGroupInfo() {
@@ -502,7 +588,7 @@
         // Set modal to EDIT state
         document.getElementById('groupModalTitle').innerText = "Chỉnh sửa thông tin";
         document.getElementById('groupForm').action = "/groups/{{ $activeGroup->slug }}";
-        
+
         // Add PUT method if not exists
         if (!document.getElementById('groupMethodPut')) {
             const methodInput = document.createElement('input');
@@ -558,7 +644,7 @@
     function loadMembers() {
         const container = document.getElementById('membersListContainer');
         container.innerHTML = '<div style="padding: 40px; text-align: center; opacity: 0.5;">Đang tải...</div>';
-        
+
         fetch(`/groups/${currentGroupSlug}/members`)
             .then(res => res.json())
             .then(members => {
@@ -573,16 +659,98 @@
             return;
         }
 
-        container.innerHTML = members.map(m => `
-            <div class="member-row">
-                <div class="avatar" style="width: 40px; height: 40px; background-image: url('${m.avatar_url}'); background-size: cover; border-radius: 12px; border: 1px solid var(--glass-border);"></div>
-                <div style="flex-grow: 1;">
-                    <div style="font-weight: 700; font-size: 14px;">${m.username}</div>
-                    <div style="font-size: 11px; color: var(--secondary-text); text-transform: uppercase;">${m.pivot.role}</div>
+        const isCreator = {{ (isset($activeGroup) && $activeGroup->creator_id === auth()->id()) ? 'true' : 'false' }};
+        const isAdmin = {{ (isset($activeGroup) && $activeGroup->isAdmin()) ? 'true' : 'false' }};
+
+        container.innerHTML = members.map(m => {
+            let menuItems = `
+                <button onclick="window.location.href='/@${m.username}'">
+                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    Hồ sơ
+                </button>
+            `;
+
+            if (m.id !== {{ auth()->id() }}) {
+                // Chỉ creator mới được phân quyền admin
+                if (isCreator && m.id !== {{ $activeGroup->creator_id ?? 0 }}) {
+                    menuItems += `
+                        <button onclick="toggleAdminRole(${m.id}, '${m.username}', '${m.pivot.role}')">
+                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                            ${m.pivot.role === 'admin' ? 'Hạ quyền Admin' : 'Lên Admin'}
+                        </button>
+                    `;
+                }
+
+                // Creator xóa được tất cả, Admin xóa được member thường
+                if (isCreator || (isAdmin && m.pivot.role !== 'admin')) {
+                    if (m.id !== {{ $activeGroup->creator_id ?? 0 }}) {
+                        menuItems += `
+                            <button class="danger" onclick="removeMemberFromGroup(${m.id}, '${m.username}')">
+                                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="17" y1="8" x2="23" y2="14"></line><line x1="23" y1="8" x2="17" y2="14"></line></svg>
+                                Trục xuất
+                            </button>
+                        `;
+                    }
+                }
+            }
+
+            return `
+                <div class="member-row" style="position: relative;">
+                    <div class="avatar" style="width: 36px; height: 36px; background-image: url('${m.avatar_url}'); background-size: cover; border-radius: 10px; border: 1px solid var(--glass-border);"></div>
+                    <div style="flex-grow: 1;">
+                        <div style="font-weight: 700; font-size: 13px;">${m.username} ${m.id === {{ auth()->id() }} ? '<span style="opacity: 0.5; font-weight: 400; font-size: 11px;">(Bạn)</span>' : ''}</div>
+                        <div style="font-size: 10px; color: ${m.pivot.role === 'admin' ? 'var(--accent-color)' : 'var(--secondary-text)'}; text-transform: uppercase; font-weight: 800;">${m.pivot.role === 'admin' ? 'Quản trị viên' : 'Thành viên'}</div>
+                    </div>
+                    <div onclick="toggleMemberDropdown(event, ${m.id})" style="cursor: pointer; padding: 5px; opacity: 0.6;">
+                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+                    </div>
+                    <div id="member-dropdown-${m.id}" class="member-dropdown">
+                        ${menuItems}
+                    </div>
                 </div>
-                ${m.id !== {{ auth()->id() }} ? '<button style="background: none; border: none; color: var(--accent-color); font-weight: 700; font-size: 12px; cursor: pointer;">Xem hồ sơ</button>' : '<span style="font-size: 11px; opacity: 0.5;">Bạn</span>'}
-            </div>
-        `).join('');
+            `;
+        }).join('');
+    }
+
+    function toggleAdminRole(userId, username, currentRole) {
+        const action = currentRole === 'admin' ? 'Hạ quyền quản trị viên của' : 'Phân quyền quản trị viên cho';
+        if (!confirm(`${action} ${username}?`)) return;
+
+        fetch(`/groups/${currentGroupSlug}/toggle-admin`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    user_id: userId
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.message);
+                loadMembers();
+            });
+    }
+
+    function removeMemberFromGroup(userId, username) {
+        if (!confirm(`Xóa ${username} khỏi cộng đồng này?`)) return;
+
+        fetch(`/groups/${currentGroupSlug}/remove-member`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    user_id: userId
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.message);
+                loadMembers();
+            });
     }
 
     function searchMembersInModal() {
@@ -622,18 +790,20 @@
         if (!confirm(`Thêm ${username} vào nhóm?`)) return;
 
         fetch(`/groups/${currentGroupSlug}/add-member`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({ user_id: userId })
-        })
-        .then(res => res.json())
-        .then(data => {
-            alert(data.message);
-            switchMemberTab('list');
-        });
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    user_id: userId
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.message);
+                switchMemberTab('list');
+            });
     }
 
     function searchMembers() {
@@ -657,7 +827,7 @@
         document.getElementById('groupPrivacyInput').value = "public";
         document.getElementById('groupSubmitBtn').innerText = "Hoàn tất tạo nhóm";
         document.getElementById('groupTypeSelection').style.display = "flex";
-        
+
         const deleteSection = document.getElementById('deleteGroupSection');
         if (deleteSection) deleteSection.style.display = "none";
 
@@ -686,7 +856,7 @@
             typeInput = document.getElementById('groupTypeInput');
         const classField = document.getElementById('classSelectionField'),
             privacyField = document.getElementById('privacyField');
-        
+
         const communityText = communityBtn.querySelector('div');
         const classText = classBtn.querySelector('div');
 
@@ -695,22 +865,22 @@
             communityBtn.style.borderColor = 'var(--accent-color)';
             communityBtn.style.background = 'rgba(0,113,227,0.05)';
             communityText.style.color = 'var(--accent-color)';
-            
+
             classBtn.style.borderColor = 'var(--glass-border)';
             classBtn.style.background = 'transparent';
             classText.style.color = 'var(--secondary-text)';
-            
+
             classField.style.display = 'none';
             privacyField.style.display = 'block';
         } else {
             classBtn.style.borderColor = 'var(--accent-color)';
             classBtn.style.background = 'rgba(0,113,227,0.05)';
             classText.style.color = '#000000';
-            
+
             communityBtn.style.borderColor = 'var(--glass-border)';
             communityBtn.style.background = 'transparent';
             communityText.style.color = 'var(--secondary-text)';
-            
+
             classField.style.display = 'block';
             privacyField.style.display = 'none';
         }
@@ -720,7 +890,7 @@
         openModal();
         const modal = document.getElementById('postModal');
         const form = modal.querySelector('form');
-        
+
         if (form) {
             // Handle group_id input
             let groupInput = form.querySelector('input[name="group_id"]');
@@ -761,14 +931,14 @@
     const originalCloseModal = window.closeModal;
     window.closeModal = function() {
         if (originalCloseModal) originalCloseModal();
-        
+
         const modal = document.getElementById('postModal');
         if (modal) {
             const form = modal.querySelector('form');
             if (form) {
                 const groupInput = form.querySelector('input[name="group_id"]');
                 if (groupInput) groupInput.remove();
-                
+
                 const miniAvatar = document.getElementById('groupMiniAvatar');
                 if (miniAvatar) miniAvatar.style.display = 'none';
 
@@ -780,17 +950,23 @@
                     postStatus.innerHTML = `<svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg> Công khai`;
                     postStatus.style.color = 'var(--secondary-text)';
                 }
-                
+
                 const textarea = form.querySelector('textarea');
                 if (textarea) textarea.placeholder = "Bạn đang nghĩ gì?";
             }
         }
     };
 
-    let currentReport = { type: '', id: '' };
+    let currentReport = {
+        type: '',
+        id: ''
+    };
 
     function openReportModal(type, id, name) {
-        currentReport = { type, id };
+        currentReport = {
+            type,
+            id
+        };
         document.getElementById('reportTargetType').innerText = type === 'group' ? 'Cộng đồng' : 'Nội dung';
         document.getElementById('reportTargetName').innerText = name;
         document.getElementById('reportModal').style.display = 'flex';
@@ -806,35 +982,35 @@
         const reason = document.getElementById('reportReason').value;
         const details = document.getElementById('reportDetails').value;
         const btn = document.getElementById('submitReportBtn');
-        
+
         btn.disabled = true;
         btn.innerText = "Đang gửi...";
 
-        fetch('{{ route('reports.store') }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({
-                reported_id: currentReport.id,
-                type: currentReport.type,
-                reason: reason,
-                details: details
+        fetch('{{ route("reports.store") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    reported_id: currentReport.id,
+                    type: currentReport.type,
+                    reason: reason,
+                    details: details
+                })
             })
-        })
-        .then(res => res.json())
-        .then(data => {
-            alert(data.message);
-            closeReportModal();
-            btn.disabled = false;
-            btn.innerText = "Gửi báo cáo";
-        })
-        .catch(err => {
-            alert('Có lỗi xảy ra, vui lòng thử lại.');
-            btn.disabled = false;
-            btn.innerText = "Gửi báo cáo";
-        });
+            .then(res => res.json())
+            .then(data => {
+                alert(data.message);
+                closeReportModal();
+                btn.disabled = false;
+                btn.innerText = "Gửi báo cáo";
+            })
+            .catch(err => {
+                alert('Có lỗi xảy ra, vui lòng thử lại.');
+                btn.disabled = false;
+                btn.innerText = "Gửi báo cáo";
+            });
     }
 </script>
 
@@ -845,10 +1021,10 @@
             <h3 style="margin: 0; font-size: 18px; font-weight: 800;">Báo cáo <span id="reportTargetType"></span></h3>
             <span onclick="closeReportModal()" style="cursor: pointer; font-size: 24px; opacity: 0.5;">&times;</span>
         </div>
-        
+
         <div style="margin-bottom: 20px;">
             <p style="font-size: 14px; color: var(--secondary-text); margin-bottom: 15px;">Bạn đang báo cáo: <strong id="reportTargetName" style="color: var(--text-color);"></strong></p>
-            
+
             <label class="input-label" style="display: block; font-size: 14px; font-weight: 700; margin-bottom: 8px;">Lý do báo cáo</label>
             <select id="reportReason" style="width: 100%; margin-bottom: 15px; padding: 12px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.03); outline: none;">
                 <option value="Spam">Spam / Nội dung rác</option>
@@ -858,11 +1034,11 @@
                 <option value="Vi phạm bản quyền">Vi phạm bản quyền</option>
                 <option value="Khác">Lý do khác</option>
             </select>
-            
+
             <label class="input-label" style="display: block; font-size: 14px; font-weight: 700; margin-bottom: 8px;">Chi tiết thêm (tùy chọn)</label>
             <textarea id="reportDetails" style="width: 100%; height: 100px; resize: none; padding: 12px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.03); outline: none;" placeholder="Cung cấp thêm thông tin để chúng tôi xử lý nhanh hơn..."></textarea>
         </div>
-        
+
         <div style="display: flex; gap: 10px;">
             <button onclick="closeReportModal()" style="flex: 1; padding: 12px; border-radius: 12px; border: 1px solid var(--glass-border); background: transparent; font-weight: 700; cursor: pointer;">Hủy</button>
             <button onclick="submitReport()" id="submitReportBtn" style="flex: 2; padding: 12px; border-radius: 12px; border: none; background: #ff3b30; color: white; font-weight: 700; cursor: pointer;">Gửi báo cáo</button>

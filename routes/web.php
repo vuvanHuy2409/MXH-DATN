@@ -53,6 +53,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/groups/{group:slug}/members', [App\Http\Controllers\SocialGroupController::class, 'getMembers'])->name('groups.members');
     Route::get('/groups/{group:slug}/search-users', [App\Http\Controllers\SocialGroupController::class, 'searchUsers'])->name('groups.search_users');
     Route::post('/groups/{group:slug}/add-member', [App\Http\Controllers\SocialGroupController::class, 'addMember'])->name('groups.add_member');
+    Route::post('/groups/{group:slug}/toggle-admin', [App\Http\Controllers\SocialGroupController::class, 'toggleAdmin'])->name('groups.toggle_admin');
+    Route::post('/groups/{group:slug}/remove-member', [App\Http\Controllers\SocialGroupController::class, 'removeMember'])->name('groups.remove_member');
 
     Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
     Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show');
@@ -113,11 +115,11 @@ Route::middleware('auth')->group(function () {
     // Profile cá nhân (Your Profile)
     Route::get('/profile', function () {
         $user = auth()->user()->loadCount(['followers', 'following'])->load(['student.faculty', 'teacher.faculty']);
-        $posts = $user->posts()->with(['user', 'media', 'likes'])->withCount(['reposts'])->latest()->get();
+        $posts = $user->posts()->with(['user', 'media', 'likes', 'group'])->withCount(['reposts'])->latest()->get();
         $replies = \App\Models\Comment::where('user_id', $user->id)->with(['user', 'post.user'])->latest()->get();
         
         $repostedIds = \App\Models\Repost::where('user_id', $user->id)->pluck('post_id');
-        $reposts = \App\Models\Post::whereIn('id', $repostedIds)->with(['user', 'media', 'likes'])->withCount(['reposts'])->latest()->get();
+        $reposts = \App\Models\Post::whereIn('id', $repostedIds)->with(['user', 'media', 'likes', 'group'])->withCount(['reposts'])->latest()->get();
 
         $photos = \App\Models\PostMedia::whereIn('post_id', $user->posts()->pluck('id'))
             ->whereIn('media_type', ['image', 'gif'])
@@ -153,11 +155,11 @@ Route::middleware('auth')->group(function () {
         $photos = collect();
 
         if ($canSeeContent) {
-            $posts = $user->posts()->with(['user', 'media', 'likes'])->withCount(['reposts'])->latest()->get();
+            $posts = $user->posts()->with(['user', 'media', 'likes', 'group'])->withCount(['reposts'])->latest()->get();
             $replies = \App\Models\Comment::where('user_id', $user->id)->with(['user', 'post.user'])->latest()->get();
 
             $repostedIds = \App\Models\Repost::where('user_id', $user->id)->pluck('post_id');
-            $reposts = \App\Models\Post::whereIn('id', $repostedIds)->with(['user', 'media', 'likes'])->withCount(['reposts'])->latest()->get();
+            $reposts = \App\Models\Post::whereIn('id', $repostedIds)->with(['user', 'media', 'likes', 'group'])->withCount(['reposts'])->latest()->get();
             
             $photos = \App\Models\PostMedia::whereIn('post_id', $user->posts()->pluck('id'))
                 ->whereIn('media_type', ['image', 'gif'])

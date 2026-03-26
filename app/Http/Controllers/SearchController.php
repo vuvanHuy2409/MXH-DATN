@@ -45,7 +45,7 @@ class SearchController extends Controller
 
             // Tìm bài viết
             if ($type === 'all' || $type === 'posts') {
-                $posts = Post::with(['user', 'media'])
+                $posts = Post::with(['user', 'media', 'group'])
                     ->withCount(['likes', 'reposts'])
                     ->where('content', 'LIKE', "%{$query}%")
                     ->latest()

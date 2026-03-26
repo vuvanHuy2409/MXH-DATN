@@ -918,8 +918,12 @@
                     @if($errors->has('content'))
                         <div style="color: #ff3b30; font-size: 13px; font-weight: 700; margin-bottom: 10px;">{{ $errors->first('content') }}</div>
                     @endif
-                    <textarea name="content" rows="4" placeholder="Bạn đang nghĩ gì?" required autofocus
+                    <textarea name="content" id="postContentInput" rows="4" placeholder="Bạn đang nghĩ gì?" required autofocus maxlength="500" oninput="updateCharCount(this)"
                               style="width: 100%; border: none; background: transparent; color: inherit; font-size: 18px; line-height: 1.6; outline: none; padding: 0; resize: none; min-height: 120px; font-weight: 500;">{{ old('content') }}</textarea>
+                    
+                    <div style="display: flex; justify-content: flex-end; margin-top: 5px;">
+                        <span id="charCountDisplay" style="font-size: 12px; color: var(--secondary-text); font-weight: 600; opacity: 0.6;">0/500</span>
+                    </div>
 
                     <!-- Link Input Area -->
                     <div id="linkInputContainer" style="display: none; margin-top: 15px; background: rgba(0,113,227,0.03); padding: 15px; border-radius: 18px; border: 1px dashed var(--accent-color); animation: slideDown 0.3s ease;">
@@ -1546,9 +1550,11 @@
                 <span onclick="closeEditPostModal()" style="cursor: pointer; font-size: 24px; opacity: 0.5;">&times;</span>
             </div>
             <div style="padding: 25px;">
-                <textarea id="editPostContent" style="width: 100%; min-height: 150px; border: none; background: transparent; font-size: 16px; color: var(--text-color); resize: none; outline: none;" placeholder="Bạn đang nghĩ gì?"></textarea>
-                <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 12px;">
-                    <button onclick="closeEditPostModal()" style="padding: 10px 20px; border-radius: 12px; border: 1px solid var(--glass-border); background: transparent; font-weight: 600; cursor: pointer;">Hủy</button>
+               <textarea id="editPostContent" maxlength="500" oninput="updateCharCount(this, 'editCharCountDisplay')" style="width: 100%; min-height: 150px; border: none; background: transparent; font-size: 16px; color: var(--text-color); resize: none; outline: none;" placeholder="Bạn đang nghĩ gì?"></textarea>
+               <div style="display: flex; justify-content: flex-end; margin-top: 5px;">
+                   <span id="editCharCountDisplay" style="font-size: 12px; color: var(--secondary-text); font-weight: 600; opacity: 0.6;">0/500</span>
+               </div>
+               <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 12px;">                    <button onclick="closeEditPostModal()" style="padding: 10px 20px; border-radius: 12px; border: 1px solid var(--glass-border); background: transparent; font-weight: 600; cursor: pointer;">Hủy</button>
                     <button onclick="submitEditPost()" class="btn-post" style="padding: 10px 25px; border-radius: 12px; font-weight: 700;">Lưu thay đổi</button>
                 </div>
             </div>
@@ -1557,15 +1563,17 @@
 
     <script>
         let currentEditingPostId = null;
+function openEditPostModal(id, content) {
+    currentEditingPostId = id;
+    const textarea = document.getElementById('editPostContent');
+    textarea.value = content;
+    updateCharCount(textarea, 'editCharCountDisplay');
+    document.getElementById('editPostModal').style.display = 'flex';
+    document.body.classList.add('modal-open');
 
-        function openEditPostModal(id, content) {
-            currentEditingPostId = id;
-            document.getElementById('editPostContent').value = content;
-            document.getElementById('editPostModal').style.display = 'flex';
-            document.body.classList.add('modal-open');
-            // Đóng tất cả dropdown đang mở
-            document.querySelectorAll('.dropdown-content').forEach(d => d.classList.remove('show'));
-        }
+    // Đóng tất cả dropdown đang mở
+    document.querySelectorAll('.dropdown-content').forEach(d => d.classList.remove('show'));
+}
 
         function closeEditPostModal() {
             document.getElementById('editPostModal').style.display = 'none';
@@ -1610,6 +1618,19 @@
             }).catch(err => {
                 console.error('Không thể sao chép: ', err);
             });
+        }
+
+        function updateCharCount(textarea, displayId = 'charCountDisplay') {
+            const count = textarea.value.length;
+            const display = document.getElementById(displayId);
+            if (display) {
+                display.innerText = `${count}/500`;
+                if (count >= 500) {
+                    display.style.color = '#ff3b30';
+                } else {
+                    display.style.color = 'var(--secondary-text)';
+                }
+            }
         }
     </script>
 </body>

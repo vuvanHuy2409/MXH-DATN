@@ -1,9 +1,9 @@
-DROP DATABASE IF EXISTS threads_clone;
-CREATE DATABASE IF NOT EXISTS threads_clone 
+
+CREATE DATABASE IF NOT EXISTS mxh_datn
 CHARACTER SET utf8mb4 
 COLLATE utf8mb4_unicode_ci;
 
-USE threads_clone;
+USE mxh_datn;
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;

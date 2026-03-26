@@ -1,0 +1,29 @@
+services:
+  mysql_db:
+    image: mysql:8.0
+    container_name: mxh_mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: mxh_datn
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+    ports:
+      - '3306:3306'
+    volumes:
+      - db_data:/var/lib/mysql
+    platform: linux/x86_64
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: mxh_phpmyadmin
+    restart: always
+    ports:
+      - '8888:80'
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=mysql_db
+      - PMA_USER=root
+      - PMA_PASSWORD=root
+
+volumes:
+  db_data:

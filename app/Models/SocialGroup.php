@@ -41,4 +41,25 @@ class SocialGroup extends Model
     {
         return $this->hasMany(Post::class, 'group_id');
     }
+
+    /**
+     * Kiểm tra xem một người dùng có phải là quản trị viên (admin) hoặc người tạo (creator) của nhóm hay không.
+     *
+     * @param int|null $userId
+     * @return bool
+     */
+    public function isAdmin($userId = null)
+    {
+        $userId = $userId ?: auth()->id();
+        if (!$userId) return false;
+
+        // Người tạo luôn là admin
+        if ($this->creator_id === $userId) return true;
+
+        // Kiểm tra trong bảng group_members
+        return $this->members()
+            ->where('user_id', $userId)
+            ->where('role', 'admin')
+            ->exists();
+    }
 }

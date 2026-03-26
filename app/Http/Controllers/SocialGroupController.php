@@ -30,7 +30,7 @@ class SocialGroupController extends Controller
             $activeGroup = SocialGroup::where('slug', $slug)->withCount('members')->firstOrFail();
             $isMember = $activeGroup->members()->where('user_id', Auth::id())->exists();
             $posts = $activeGroup->posts()
-                ->with(['user', 'media', 'likes'])
+                ->with(['user', 'media', 'likes', 'group'])
                 ->withCount('comments')
                 ->orderByRaw('user_id = ? DESC', [Auth::id()]) // Ưu tiên bài viết của mình lên đầu
                 ->latest()
@@ -137,7 +137,7 @@ class SocialGroupController extends Controller
 
     public function addMember(Request $request, SocialGroup $group)
     {
-        if (!$group->members()->where('user_id', Auth::id())->where('role', 'admin')->exists()) {
+        if (!$group->isAdmin()) {
             return response()->json(['message' => 'Bạn không có quyền thêm thành viên.'], 403);
         }
 
@@ -149,9 +149,71 @@ class SocialGroupController extends Controller
         return response()->json(['message' => 'Đã thêm thành viên thành công.']);
     }
 
+    public function toggleAdmin(Request $request, SocialGroup $group)
+    {
+        // Chỉ người tạo nhóm mới có quyền phân quyền admin cho người khác
+        if ($group->creator_id !== Auth::id()) {
+            return response()->json(['message' => 'Chỉ người tạo nhóm mới có quyền phân quyền quản trị viên.'], 403);
+        }
+
+        $userId = $request->input('user_id');
+        if ($userId == $group->creator_id) {
+            return response()->json(['message' => 'Không thể thay đổi quyền của người tạo nhóm.'], 400);
+        }
+
+        $member = $group->members()->where('user_id', $userId)->first();
+        if (!$member) {
+            return response()->json(['message' => 'Thành viên không tồn tại trong nhóm.'], 404);
+        }
+
+        $newRole = $member->pivot->role === 'admin' ? 'member' : 'admin';
+        $group->members()->updateExistingPivot($userId, ['role' => $newRole]);
+
+        return response()->json([
+            'message' => 'Đã cập nhật quyền thành công.',
+            'new_role' => $newRole
+        ]);
+    }
+
+    public function removeMember(Request $request, SocialGroup $group)
+    {
+        $userId = $request->input('user_id');
+
+        // Không thể tự xóa bản thân bằng phương thức này (nên dùng leave)
+        if ($userId == Auth::id()) {
+            return response()->json(['message' => 'Sử dụng chức năng rời nhóm để thực hiện hành động này.'], 400);
+        }
+
+        // Quyền xóa: Admin được xóa member, Creator được xóa tất cả (trừ creator)
+        $isAdmin = $group->isAdmin();
+        $isCreator = $group->creator_id === Auth::id();
+
+        if (!$isAdmin) {
+            return response()->json(['message' => 'Bạn không có quyền xóa thành viên.'], 403);
+        }
+
+        $targetMember = $group->members()->where('user_id', $userId)->first();
+        if (!$targetMember) {
+            return response()->json(['message' => 'Thành viên không tồn tại.'], 404);
+        }
+
+        // Admin không thể xóa admin khác, trừ khi là creator
+        if ($targetMember->pivot->role === 'admin' && !$isCreator) {
+            return response()->json(['message' => 'Chỉ người tạo nhóm mới có quyền xóa quản trị viên khác.'], 403);
+        }
+
+        if ($userId == $group->creator_id) {
+            return response()->json(['message' => 'Không thể xóa người tạo nhóm.'], 400);
+        }
+
+        $group->members()->detach($userId);
+
+        return response()->json(['message' => 'Đã xóa thành viên khỏi nhóm.']);
+    }
+
     public function updateAvatar(Request $request, SocialGroup $group)
     {
-        if ($group->creator_id !== Auth::id()) abort(403);
+        if (!$group->isAdmin()) abort(403);
 
         $request->validate([
             'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
@@ -186,7 +248,7 @@ class SocialGroupController extends Controller
 
     public function update(Request $request, SocialGroup $group)
     {
-        if ($group->creator_id !== Auth::id()) abort(403);
+        if (!$group->isAdmin()) abort(403);
 
         $request->validate([
             'name' => 'required|string|max:255|unique:social_groups,name,' . $group->id,

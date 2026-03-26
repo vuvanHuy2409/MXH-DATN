@@ -1,7 +1,13 @@
 @php
-    $isOwner = $post->user_id === auth()->id();
-    $isFollowing = auth()->user()->following->contains($post->user_id);
     $isCommentType = $post instanceof \App\Models\Comment;
+    $isOwner = $post->user_id === auth()->id();
+    $isGroupOwner = false;
+    if (!$isOwner && !$isCommentType && isset($post->group_id)) {
+        if ($post->group && $post->group->isAdmin()) {
+            $isGroupOwner = true;
+        }
+    }
+    $isFollowing = auth()->user()->following->contains($post->user_id);
     $hasLiked = (!$isCommentType) ? $post->likes->contains('user_id', auth()->id()) : false;
     $uniqueId = ($prefix ?? 'p') . '-' . $post->id;
 
@@ -103,15 +109,18 @@
                     <div id="dropdown-{{ $uniqueId }}" class="dropdown-content" style="border-radius: 16px; border: 1px solid var(--glass-border); box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
                         @if($isOwner)
                             @if(!$isCommentType)
-                                <button onclick="openEditPostModal({{ $post->id }}, '{{ addslashes($post->content) }}')">
+                                <button onclick="openEditPostModal({{ $post->id }}, {{ json_encode($post->content) }})">
                                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> 
                                     Chỉnh sửa
                                 </button>
                             @endif
+                        @endif
+
+                        @if($isOwner || $isGroupOwner)
                             <button class="danger" onclick="{{ $isCommentType ? "deleteComment($post->id)" : "deletePost($post->id)" }}"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg> Xóa</button>
                         @endif
 
-                        @if(!$isOwner)
+                        @if(!$isOwner && !$isGroupOwner)
                             <button class="danger" onclick="alert('Cảm ơn bạn đã báo cáo. Chúng tôi sẽ xem xét {{ $isCommentType ? 'bình luận' : 'bài viết' }} này sớm nhất có thể.')">
                                 <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
                                 Báo cáo {{ $isCommentType ? 'bình luận' : 'bài viết' }}
@@ -130,7 +139,7 @@
 
             <!-- Content Body -->
             <div onclick="window.location.href='{{ route('posts.show', $post->id) }}'" style="cursor: pointer; margin-bottom: 12px; width: 100%; text-align: left;">
-                <div style="font-size: 15px; line-height: 1.55; color: var(--text-color); font-weight: 450; white-space: pre-wrap; word-break: break-word; text-align: left;">{{ trim($post->content) }}</div>
+                <div class="post-text" style="font-size: 15px; line-height: 1.55; color: var(--text-color); font-weight: 450; white-space: pre-wrap; word-break: break-word; text-align: left;">{{ trim($post->content) }}</div>
             </div>
 
             <!-- Comment Image -->

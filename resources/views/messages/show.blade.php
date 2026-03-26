@@ -487,7 +487,7 @@
 
                     <!-- Action Menu -->
                     <div id="msg-menu-{{ $message->id }}" class="msg-action-menu">
-                        <div class="msg-action-item" onclick="replyToMessage({{ $message->id }}, '{{ $message->sender->username }}', '{{ $message->message_type === 'text' ? addslashes($message->content) : '[Phương tiện]' }}')">
+                        <div class="msg-action-item" onclick="replyToMessage({{ $message->id }}, '{{ $message->sender->username }}', {{ $message->message_type === 'text' ? json_encode($message->content) : "'[Phương tiện]'" }})">
                             <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none">
                                 <polyline points="9 17 4 12 9 7"></polyline>
                                 <path d="M20 18v-2a4 4 0 0 0-4-4H4"></path>
