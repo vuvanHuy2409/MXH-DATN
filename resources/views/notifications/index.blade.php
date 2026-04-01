@@ -127,6 +127,28 @@
     </div>
 </div>
 
+<style>
+    [data-theme="dark"] .notif-item {
+        border-color: rgba(255,255,255,0.06) !important;
+    }
+    [data-theme="dark"] .notif-item:not([style*="border-left"]) {
+        background: rgba(22,22,32,0.5) !important;
+    }
+    [data-theme="dark"] .notif-tab.active-tab,
+    [data-theme="dark"] .notif-tab[style*="background: var(--glass-bg)"] {
+        background: rgba(30,30,48,0.95) !important;
+        border-color: rgba(255,255,255,0.08) !important;
+    }
+    [data-theme="dark"] .notif-item button[type="submit"] {
+        border-color: rgba(255,255,255,0.12) !important;
+        background: rgba(255,255,255,0.04) !important;
+        color: var(--text-color) !important;
+    }
+    [data-theme="dark"] .notif-item button[type="submit"]:hover {
+        background: rgba(255,255,255,0.08) !important;
+    }
+</style>
+
 <script>
     function filterNotifications(type) {
         const items = document.querySelectorAll('.notif-item');

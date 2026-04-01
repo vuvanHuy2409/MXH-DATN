@@ -1,0 +1,75 @@
+---
+title: Sơ đồ tuần tự - Đăng ký tài khoản
+---
+sequenceDiagram
+    actor NguoiDung as Người dùng
+    participant GiaoDien as :Giao diện\nĐăng ký
+    participant DieuKhien as :Điều khiển\nĐăng ký
+    participant HeTong as :Hệ thống\n(Database/Cache)
+
+    NguoiDung->>GiaoDien: 1 Mở trang đăng ký
+    GiaoDien->>DieuKhien: 2 Tải danh sách khoa
+    DieuKhien->>HeTong: 3 Truy vấn danh sách khoa
+    HeTong-->>DieuKhien: 4 Kết quả: Danh sách khoa
+    DieuKhien-->>GiaoDien: 5 Trả về dữ liệu
+    GiaoDien-->>NguoiDung: 6 Hiển thị form đăng ký (chọn loại tài khoản, nhập thông tin)
+    NguoiDung->>GiaoDien: 7 Nhập thông tin (loại TK, họ tên, mã SV/email GV, mật khẩu,...)
+    NguoiDung->>GiaoDien: 8 Nhấn nút "Đăng ký"
+
+    rect rgb(240, 240, 240)
+        Note over NguoiDung, HeTong: Quá trình xử lý đăng ký
+
+        rect rgb(220, 235, 220)
+            Note over NguoiDung, HeTong: Đăng ký thành công
+            GiaoDien->>DieuKhien: 9 Gửi yêu cầu
+            DieuKhien->>HeTong: 10 Kiểm tra email đã tồn tại chưa
+            HeTong-->>DieuKhien: 11 Kết quả: Chưa tồn tại
+            DieuKhien->>HeTong: 12 Lưu dữ liệu đăng ký vào Session & tạo OTP vào Cache (1 phút)
+            HeTong-->>DieuKhien: 13 Xác nhận đã lưu
+            DieuKhien->>HeTong: 14 Gửi mã OTP qua email
+            HeTong-->>DieuKhien: 15 Email đã được gửi thành công
+            DieuKhien-->>GiaoDien: 16 Chuyển hướng sang trang xác thực OTP
+            GiaoDien-->>NguoiDung: 17 Hiển thị form nhập mã OTP
+            NguoiDung->>GiaoDien: 18 Nhập mã OTP nhận được từ email
+            NguoiDung->>GiaoDien: 19 Nhấn "Xác nhận"
+            GiaoDien->>DieuKhien: 20 Gửi yêu cầu xác thực OTP
+            DieuKhien->>HeTong: 21 Xác thực OTP từ Cache
+            HeTong-->>DieuKhien: 22 Kết quả: OTP hợp lệ
+            DieuKhien->>HeTong: 23 Tạo tài khoản (User + Chi tiết SV/GV) vào CSDL
+            HeTong-->>DieuKhien: 24 Kết quả: Tài khoản tạo thành công
+            DieuKhien-->>GiaoDien: 25 Đăng nhập tự động & chuyển hướng trang chính
+            GiaoDien-->>NguoiDung: 26 Hiển thị giao diện chính + thông báo chào mừng
+        end
+
+        Note over NguoiDung, HeTong: Đăng ký không thành công
+
+        alt Thiếu thông tin bắt buộc hoặc dữ liệu không hợp lệ
+            GiaoDien->>DieuKhien: Gửi yêu cầu
+            DieuKhien-->>GiaoDien: Trả về lỗi validation: "Vui lòng nhập đầy đủ và đúng định dạng!"
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi bên dưới các trường nhập
+        end
+
+        alt Email hoặc Mã sinh viên đã tồn tại trong hệ thống
+            GiaoDien->>DieuKhien: Gửi yêu cầu
+            DieuKhien->>HeTong: Kiểm tra email trong CSDL
+            HeTong-->>DieuKhien: Kết quả: Email đã tồn tại
+            DieuKhien-->>GiaoDien: Trả về lỗi: "Email này đã tồn tại."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi, yêu cầu nhập lại
+        end
+
+        alt Mã OTP sai hoặc đã hết hạn (quá 1 phút)
+            GiaoDien->>DieuKhien: Gửi yêu cầu xác thực OTP
+            DieuKhien->>HeTong: Kiểm tra OTP trong Cache
+            HeTong-->>DieuKhien: Kết quả: OTP hết hạn hoặc không khớp
+            DieuKhien-->>GiaoDien: Trả về lỗi: "Mã OTP không chính xác hoặc đã hết hạn (chỉ có hiệu lực 1 phút)."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+
+        alt Mất kết nối hệ thống/Database
+            GiaoDien->>DieuKhien: Gửi yêu cầu
+            DieuKhien->>HeTong: Thử kết nối
+            HeTong-->>DieuKhien: Lỗi kết nối (Timeout/Error)
+            DieuKhien-->>GiaoDien: Trả về lỗi: "Lỗi kết nối CSDL"
+            GiaoDien-->>NguoiDung: Hiển thị Popup báo lỗi
+        end
+    end

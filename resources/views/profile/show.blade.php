@@ -191,8 +191,23 @@
     }
 
     [data-theme="dark"] .profile-cover {
-        background: linear-gradient(to bottom right, #243949 0%, #517fa4 100%);
-        filter: brightness(0.8);
+        background: linear-gradient(135deg, #0d1b2e 0%, #1a2744 40%, #0f1a30 100%);
+        filter: none;
+    }
+
+    [data-theme="dark"] .cover-pattern {
+        background-image: radial-gradient(circle at 2px 2px, rgba(77, 148, 255, 0.08) 1px, transparent 0);
+    }
+
+    [data-theme="dark"] .glass-btn:hover {
+        background: rgba(77, 148, 255, 0.12) !important;
+        border-color: rgba(77, 148, 255, 0.3) !important;
+        color: #4D94FF !important;
+    }
+
+    [data-theme="dark"] .badge-new {
+        background: rgba(77, 148, 255, 0.1);
+        color: #4D94FF;
     }
 
     .cover-pattern {
@@ -206,7 +221,7 @@
     }
 
     .badge-new {
-        background: rgba(0, 113, 227, 0.08);
+        background: rgba(0, 98, 255, 0.08);
         color: var(--accent-color);
         padding: 4px 10px;
         border-radius: 10px;

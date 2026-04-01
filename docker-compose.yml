@@ -1,29 +1,19 @@
 services:
-  mysql_db:
-    image: mysql:8.0
-    container_name: mxh_mysql
-    restart: always
-    environment:
-      MYSQL_DATABASE: mxh_datn
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+  redis:
+    image: redis:7-alpine
+    container_name: dev-redis
+    restart: unless-stopped
     ports:
-      - '3306:3306'
+      - "6379:6379"
     volumes:
-      - db_data:/var/lib/mysql
-    platform: linux/x86_64
-
-  phpmyadmin:
-    image: phpmyadmin:latest
-    container_name: mxh_phpmyadmin
-    restart: always
-    ports:
-      - '8888:80'
-    environment:
-      - PMA_ARBITRARY=1
-      - PMA_HOST=mysql_db
-      - PMA_USER=root
-      - PMA_PASSWORD=root
+      - redis_data:/data
+    command: >
+      redis-server
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --save 900 1
+      --save 300 10
+      --appendonly yes
 
 volumes:
-  db_data:
+  redis_data:

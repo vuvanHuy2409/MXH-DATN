@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Comment;
+use App\Models\GroupMember;
+use App\Models\Notification;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,7 +18,7 @@ class ReplyController extends Controller
     {
         // Kiểm tra quyền thành viên nếu bài viết thuộc về một nhóm
         if ($post->group_id) {
-            $isMember = \App\Models\GroupMember::where('group_id', $post->group_id)
+            $isMember = GroupMember::where('group_id', $post->group_id)
                 ->where('user_id', Auth::id())
                 ->exists();
             
@@ -74,7 +76,7 @@ class ReplyController extends Controller
 
         // 1. Thông báo cho chủ bài viết (nếu không phải chính họ đăng bình luận)
         if ($post->user_id !== $authId) {
-            \App\Models\Notification::create([
+            Notification::create([
                 'user_id' => $post->user_id,
                 'actor_id' => $authId,
                 'type' => 'reply',
@@ -83,16 +85,13 @@ class ReplyController extends Controller
         }
 
         // 2. Thông báo cho chủ bình luận cha (nếu có bình luận cha và không phải chính họ trả lời)
-        if ($parentComment && $parentComment->user_id !== $authId) {
-            // Tránh gửi 2 thông báo cho cùng 1 người nếu chủ bài viết và chủ bình luận cha là một
-            if ($parentComment->user_id !== $post->user_id) {
-                \App\Models\Notification::create([
-                    'user_id' => $parentComment->user_id,
-                    'actor_id' => $authId,
-                    'type' => 'reply',
-                    'post_id' => $post->id,
-                ]);
-            }
+        if ($parentComment && $parentComment->user_id !== $authId && $parentComment->user_id !== $post->user_id) {
+            Notification::create([
+                'user_id' => $parentComment->user_id,
+                'actor_id' => $authId,
+                'type' => 'reply',
+                'post_id' => $post->id,
+            ]);
         }
         // --- KẾT THÚC THÔNG BÁO ---
 

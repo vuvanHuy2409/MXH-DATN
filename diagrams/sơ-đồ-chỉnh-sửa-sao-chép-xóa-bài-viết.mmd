@@ -1,0 +1,96 @@
+---
+title: Sơ đồ tuần tự - Chỉnh sửa, Sao chép và Xóa bài viết
+---
+sequenceDiagram
+    actor NguoiDung as Người dùng
+    participant GiaoDien as :Giao diện\nBài viết
+    participant DieuKhien as :Điều khiển\nBài viết
+    participant HeTong as :Hệ thống\n(Database)
+
+    NguoiDung->>GiaoDien: 1 Nhấn menu "..." trên bài viết
+    GiaoDien-->>NguoiDung: 2 Hiển thị menu tuỳ chọn (Chỉnh sửa / Sao chép link / Xóa)
+
+    rect rgb(240, 240, 240)
+        Note over NguoiDung, HeTong: Chức năng Chỉnh sửa bài viết
+
+        rect rgb(220, 235, 220)
+            Note over NguoiDung, HeTong: Chỉnh sửa thành công
+            NguoiDung->>GiaoDien: 3 Chọn "Chỉnh sửa"
+            GiaoDien-->>NguoiDung: 4 Hiển thị form chỉnh sửa với nội dung hiện tại
+            NguoiDung->>GiaoDien: 5 Sửa nội dung bài viết
+            NguoiDung->>GiaoDien: 6 Nhấn "Lưu"
+            GiaoDien->>DieuKhien: 7 Gửi yêu cầu PATCH /posts/{id} (content mới)
+            DieuKhien->>HeTong: 8 Kiểm tra quyền sở hữu (post.user_id == auth.id)
+            HeTong-->>DieuKhien: 9 Kết quả: Là chủ bài viết
+            DieuKhien->>DieuKhien: 10 Validate nội dung (required, max:500)
+            DieuKhien->>HeTong: 11 Cập nhật nội dung bài viết trong CSDL
+            HeTong-->>DieuKhien: 12 Kết quả: Cập nhật thành công
+            DieuKhien-->>GiaoDien: 13 JSON: status="success", content=nội_dung_mới
+            GiaoDien-->>NguoiDung: 14 Cập nhật nội dung bài viết ngay trên trang
+        end
+
+        alt Không phải chủ bài viết
+            GiaoDien->>DieuKhien: Gửi yêu cầu PATCH /posts/{id}
+            DieuKhien->>HeTong: Kiểm tra quyền sở hữu
+            HeTong-->>DieuKhien: Kết quả: Không phải chủ bài viết
+            DieuKhien-->>GiaoDien: Trả về lỗi 403 Forbidden
+            GiaoDien-->>NguoiDung: Hiển thị thông báo "Không có quyền chỉnh sửa"
+        end
+
+        alt Nội dung bỏ trống hoặc vượt quá 500 ký tự
+            GiaoDien->>DieuKhien: Gửi yêu cầu
+            DieuKhien-->>GiaoDien: Trả về lỗi validation
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi, giữ lại nội dung đang sửa
+        end
+    end
+
+    rect rgb(240, 240, 240)
+        Note over NguoiDung, HeTong: Chức năng Sao chép link bài viết
+
+        rect rgb(220, 235, 220)
+            Note over NguoiDung, HeTong: Sao chép thành công
+            NguoiDung->>GiaoDien: 15 Chọn "Sao chép link"
+            GiaoDien->>GiaoDien: 16 Tạo đường dẫn bài viết (/posts/{id})
+            GiaoDien->>GiaoDien: 17 Ghi link vào Clipboard (navigator.clipboard.writeText)
+            GiaoDien-->>NguoiDung: 18 Hiển thị thông báo: "Đã sao chép link bài viết!"
+        end
+
+        alt Trình duyệt không hỗ trợ Clipboard API
+            GiaoDien->>GiaoDien: Thử ghi vào Clipboard — thất bại
+            GiaoDien-->>NguoiDung: Hiển thị link dạng text để người dùng tự sao chép
+        end
+    end
+
+    rect rgb(240, 240, 240)
+        Note over NguoiDung, HeTong: Chức năng Xóa bài viết
+
+        rect rgb(255, 220, 220)
+            Note over NguoiDung, HeTong: Xóa thành công
+            NguoiDung->>GiaoDien: 19 Chọn "Xóa bài viết"
+            GiaoDien-->>NguoiDung: 20 Hiển thị hộp thoại xác nhận xóa
+            NguoiDung->>GiaoDien: 21 Xác nhận "Đồng ý xóa"
+            GiaoDien->>DieuKhien: 22 Gửi yêu cầu DELETE /posts/{id}
+            DieuKhien->>HeTong: 23 Kiểm tra quyền (chủ bài viết hoặc admin nhóm)
+            HeTong-->>DieuKhien: 24 Kết quả: Có quyền xóa
+            DieuKhien->>HeTong: 25 Xóa bài viết (cascade: xóa comments, likes, media liên quan)
+            HeTong-->>DieuKhien: 26 Kết quả: Xóa thành công
+            DieuKhien-->>GiaoDien: 27 JSON: status="success"
+            GiaoDien-->>NguoiDung: 28 Xóa bài viết khỏi giao diện, cập nhật bảng tin
+        end
+
+        alt Không có quyền xóa (không phải chủ bài & không phải admin nhóm)
+            GiaoDien->>DieuKhien: Gửi yêu cầu DELETE /posts/{id}
+            DieuKhien->>HeTong: Kiểm tra quyền sở hữu và quyền admin nhóm
+            HeTong-->>DieuKhien: Kết quả: Không có quyền
+            DieuKhien-->>GiaoDien: Trả về lỗi 403: "Không có quyền"
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+
+        alt Bài viết không tồn tại (đã bị xóa trước đó)
+            GiaoDien->>DieuKhien: Gửi yêu cầu DELETE /posts/{id}
+            DieuKhien->>HeTong: Tìm kiếm bài viết
+            HeTong-->>DieuKhien: Kết quả: Không tìm thấy
+            DieuKhien-->>GiaoDien: Trả về lỗi 404 Not Found
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+    end

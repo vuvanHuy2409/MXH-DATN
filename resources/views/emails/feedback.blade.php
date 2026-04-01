@@ -5,7 +5,7 @@
     <style>
         body { font-family: sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px; }
-        .header { border-bottom: 2px solid #0071e3; padding-bottom: 10px; margin-bottom: 20px; }
+        .header { border-bottom: 2px solid #0062FF; padding-bottom: 10px; margin-bottom: 20px; }
         .user-info { background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
         .content { white-space: pre-wrap; background: #fff; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
     </style>

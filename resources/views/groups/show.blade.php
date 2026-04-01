@@ -40,12 +40,31 @@
     }
     .group-item-sidebar:hover { background: rgba(0, 0, 0, 0.03); }
     .group-item-sidebar.active {
-        background: rgba(0, 113, 227, 0.08);
+        background: rgba(0, 98, 255, 0.08);
         border-left-color: var(--accent-color);
     }
     @media (max-width: 900px) {
         .group-sidebar { display: none; }
         .container { max-width: 100% !important; }
+    }
+    [data-theme="dark"] .group-layout {
+        background: rgba(16,16,24,0.92);
+        border-color: rgba(255,255,255,0.07);
+    }
+    [data-theme="dark"] .group-sidebar {
+        background: rgba(18,18,28,0.95);
+        border-right-color: rgba(255,255,255,0.07);
+    }
+    [data-theme="dark"] .group-item-sidebar:hover {
+        background: rgba(255,255,255,0.05);
+    }
+    [data-theme="dark"] .group-item-sidebar.active {
+        background: rgba(94,158,255,0.1);
+    }
+    [data-theme="dark"] #createGroupModal input {
+        background: rgba(255,255,255,0.05) !important;
+        border-color: rgba(255,255,255,0.1) !important;
+        color: var(--text-color) !important;
     }
 </style>
 

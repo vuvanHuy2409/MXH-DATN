@@ -1,0 +1,83 @@
+---
+title: Sơ đồ tuần tự - Gửi tin nhắn
+---
+sequenceDiagram
+    actor NguoiDung as Người dùng
+    participant GiaoDien as :Giao diện\nTin nhắn
+    participant DieuKhien as :Hệ thống
+    participant HeTong as :Hệ thống\n(Database)
+
+    %% =============================================
+    %% BƯỚC KHỞI ĐẦU
+    %% =============================================
+    NguoiDung->>GiaoDien: 1 Đăng nhập vào hệ thống
+    GiaoDien->>DieuKhien: 2 Xác thực tài khoản
+    DieuKhien-->>GiaoDien: 3 Xác thực thành công
+    GiaoDien-->>NguoiDung: 4 Hiển thị giao diện Trang chủ
+
+    %% =============================================
+    %% TRUY CẬP TIN NHẮN
+    %% =============================================
+    NguoiDung->>GiaoDien: 5 Truy cập vào biểu tượng tin nhắn
+    GiaoDien->>DieuKhien: 6 Tải danh sách cuộc hội thoại
+    DieuKhien->>HeTong: 7 Truy vấn conversations của người dùng
+    HeTong-->>DieuKhien: 8 Kết quả: Danh sách cuộc hội thoại
+    DieuKhien-->>GiaoDien: 9 Trả về danh sách
+    GiaoDien-->>NguoiDung: 10 Hiển thị danh sách cuộc hội thoại
+
+    %% =============================================
+    %% CHỌN CUỘC HỘI THOẠI
+    %% =============================================
+    NguoiDung->>GiaoDien: 11 Chọn một cuộc hội thoại cụ thể
+    GiaoDien->>DieuKhien: 12 Tải nội dung cuộc hội thoại
+    DieuKhien->>HeTong: 13 Kiểm tra tư cách thành viên\\n+ tải lịch sử tin nhắn (limit 150)
+    HeTong-->>DieuKhien: 14 Kết quả: Hợp lệ + lịch sử tin nhắn
+    DieuKhien-->>GiaoDien: 15 Trả về dữ liệu hội thoại
+    GiaoDien-->>NguoiDung: 16 Hiển thị giao diện cuộc hội thoại\\n(tin nhắn cũ + ô nhập liệu)
+
+    %% =============================================
+    %% NHẬP VÀ GỬI TIN NHẮN
+    %% =============================================
+    NguoiDung->>GiaoDien: 17 Nhập nội dung tin nhắn\\nhoặc đính kèm ảnh / file
+    GiaoDien->>DieuKhien: 18 Gửi yêu cầu POST /messages/{conversation}\\n(type, content, file, parent_id)
+
+    DieuKhien->>DieuKhien: 19 Kiểm tra tính hợp lệ theo loại tin nhắn:\\n— Text: content required, max:5000 ký tự\\n— Image: mimes:jpeg,png,jpg,gif,webp, max:10MB\\n— File: max:200MB mỗi file
+
+    %% ---- Không hợp lệ ----
+    rect rgb(255, 220, 220)
+        Note over NguoiDung, HeTong: Không hợp lệ
+
+        DieuKhien-->>GiaoDien: 20a Trả về lỗi validation:\\n(nội dung trống, sai định dạng,\\nhoặc vượt kích thước cho phép)
+        GiaoDien-->>NguoiDung: 21a Hiển thị thông báo lỗi\\nGiữ nguyên nội dung đã nhập
+    end
+
+    %% ---- Hợp lệ ----
+    rect rgb(220, 235, 220)
+        Note over NguoiDung, HeTong: Hợp lệ — Lưu và hiển thị tin nhắn
+
+        DieuKhien->>HeTong: 20b Lưu tin nhắn vào bảng messages\\n(conversation_id, sender_id,\\nmessage_type, content/file_url,\\nfile_name, file_size, parent_id)
+        HeTong-->>DieuKhien: 21b Kết quả: Lưu thành công
+        DieuKhien->>HeTong: 22b Cập nhật conversation.updated_at (touch)
+        HeTong-->>DieuKhien: 23b Cập nhật thành công
+        DieuKhien-->>GiaoDien: 24b Trả về JSON: tin nhắn mới\\n(kèm thông tin sender)
+        GiaoDien-->>NguoiDung: 25b Hiển thị tin nhắn mới lên\\ngiao diện cuộc hội thoại
+    end
+
+    %% =============================================
+    %% LỖI CHUNG
+    %% =============================================
+    rect rgb(255, 235, 200)
+        Note over NguoiDung, HeTong: Lỗi chung
+
+        alt Không phải thành viên cuộc hội thoại
+            DieuKhien-->>GiaoDien: Trả về lỗi 403 Forbidden
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+
+        alt Mất kết nối hệ thống/Database
+            DieuKhien->>HeTong: Thực hiện lưu tin nhắn
+            HeTong-->>DieuKhien: Lỗi kết nối (Timeout/Error)
+            DieuKhien-->>GiaoDien: Trả về lỗi 500: "Đã xảy ra lỗi hệ thống."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+    end

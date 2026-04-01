@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class NotificationController extends Controller
 {
@@ -16,6 +17,7 @@ class NotificationController extends Controller
         $rawNotifications = Notification::with(['actor', 'post.group'])
             ->where('user_id', Auth::id())
             ->orderByDesc('id')
+            ->limit(100)
             ->get();
 
         $notifications = $this->aggregateNotifications($rawNotifications);
@@ -28,6 +30,7 @@ class NotificationController extends Controller
         $rawNotifications = Notification::with(['actor', 'post.group'])
             ->where('user_id', Auth::id())
             ->orderByDesc('id')
+            ->limit(100)
             ->get();
 
         $notifications = $this->aggregateNotifications($rawNotifications)
@@ -68,9 +71,14 @@ class NotificationController extends Controller
 
     public function markAllRead()
     {
-        Notification::where('user_id', Auth::id())
+        $userId = Auth::id();
+        Notification::where('user_id', $userId)
             ->where('is_read', false)
             ->update(['is_read' => true]);
+
+        // Xóa cache khi đã đọc
+        Cache::forget("unread_notif_{$userId}");
+        Cache::forget("unread_msg_{$userId}");
 
         return response()->json(['status' => 'success']);
     }
@@ -78,23 +86,23 @@ class NotificationController extends Controller
     public function unreadCounts()
     {
         $userId = Auth::id();
-        
-        $unreadNotifCount = Notification::where('user_id', $userId)
-            ->where('is_read', false)
-            ->count();
-        
-        $unreadMsgCount = \App\Models\Message::whereIn('conversation_id', function($query) use ($userId) {
-            $query->select('conversation_id')
-                  ->from('participants')
-                  ->where('user_id', $userId);
-        })
-        ->where('sender_id', '!=', $userId)
-        ->where('is_read', false)
-        ->count();
+
+        // Cache unread counts 30 giây — đây là API được gọi mỗi 30s từ frontend
+        $unreadNotifCount = Cache::remember("unread_notif_{$userId}", 30, fn() =>
+            Notification::where('user_id', $userId)->where('is_read', false)->count()
+        );
+
+        $unreadMsgCount = Cache::remember("unread_msg_{$userId}", 30, fn() =>
+            \App\Models\Message::join('participants', 'messages.conversation_id', '=', 'participants.conversation_id')
+                ->where('participants.user_id', $userId)
+                ->where('messages.sender_id', '!=', $userId)
+                ->where('messages.is_read', false)
+                ->count()
+        );
 
         return response()->json([
             'unreadNotificationsCount' => $unreadNotifCount,
-            'unreadMessagesCount' => $unreadMsgCount,
+            'unreadMessagesCount'      => $unreadMsgCount,
         ]);
     }
 }

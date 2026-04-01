@@ -1,0 +1,107 @@
+---
+title: Sơ đồ tuần tự - Quản lý thông báo
+---
+sequenceDiagram
+    actor NguoiDung as Người dùng
+    participant GiaoDien as :Giao diện\nThông báo
+    participant DieuKhien as :Hệ thống
+    participant HeTong as :Hệ thống\n(Database/Cache)
+
+    %% =============================================
+    %% BƯỚC KHỞI ĐẦU
+    %% =============================================
+    NguoiDung->>GiaoDien: 1 Đăng nhập vào hệ thống
+    GiaoDien->>DieuKhien: 2 Xác thực tài khoản
+    DieuKhien-->>GiaoDien: 3 Xác thực thành công
+    GiaoDien-->>NguoiDung: 4 Hiển thị giao diện Trang chủ
+
+    GiaoDien->>DieuKhien: 5 Tự động gọi GET /api/unread-counts (mỗi 30 giây)
+    DieuKhien->>HeTong: 6 Đếm số thông báo chưa đọc (Cache 30s)
+    HeTong-->>DieuKhien: 7 Kết quả: unreadNotificationsCount, unreadMessagesCount
+    DieuKhien-->>GiaoDien: 8 Trả về số lượng chưa đọc
+    GiaoDien-->>NguoiDung: 9 Hiển thị badge số lượng trên biểu tượng thông báo
+
+    NguoiDung->>GiaoDien: 10 Truy cập biểu tượng thông báo
+    GiaoDien->>DieuKhien: 11 Gửi yêu cầu GET /api/notifications
+    DieuKhien->>HeTong: 12 Truy vấn 100 thông báo mới nhất (kèm actor, post, group)
+    HeTong-->>DieuKhien: 13 Kết quả: Danh sách thông báo thô
+    DieuKhien->>DieuKhien: 14 Gộp thông báo trùng lặp theo (type + post_id)\nvà tính aggregate_count, aggregate_actors
+    DieuKhien-->>GiaoDien: 15 JSON: Danh sách thông báo đã gộp (kèm created_at_human)
+    GiaoDien-->>NguoiDung: 16 Hiển thị popup danh sách thông báo mới và cũ
+
+    NguoiDung->>GiaoDien: 17 Chọn 1 thông báo cụ thể trong danh sách
+    GiaoDien->>DieuKhien: 18 Gửi yêu cầu POST /api/notifications/read (đánh dấu đã đọc tất cả)
+    DieuKhien->>HeTong: 19 Cập nhật is_read=true cho tất cả thông báo chưa đọc
+    HeTong-->>DieuKhien: 20 Cập nhật thành công
+    DieuKhien->>HeTong: 21 Xoá cache: unread_notif_{userId}
+    DieuKhien-->>GiaoDien: 22 JSON: status="success"
+    GiaoDien-->>NguoiDung: 23 Ẩn badge số lượng thông báo
+
+    DieuKhien->>DieuKhien: 24 Phân loại thông báo theo type
+
+    %% =============================================
+    %% NHÁNH 1: THÔNG BÁO THEO DÕI (type=follow)
+    %% =============================================
+    rect rgb(220, 235, 220)
+        Note over NguoiDung, HeTong: Nhánh 1 — Thông báo theo dõi (type=follow)
+
+        DieuKhien-->>GiaoDien: 25a "{actor} đã theo dõi bạn"
+        GiaoDien-->>NguoiDung: 26a Hiển thị thông báo theo dõi
+        NguoiDung->>GiaoDien: 27a Nhấn vào thông báo
+        GiaoDien->>DieuKhien: 28a Chuyển hướng GET /profile/{actor_username}
+        DieuKhien->>HeTong: 29a Truy vấn thông tin trang cá nhân actor
+        HeTong-->>DieuKhien: 30a Kết quả: Dữ liệu hồ sơ
+        DieuKhien-->>GiaoDien: 31a Trả về trang cá nhân
+        GiaoDien-->>NguoiDung: 32a Chuyển hướng sang trang cá nhân người theo dõi
+    end
+
+    %% =============================================
+    %% NHÁNH 2: THÔNG BÁO THÍCH / BÌNH LUẬN (type=like/reply)
+    %% =============================================
+    rect rgb(200, 230, 255)
+        Note over NguoiDung, HeTong: Nhánh 2 — Thông báo thích / bình luận (type=like/reply)
+
+        DieuKhien-->>GiaoDien: 25b "{actor} đã thích/bình luận bài viết của bạn"
+        GiaoDien-->>NguoiDung: 26b Hiển thị thông báo thích/bình luận
+        NguoiDung->>GiaoDien: 27b Nhấn vào thông báo
+        GiaoDien->>DieuKhien: 28b Chuyển hướng GET /posts/{post_id}
+        DieuKhien->>HeTong: 29b Truy vấn bài viết + danh sách bình luận
+        HeTong-->>DieuKhien: 30b Kết quả: Dữ liệu bài viết
+        DieuKhien-->>GiaoDien: 31b Trả về trang bài viết
+        GiaoDien-->>NguoiDung: 32b Hiển thị bài viết và bình luận liên quan
+    end
+
+    %% =============================================
+    %% NHÁNH 3: THÔNG BÁO CỘNG ĐỒNG (type=group)
+    %% =============================================
+    rect rgb(255, 245, 210)
+        Note over NguoiDung, HeTong: Nhánh 3 — Thông báo cộng đồng (type=group)
+
+        DieuKhien-->>GiaoDien: 25c "Có hoạt động mới trong cộng đồng {group}"
+        GiaoDien-->>NguoiDung: 26c Hiển thị thông báo cộng đồng
+        NguoiDung->>GiaoDien: 27c Nhấn vào thông báo
+        GiaoDien->>DieuKhien: 28c Chuyển hướng GET /groups/{group_slug}
+        DieuKhien->>HeTong: 29c Truy vấn thông tin và bài viết của nhóm
+        HeTong-->>DieuKhien: 30c Kết quả: Dữ liệu cộng đồng
+        DieuKhien-->>GiaoDien: 31c Trả về trang cộng đồng
+        GiaoDien-->>NguoiDung: 32c Chuyển hướng vào trang cộng đồng nhóm đó
+    end
+
+    %% =============================================
+    %% LỖI CHUNG
+    %% =============================================
+    rect rgb(255, 220, 220)
+        Note over NguoiDung, HeTong: Lỗi chung
+
+        alt Không có thông báo nào
+            DieuKhien-->>GiaoDien: Trả về danh sách rỗng
+            GiaoDien-->>NguoiDung: Hiển thị "Bạn chưa có thông báo nào"
+        end
+
+        alt Mất kết nối hệ thống/Database
+            DieuKhien->>HeTong: Thực hiện truy vấn
+            HeTong-->>DieuKhien: Lỗi kết nối (Timeout/Error)
+            DieuKhien-->>GiaoDien: Trả về lỗi 500: "Đã xảy ra lỗi hệ thống."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+    end

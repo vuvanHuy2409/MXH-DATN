@@ -1,0 +1,108 @@
+---
+title: Sơ đồ tuần tự - Tìm kiếm
+---
+sequenceDiagram
+    actor NguoiDung as Người dùng
+    participant GiaoDien as :Giao diện\nTrang chủ
+    participant DieuKhien as :Hệ thống
+    participant HeTong as :Cơ sở dữ liệu
+
+    %% =============================================
+    %% BƯỚC KHỞI ĐẦU
+    %% =============================================
+    NguoiDung->>GiaoDien: 1 Đăng nhập vào hệ thống
+    GiaoDien->>DieuKhien: 2 Xác thực tài khoản
+    DieuKhien-->>GiaoDien: 3 Xác thực thành công
+    GiaoDien-->>NguoiDung: 4 Hiển thị giao diện Trang chủ
+
+    NguoiDung->>GiaoDien: 5 Nhấn vào ô tìm kiếm
+    GiaoDien-->>NguoiDung: 6 Hiển thị giao diện tìm kiếm
+    NguoiDung->>GiaoDien: 7 Nhập từ khóa và nhấn "Tìm kiếm"
+    GiaoDien->>DieuKhien: 8 Gửi yêu cầu GET /search?q={từ_khóa}&type={loại}
+
+    %% =============================================
+    %% NHÁNH 1: TÌM KIẾM TẤT CẢ (type = all)
+    %% =============================================
+    rect rgb(220, 235, 220)
+        Note over NguoiDung, HeTong: Nhánh 1 — Tìm kiếm tất cả (type=all)
+
+        DieuKhien->>HeTong: 9a Truy vấn người dùng theo username / email / họ tên / mã SV (LIKE, limit 20)
+        HeTong-->>DieuKhien: 10a Kết quả: Danh sách người dùng khớp
+        DieuKhien->>HeTong: 11a Truy vấn bài viết theo nội dung (LIKE, latest, limit 20)
+        HeTong-->>DieuKhien: 12a Kết quả: Danh sách bài viết khớp
+        DieuKhien->>HeTong: 13a Lấy gợi ý người dùng chưa theo dõi (random, limit 8)
+        HeTong-->>DieuKhien: 14a Kết quả: Danh sách gợi ý
+
+        alt Có kết quả
+            DieuKhien-->>GiaoDien: 15a Trả về: users, posts, suggestions
+            GiaoDien-->>NguoiDung: 16a Hiển thị kết quả người dùng + bài viết + gợi ý kết bạn
+        end
+
+        alt Không có kết quả
+            DieuKhien-->>GiaoDien: 15a Trả về: danh sách rỗng + suggestions
+            GiaoDien-->>NguoiDung: 16a Hiển thị "Không tìm thấy kết quả" + gợi ý kết bạn
+        end
+    end
+
+    %% =============================================
+    %% NHÁNH 2: TÌM KIẾM NGƯỜI DÙNG (type = people)
+    %% =============================================
+    rect rgb(200, 230, 255)
+        Note over NguoiDung, HeTong: Nhánh 2 — Tìm kiếm người dùng (type=people)
+
+        DieuKhien->>HeTong: 9b Truy vấn người dùng theo username / email / họ tên / mã SV (LIKE, limit 20)
+        HeTong-->>DieuKhien: 10b Kết quả: Danh sách người dùng (kèm followers_count)
+        DieuKhien->>DieuKhien: 11b Gắn cờ follows_me cho từng người dùng
+        DieuKhien->>HeTong: 12b Lấy gợi ý người dùng chưa theo dõi (random, limit 8)
+        HeTong-->>DieuKhien: 13b Kết quả: Danh sách gợi ý
+
+        alt Có kết quả
+            DieuKhien-->>GiaoDien: 14b Trả về: users, suggestions
+            GiaoDien-->>NguoiDung: 15b Hiển thị danh sách người dùng tìm được + gợi ý kết bạn
+        end
+
+        alt Không có kết quả
+            DieuKhien-->>GiaoDien: 14b Trả về: danh sách rỗng + suggestions
+            GiaoDien-->>NguoiDung: 15b Hiển thị "Không tìm thấy người dùng" + gợi ý kết bạn
+        end
+    end
+
+    %% =============================================
+    %% NHÁNH 3: TÌM KIẾM BÀI VIẾT (type = posts)
+    %% =============================================
+    rect rgb(255, 245, 210)
+        Note over NguoiDung, HeTong: Nhánh 3 — Tìm kiếm bài viết (type=posts)
+
+        DieuKhien->>HeTong: 9c Truy vấn bài viết theo nội dung (LIKE, latest, limit 20)\nkèm user / media / group / likes_count / reposts_count
+        HeTong-->>DieuKhien: 10c Kết quả: Danh sách bài viết khớp
+        DieuKhien->>HeTong: 11c Lấy gợi ý người dùng chưa theo dõi (random, limit 8)
+        HeTong-->>DieuKhien: 12c Kết quả: Danh sách gợi ý
+
+        alt Có kết quả
+            DieuKhien-->>GiaoDien: 13c Trả về: posts, suggestions
+            GiaoDien-->>NguoiDung: 14c Hiển thị danh sách bài viết tìm được + gợi ý kết bạn
+        end
+
+        alt Không có kết quả
+            DieuKhien-->>GiaoDien: 13c Trả về: danh sách rỗng + suggestions
+            GiaoDien-->>NguoiDung: 14c Hiển thị "Không tìm thấy bài viết" + gợi ý kết bạn
+        end
+    end
+
+    %% =============================================
+    %% CÁC LỖI CHUNG
+    %% =============================================
+    rect rgb(255, 220, 220)
+        Note over NguoiDung, HeTong: Các lỗi chung
+
+        alt Từ khóa bỏ trống
+            GiaoDien-->>NguoiDung: Hiển thị trang tìm kiếm với danh sách gợi ý (không truy vấn DB)
+        end
+
+        alt Mất kết nối hệ thống/Database
+            DieuKhien->>HeTong: Thực hiện truy vấn
+            HeTong-->>DieuKhien: Lỗi kết nối (Timeout/Error)
+            DieuKhien-->>GiaoDien: Trả về lỗi 500: "Đã xảy ra lỗi hệ thống."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+    end

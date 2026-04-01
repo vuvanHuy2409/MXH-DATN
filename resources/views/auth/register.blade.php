@@ -8,12 +8,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-main: #D1E9F6;
-            --glass-bg: rgba(255, 255, 255, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.4);
+            --bg-main: #F8FAFC;
+            --glass-bg: rgba(255, 255, 255, 0.88);
+            --glass-border: #E2E8F0;
             --text-color: #1d1d1f;
             --secondary-text: #6e6e73;
-            --accent-color: #0071e3;
+            --accent-color: #0062FF;
         }
 
         [data-theme="dark"] {
@@ -29,8 +29,8 @@
             margin: 0;
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-main);
-            background-image: radial-gradient(at 0% 0%, hsla(200, 100%, 90%, 1) 0, transparent 50%),
-                radial-gradient(at 100% 100%, hsla(190, 100%, 85%, 1) 0, transparent 50%);
+            background-image: radial-gradient(at 0% 0%, rgba(0, 98, 255, 0.06) 0, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(226, 232, 240, 0.6) 0, transparent 50%);
             background-attachment: fixed;
             display: flex;
             justify-content: center;

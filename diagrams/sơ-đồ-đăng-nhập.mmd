@@ -1,0 +1,57 @@
+---
+title: Sơ đồ tuần tự - Đăng nhập
+---
+sequenceDiagram
+    actor NguoiDung as Người dùng
+    participant GiaoDien as :Giao diện\nĐăng nhập
+    participant DieuKhien as :Điều khiển\nĐăng nhập
+    participant HeTong as :Hệ thống\n(Database)
+
+    NguoiDung->>GiaoDien: 1 Mở hệ thống
+    GiaoDien-->>NguoiDung: 2 Hiển thị form đăng nhập
+    NguoiDung->>GiaoDien: 3 Nhập Tài khoản, Mật khẩu
+    NguoiDung->>GiaoDien: 4 Nhấn nút "Đăng nhập"
+
+    rect rgb(240, 240, 240)
+        Note over NguoiDung, HeTong: Quá trình xử lý đăng nhập
+
+        rect rgb(220, 235, 220)
+            Note over NguoiDung, HeTong: Đăng nhập thành công
+            GiaoDien->>DieuKhien: 5 Gửi yêu cầu
+            DieuKhien->>HeTong: 6 Kiểm tra thông tin tài khoản
+            HeTong-->>DieuKhien: 7 Kết quả: Hợp lệ (Tài khoản, Quyền)
+            DieuKhien-->>GiaoDien: 8 Thông báo đăng nhập thành công
+            GiaoDien-->>NguoiDung: 9 Hiển thị giao diện chính (theo quyền)
+        end
+
+        Note over NguoiDung, HeTong: Đăng nhập không thành công
+
+        alt Tài khoản hoặc mật khẩu bỏ trống
+            GiaoDien-->>DieuKhien: 10 Trả về lỗi: "Vui lòng nhập đầy đủ thông tin!"
+            GiaoDien-->>NguoiDung: 11 Hiển thị popup báo lỗi và yêu cầu nhập lại
+        end
+
+        alt Tài khoản hoặc mật khẩu sai
+            GiaoDien->>DieuKhien: Gửi yêu cầu
+            DieuKhien->>HeTong: 12 Kiểm tra thông tin
+            HeTong-->>DieuKhien: 13 Kết quả: Không tìm thấy hoặc sai mật khẩu
+            DieuKhien-->>GiaoDien: 14 Trả về lỗi: "Sai tên đăng nhập hoặc mật khẩu!"
+            GiaoDien-->>NguoiDung: 15 Hiển thị Popup báo lỗi, yêu cầu thử lại
+        end
+
+        alt Tài khoản không hoạt động (bị khóa)
+            GiaoDien->>DieuKhien: Gửi yêu cầu
+            DieuKhien->>HeTong: 16 Kiểm tra trạng thái
+            HeTong-->>DieuKhien: 17 Kết quả: Tài khoản bị vô hiệu hóa
+            DieuKhien-->>GiaoDien: 18 Trả về lỗi: "Tài khoản đang trong trạng thái không hoạt động"
+            GiaoDien-->>NguoiDung: 19 Hiển thị popup báo lỗi
+        end
+
+        alt Mất kết nối hệ thống/Database
+            GiaoDien->>DieuKhien: Gửi yêu cầu
+            DieuKhien->>HeTong: 20 Thử kết nối
+            HeTong-->>DieuKhien: 21 Lỗi kết nối (Time out/Error)
+            DieuKhien-->>GiaoDien: 22 Trả về lỗi: "Lỗi kết nối CSDL"
+            GiaoDien-->>NguoiDung: 23 Hiển thị Popup báo lỗi
+        end
+    end

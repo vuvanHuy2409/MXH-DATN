@@ -1,0 +1,71 @@
+---
+title: Sơ đồ tuần tự - Tìm kiếm tin nhắn (bạn bè & nhóm)
+---
+sequenceDiagram
+    actor NguoiDung as Người dùng
+    participant GiaoDien as :Giao diện\nTin nhắn
+    participant DieuKhien as :Hệ thống
+    participant HeTong as :Hệ thống\n(Database)
+
+    %% =============================================
+    %% BƯỚC KHỞI ĐẦU
+    %% =============================================
+    NguoiDung->>GiaoDien: 1 Đăng nhập vào hệ thống
+    GiaoDien->>DieuKhien: 2 Xác thực tài khoản
+    DieuKhien-->>GiaoDien: 3 Xác thực thành công
+    GiaoDien-->>NguoiDung: 4 Hiển thị giao diện Trang chủ
+
+    NguoiDung->>GiaoDien: 5 Truy cập vào biểu tượng tin nhắn
+    GiaoDien->>DieuKhien: 6 Tải danh sách cuộc hội thoại
+    DieuKhien->>HeTong: 7 Truy vấn conversations của người dùng
+    HeTong-->>DieuKhien: 8 Kết quả: Danh sách cuộc hội thoại
+    DieuKhien-->>GiaoDien: 9 Trả về danh sách
+    GiaoDien-->>NguoiDung: 10 Hiển thị cửa sổ tin nhắn
+
+    %% =============================================
+    %% TÌM KIẾM TIN NHẮN
+    %% =============================================
+    NguoiDung->>GiaoDien: 11 Nhập từ khóa vào ô tìm kiếm và nhấn Enter
+    GiaoDien->>DieuKhien: 12 Gửi yêu cầu GET /messages/{conversation}/search?q={từ_khóa}
+    DieuKhien->>HeTong: 13 Kiểm tra dữ liệu trong CSDL\nTruy vấn tin nhắn theo nội dung (LIKE, limit 50)\nkèm thông tin sender
+
+    %% ---- Không có kết quả ----
+    rect rgb(255, 220, 220)
+        Note over NguoiDung, HeTong: Không có kết quả
+
+        HeTong-->>DieuKhien: 14a Kết quả: Danh sách rỗng
+        DieuKhien-->>GiaoDien: 15a JSON: []
+        GiaoDien-->>NguoiDung: 16a Thông báo không tìm thấy dữ liệu
+    end
+
+    %% ---- Có kết quả ----
+    rect rgb(220, 235, 220)
+        Note over NguoiDung, HeTong: Có kết quả
+
+        HeTong-->>DieuKhien: 14b Kết quả: Danh sách tin nhắn khớp từ khóa\n(kèm thông tin sender)
+        DieuKhien-->>GiaoDien: 15b JSON: Danh sách tin nhắn tìm được
+        GiaoDien-->>NguoiDung: 16b Hiển thị người dùng hoặc nhóm chat\nđã tham gia có chứa từ khóa
+    end
+
+    %% =============================================
+    %% LỖI CHUNG
+    %% =============================================
+    rect rgb(255, 235, 200)
+        Note over NguoiDung, HeTong: Lỗi chung
+
+        alt Từ khóa bỏ trống
+            GiaoDien-->>NguoiDung: Không gửi yêu cầu,\nhiển thị toàn bộ danh sách hội thoại
+        end
+
+        alt Không phải thành viên cuộc hội thoại
+            DieuKhien-->>GiaoDien: Trả về lỗi 403 Forbidden
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+
+        alt Mất kết nối hệ thống/Database
+            DieuKhien->>HeTong: Thực hiện truy vấn
+            HeTong-->>DieuKhien: Lỗi kết nối (Timeout/Error)
+            DieuKhien-->>GiaoDien: Trả về lỗi 500: "Đã xảy ra lỗi hệ thống."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+    end

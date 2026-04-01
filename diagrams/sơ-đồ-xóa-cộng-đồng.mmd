@@ -1,0 +1,78 @@
+---
+title: Sơ đồ tuần tự - Xoá cộng đồng
+---
+sequenceDiagram
+    actor NguoiDung as Người dùng
+    participant GiaoDien as :Giao diện\nCộng đồng
+    participant DieuKhien as :Hệ thống
+    participant HeTong as :Hệ thống\n(Database)
+
+    %% =============================================
+    %% BƯỚC KHỞI ĐẦU
+    %% =============================================
+    NguoiDung->>GiaoDien: 1 Đăng nhập vào hệ thống
+    GiaoDien->>DieuKhien: 2 Xác thực tài khoản
+    DieuKhien-->>GiaoDien: 3 Xác thực thành công
+    GiaoDien-->>NguoiDung: 4 Hiển thị giao diện Trang chủ
+
+    NguoiDung->>GiaoDien: 5 Truy cập vào biểu tượng Cộng đồng
+    GiaoDien->>DieuKhien: 6 Tải danh sách cộng đồng của người dùng
+    DieuKhien->>HeTong: 7 Truy vấn social_groups của người dùng
+    HeTong-->>DieuKhien: 8 Kết quả: Danh sách cộng đồng
+    DieuKhien-->>GiaoDien: 9 Trả về danh sách
+    GiaoDien-->>NguoiDung: 10 Hiển thị giao diện các Cộng đồng
+
+    %% =============================================
+    %% CHỌN CỘNG ĐỒNG
+    %% =============================================
+    NguoiDung->>GiaoDien: 11 Chọn cộng đồng bất kì
+    GiaoDien->>DieuKhien: 12 Tải nội dung cộng đồng
+    DieuKhien->>HeTong: 13 Truy vấn thông tin cộng đồng + kiểm tra thành viên
+    HeTong-->>DieuKhien: 14 Kết quả: Hợp lệ + dữ liệu cộng đồng
+    DieuKhien-->>GiaoDien: 15 Trả về dữ liệu cộng đồng
+    GiaoDien-->>NguoiDung: 16 Hiển thị giao diện Cộng đồng
+
+    %% =============================================
+    %% XOÁ CỘNG ĐỒNG
+    %% =============================================
+    NguoiDung->>GiaoDien: 17 Chọn "Xoá cộng đồng" trong phần mở rộng
+    GiaoDien-->>NguoiDung: 18 Hiển thị popup xác nhận xoá cộng đồng
+
+    rect rgb(220, 235, 220)
+        Note over NguoiDung, HeTong: Xác nhận xoá cộng đồng
+
+        NguoiDung->>GiaoDien: 19 Xác nhận xoá
+        GiaoDien->>DieuKhien: 20 Gửi yêu cầu DELETE /groups/{group}
+        DieuKhien->>DieuKhien: 21 Kiểm tra quyền:\\nChỉ người tạo (creator_id) mới được xoá
+        DieuKhien->>HeTong: 22 Xoá cộng đồng khỏi CSDL\\n(xoá toàn bộ dữ liệu liên quan)
+        HeTong-->>DieuKhien: 23 Kết quả: Xoá thành công
+        DieuKhien-->>GiaoDien: 24 Redirect về /groups\\n(kèm thông báo "Nhóm đã được xóa vĩnh viễn.")
+        GiaoDien-->>NguoiDung: 25 Thông báo xoá thành công\\nChuyển về danh sách cộng đồng
+    end
+
+    rect rgb(255, 220, 220)
+        Note over NguoiDung, HeTong: Huỷ xoá cộng đồng
+
+        alt Người dùng nhấn "Huỷ" trên popup
+            GiaoDien-->>NguoiDung: Đóng popup, giữ nguyên cộng đồng
+        end
+    end
+
+    %% =============================================
+    %% LỖI CHUNG
+    %% =============================================
+    rect rgb(255, 235, 200)
+        Note over NguoiDung, HeTong: Lỗi chung
+
+        alt Không có quyền xoá\\n(không phải người tạo cộng đồng)
+            DieuKhien-->>GiaoDien: Trả về lỗi 403 Forbidden
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+
+        alt Mất kết nối hệ thống/Database
+            DieuKhien->>HeTong: Thực hiện xoá dữ liệu
+            HeTong-->>DieuKhien: Lỗi kết nối (Timeout/Error)
+            DieuKhien-->>GiaoDien: Trả về lỗi 500: "Đã xảy ra lỗi hệ thống."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+    end

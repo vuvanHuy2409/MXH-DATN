@@ -1,0 +1,95 @@
+---
+title: Sơ đồ tuần tự - Đăng bài viết cộng đồng
+---
+sequenceDiagram
+    actor NguoiDung as Người dùng
+    participant GiaoDien as :Giao diện\nCộng đồng
+    participant DieuKhien as :Hệ thống
+    participant AI as :Hệ thống AI\nKiểm duyệt
+    participant HeTong as :Hệ thống\n(Database)
+
+    %% =============================================
+    %% BƯỚC KHỞI ĐẦU
+    %% =============================================
+    NguoiDung->>GiaoDien: 1 Đăng nhập vào hệ thống
+    GiaoDien->>DieuKhien: 2 Xác thực tài khoản
+    DieuKhien-->>GiaoDien: 3 Xác thực thành công
+    GiaoDien-->>NguoiDung: 4 Hiển thị giao diện Trang chủ
+
+    NguoiDung->>GiaoDien: 5 Truy cập vào biểu tượng Cộng đồng
+    GiaoDien->>DieuKhien: 6 Tải danh sách cộng đồng của người dùng
+    DieuKhien->>HeTong: 7 Truy vấn social_groups của người dùng
+    HeTong-->>DieuKhien: 8 Kết quả: Danh sách cộng đồng
+    DieuKhien-->>GiaoDien: 9 Trả về danh sách
+    GiaoDien-->>NguoiDung: 10 Hiển thị giao diện các Cộng đồng
+
+    %% =============================================
+    %% MỞ FORM ĐĂNG BÀI
+    %% =============================================
+    NguoiDung->>GiaoDien: 11 Chọn chức năng tạo bài viết
+    GiaoDien->>DieuKhien: 12 Gửi yêu cầu tải form đăng bài
+    DieuKhien-->>GiaoDien: 13 Trả về giao diện cửa sổ đăng bài viết
+    GiaoDien-->>NguoiDung: 14 Hiển thị giao diện cửa sổ đăng bài viết
+
+    %% =============================================
+    %% SOẠN THẢO VÀ KIỂM TRA
+    %% =============================================
+    NguoiDung->>GiaoDien: 15 Soạn thảo bài viết:\\nNhập Text, chọn Ảnh / File / link liên kết\\nvà nhấn "Đăng"
+    GiaoDien->>DieuKhien: 16 Gửi yêu cầu POST /posts\\n(content, group_id, link_url, media[])
+
+    DieuKhien->>DieuKhien: 17 Kiểm tra dung lượng và validate dữ liệu\\n(content: required, max:500;\\ngroup_id: exists:social_groups,id;\\nmedia.*: file, max:100MB mỗi file)
+
+    %% ---- Không hợp lệ / quá dung lượng ----
+    rect rgb(255, 220, 220)
+        Note over NguoiDung, HeTong: Không hợp lệ / quá dung lượng
+
+        DieuKhien-->>GiaoDien: 18a Trả về lỗi validation:\\n(nội dung vượt 500 ký tự,\\nfile vượt 100MB,...)
+        GiaoDien-->>NguoiDung: 19a Hiển thị báo lỗi văn bản hoặc dung lượng\\nGiữ nguyên dữ liệu đã nhập
+    end
+
+    %% ---- Hợp lệ → Gửi AI kiểm duyệt ----
+    rect rgb(220, 235, 220)
+        Note over NguoiDung, HeTong: Dữ liệu hợp lệ — Gửi AI kiểm duyệt
+
+        DieuKhien->>AI: 18b Gửi nội dung văn bản (text) qua API cho AI kiểm duyệt
+        AI->>AI: 19b Phân tích ngôn ngữ và tính điểm vi phạm
+
+        %% AI: Không hợp lệ
+        rect rgb(255, 220, 220)
+            Note over NguoiDung, HeTong: AI: Nội dung không hợp lệ
+
+            AI-->>DieuKhien: 20a Kết quả: Không hợp lệ (điểm vi phạm vượt ngưỡng)
+            DieuKhien-->>GiaoDien: 21a Trả về lỗi:\\n"Nội dung bài viết vi phạm tiêu chuẩn cộng đồng."
+            GiaoDien-->>NguoiDung: 22a Hiển thị thông báo lỗi\\nGiữ nguyên dữ liệu đã nhập
+        end
+
+        %% AI: Hợp lệ
+        rect rgb(220, 235, 220)
+            Note over NguoiDung, HeTong: AI: Nội dung hợp lệ — Lưu bài viết
+
+            AI-->>DieuKhien: 20b Kết quả: Hợp lệ (không vi phạm)
+            DieuKhien->>HeTong: 21b Lưu bài viết vào bảng posts\\n(user_id, group_id, content, link_url)\\nLưu media vào bảng post_media\\n(media_url, file_name, media_type: image/gif/file)
+            HeTong-->>DieuKhien: 22b Kết quả: Lưu thành công
+            DieuKhien-->>GiaoDien: 23b Redirect về trang cộng đồng\\n(kèm thông báo "Bài viết đã được đăng!")
+            GiaoDien-->>NguoiDung: 24b Hiển thị bài viết trên trang cộng đồng
+        end
+    end
+
+    %% =============================================
+    %% LỖI CHUNG
+    %% =============================================
+    rect rgb(255, 235, 200)
+        Note over NguoiDung, HeTong: Lỗi chung
+
+        alt Không phải thành viên cộng đồng
+            DieuKhien-->>GiaoDien: Trả về lỗi 403 Forbidden
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+
+        alt Mất kết nối hệ thống/Database
+            DieuKhien->>HeTong: Thực hiện lưu dữ liệu
+            HeTong-->>DieuKhien: Lỗi kết nối (Timeout/Error)
+            DieuKhien-->>GiaoDien: Trả về lỗi 500: "Đã xảy ra lỗi khi đăng bài."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+    end

@@ -98,14 +98,29 @@ class AuthController extends Controller
 
         return redirect('/login')->with('status', __('Mật khẩu đã được thay đổi thành công.'));
     }
-    public function showLogin() { return view('auth.login'); }
+    public function showLogin()
+    {
+        $dbOffline = false;
+        try {
+            \Illuminate\Support\Facades\DB::connection()->getPdo();
+        } catch (\Exception $e) {
+            $dbOffline = true;
+        }
+        return view('auth.login', compact('dbOffline'));
+    }
 
     public function login(Request $request)
     {
         $request->validate(['email_prefix' => 'required', 'password' => 'required']);
-        
+
+        try {
+            \Illuminate\Support\Facades\DB::connection()->getPdo();
+        } catch (\Exception $e) {
+            return back()->withErrors(['email_prefix' => 'db_offline'])->withInput();
+        }
+
         $input = $request->email_prefix;
-        
+
         // Thử đăng nhập với input gốc (dành cho giáo viên dùng email cá nhân hoặc username)
         if (Auth::attempt(['email' => $input, 'password' => $request->password])) {
             $request->session()->regenerate();

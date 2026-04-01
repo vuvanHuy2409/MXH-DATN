@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Appointment;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\Participant;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class ConversationController extends Controller
@@ -34,11 +37,13 @@ class ConversationController extends Controller
         }
 
         $conversations = $query->get();
-        
-        // Chỉ lấy bạn bè thực sự (theo dõi lẫn nhau)
-        $friends = $user->following()
-            ->whereIn('users.id', $user->followers()->pluck('users.id'))
-            ->get();
+
+        // Cache danh sách bạn bè 5 phút
+        $userId = $user->id;
+        $friends = Cache::remember("user_{$userId}_friends", 300, function() use ($user) {
+            $followerIds = $user->followers()->pluck('users.id');
+            return $user->following()->whereIn('users.id', $followerIds)->get();
+        });
 
         return view('messages.index', compact('conversations', 'friends', 'filter'));
     }
@@ -64,8 +69,12 @@ class ConversationController extends Controller
         if ($conversation->type === 'direct') {
             $otherUser = $conversation->users()->where('users.id', '!=', $user->id)->first();
             if ($otherUser) {
-                $isFriend = $user->following()->where('users.id', $otherUser->id)->exists() && 
+                $uid = $user->id;
+                $oid = $otherUser->id;
+                $isFriend = Cache::remember("friend_{$uid}_{$oid}", 120, function() use ($user, $otherUser) {
+                    return $user->following()->where('users.id', $otherUser->id)->exists() &&
                            $user->followers()->where('users.id', $otherUser->id)->exists();
+                });
             }
         }
 
@@ -75,7 +84,13 @@ class ConversationController extends Controller
             $conversation->update(['join_code' => Conversation::generateUniqueJoinCode()]);
         }
 
-        $messages = $conversation->messages()->with(['sender', 'parent.sender'])->oldest()->get();
+        $messages = $conversation->messages()
+            ->with(['sender', 'parent.sender'])
+            ->latest()
+            ->limit(150)
+            ->get()
+            ->reverse()
+            ->values();
 
         return view('messages.show', compact('conversation', 'messages', 'otherUser', 'isFriend', 'conversations', 'filter'));
     }
@@ -229,19 +244,23 @@ class ConversationController extends Controller
         $request->validate(['user_ids' => 'required|array|min:1']);
         $status = $conversation->requires_approval && $conversation->creator_id !== auth()->id() ? 'pending' : 'active';
 
+        // Load tất cả user một lần, tránh N+1
+        $usersToAdd = User::whereIn('id', $request->user_ids)->get()->keyBy('id');
+        $now = now();
         foreach ($request->user_ids as $userId) {
             Participant::updateOrCreate(
                 ['conversation_id' => $conversation->id, 'user_id' => $userId],
-                ['role' => 'member', 'status' => $status, 'joined_at' => now()]
+                ['role' => 'member', 'status' => $status, 'joined_at' => $now]
             );
-            
-            $u = User::find($userId);
-            Message::create([
-                'conversation_id' => $conversation->id,
-                'sender_id' => auth()->id(),
-                'message_type' => 'system',
-                'content' => "📥 **{$u->username}** đã được thêm vào nhóm.",
-            ]);
+            $u = $usersToAdd->get($userId);
+            if ($u) {
+                Message::create([
+                    'conversation_id' => $conversation->id,
+                    'sender_id' => auth()->id(),
+                    'message_type' => 'system',
+                    'content' => "📥 **{$u->username}** đã được thêm vào nhóm.",
+                ]);
+            }
         }
 
         if ($request->wantsJson()) {
@@ -277,15 +296,16 @@ class ConversationController extends Controller
                       });
             })
             ->latest()
+            ->limit(100)
             ->get();
-            
+
         return response()->json($media);
     }
 
     public function searchMessages(Request $request, Conversation $conversation)
     {
         $q = $request->query('q');
-        $messages = $conversation->messages()->with('sender')->where('content', 'like', "%$q%")->latest()->get();
+        $messages = $conversation->messages()->with('sender')->where('content', 'like', "%$q%")->latest()->limit(50)->get();
         return response()->json($messages);
     }
 
@@ -337,20 +357,77 @@ class ConversationController extends Controller
 
     public function createAppointment(Request $request, Conversation $conversation)
     {
-        $request->validate(['title' => 'required|string|max:255', 'appointment_time' => 'required|date', 'location' => 'nullable|string|max:255']);
-        $appointment = \App\Models\Appointment::create(['conversation_id' => $conversation->id, 'creator_id' => auth()->id(), 'title' => $request->title, 'appointment_time' => $request->appointment_time, 'location' => $request->location]);
+        if (!$conversation->users()->where('users.id', auth()->id())->exists()) abort(403);
+
+        $request->validate([
+            'title'            => 'required|string|max:255',
+            'appointment_time' => 'required|date',
+            'location'         => 'nullable|string|max:255',
+            'description'      => 'nullable|string|max:1000',
+        ]);
+
+        $appointment = Appointment::create([
+            'conversation_id'  => $conversation->id,
+            'creator_id'       => auth()->id(),
+            'title'            => $request->title,
+            'appointment_time' => $request->appointment_time,
+            'location'         => $request->location,
+            'description'      => $request->description,
+        ]);
+
+        $formattedTime = Carbon::parse($request->appointment_time)->format('H:i d/m/Y');
+        $locationHtml  = $request->location
+            ? '<div style="font-size:13px;margin-top:4px;opacity:0.8;">📍 ' . e($request->location) . '</div>'
+            : '';
+        $descHtml = $request->description
+            ? '<div style="font-size:13px;margin-top:4px;opacity:0.7;">📝 ' . e($request->description) . '</div>'
+            : '';
+
+        $content = '<div style="font-weight:700;font-size:14px;margin-bottom:4px;">' . e($request->title) . '</div>'
+            . '<div style="font-size:13px;opacity:0.8;">⏰ ' . $formattedTime . '</div>'
+            . $locationHtml . $descHtml;
+
         Message::create([
             'conversation_id' => $conversation->id,
-            'sender_id' => auth()->id(),
-            'message_type' => 'system',
-            'content' => "📅 Đã tạo lịch hẹn: **{$request->title}** lúc " . date('H:i d/m', strtotime($request->appointment_time)),
+            'sender_id'       => auth()->id(),
+            'message_type'    => 'system',
+            'content'         => $content,
+            'metadata'        => ['appointment_id' => $appointment->id, 'type' => 'appointment_created'],
         ]);
-        return response()->json(['status' => 'success', 'appointment' => $appointment]);
+
+        $conversation->touch();
+
+        return response()->json(['status' => 'success', 'appointment' => $appointment->load('creator')]);
+    }
+
+    public function cancelAppointment(Conversation $conversation, Appointment $appointment)
+    {
+        if ($appointment->conversation_id !== $conversation->id) abort(404);
+        if (!$conversation->users()->where('users.id', auth()->id())->exists()) abort(403);
+
+        $appointment->update(['status' => 'cancelled']);
+
+        Message::create([
+            'conversation_id' => $conversation->id,
+            'sender_id'       => auth()->id(),
+            'message_type'    => 'system',
+            'content'         => '🚫 Lịch hẹn <strong>' . e($appointment->title) . '</strong> đã bị hủy.',
+            'metadata'        => ['appointment_id' => $appointment->id, 'type' => 'appointment_cancelled'],
+        ]);
+
+        $conversation->touch();
+
+        return response()->json(['status' => 'success']);
     }
 
     public function getAppointments(Conversation $conversation)
     {
-        $appointments = $conversation->appointments()->where('status', 'upcoming')->latest()->get();
+        if (!$conversation->users()->where('users.id', auth()->id())->exists()) abort(403);
+        $appointments = $conversation->appointments()
+            ->where('status', 'upcoming')
+            ->with('creator')
+            ->latest('appointment_time')
+            ->get();
         return response()->json($appointments);
     }
 
@@ -377,14 +454,19 @@ class ConversationController extends Controller
         $user = auth()->user();
         $query = $request->get('q', '');
         
-        // Tìm kiếm chỉ trong danh sách bạn bè (mutual follow)
-        $friends = $user->following()
-            ->whereIn('users.id', $user->followers()->pluck('users.id'))
+        // Dùng cache friend list để tránh double subquery
+        $userId = $user->id;
+        $friendIds = Cache::remember("user_{$userId}_friend_ids", 300, function() use ($user) {
+            $followerIds = $user->followers()->pluck('users.id')->toArray();
+            return $user->following()->whereIn('users.id', $followerIds)->pluck('users.id')->toArray();
+        });
+
+        $friends = User::whereIn('id', $friendIds)
             ->where(function($q) use ($query) {
                 $q->where('username', 'like', '%' . $query . '%')
                   ->orWhere('email', 'like', '%' . $query . '%');
             })
-            ->select('users.id', 'username', 'avatar_url')
+            ->select('id', 'username', 'avatar_url')
             ->limit(20)
             ->get();
             
@@ -401,11 +483,14 @@ class ConversationController extends Controller
         return response()->json(['conversation_id' => $conversation->id, 'messages' => $messages]);
     }
 
-    public function apiMessages(Conversation $conversation)
+    public function apiMessages(Conversation $conversation, Request $request)
     {
         if (!$conversation->users()->where('users.id', auth()->id())->exists()) return response()->json(['error' => 'Forbidden'], 403);
-        $messages = $conversation->messages()->with('sender')->oldest()->get();
-        return response()->json($messages);
+        $query = $conversation->messages()->with('sender')->oldest();
+        if ($request->filled('since')) {
+            $query->where('id', '>', intval($request->since));
+        }
+        return response()->json($query->get());
     }
 
     public function joinByCode(Request $request)

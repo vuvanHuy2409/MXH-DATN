@@ -1,0 +1,32 @@
+---
+title: Sơ đồ tuần tự - Thông tin ứng dụng
+---
+sequenceDiagram
+    actor NguoiDung as Người dùng
+    participant GiaoDien as :Giao diện\nMenu hệ thống
+    participant DieuKhien as :Hệ thống
+
+    %% =============================================
+    %% BƯỚC KHỞI ĐẦU
+    %% =============================================
+    NguoiDung->>GiaoDien: 1 Đăng nhập vào hệ thống
+    GiaoDien->>DieuKhien: 2 Xác thực tài khoản
+    DieuKhien-->>GiaoDien: 3 Xác thực thành công
+    GiaoDien-->>NguoiDung: 4 Hiển thị giao diện Trang chủ
+
+    NguoiDung->>GiaoDien: 5 Chọn chức năng menu hệ thống
+    GiaoDien->>DieuKhien: 6 Gửi yêu cầu GET /settings
+    DieuKhien-->>GiaoDien: 7 Trả về giao diện menu hệ thống
+    GiaoDien-->>NguoiDung: 8 Hiển thị giao diện Menu hệ thống
+
+    %% =============================================
+    %% XEM THÔNG TIN ỨNG DỤNG
+    %% =============================================
+    rect rgb(220, 235, 220)
+        Note over NguoiDung, DieuKhien: Xem thông tin ứng dụng
+
+        NguoiDung->>GiaoDien: 9 Chọn chức năng thông tin ứng dụng
+        GiaoDien->>DieuKhien: 10 Gửi yêu cầu GET /settings/help
+        DieuKhien-->>GiaoDien: 11 Trả về giao diện thông tin ứng dụng\n(phiên bản, điều khoản, hướng dẫn sử dụng)
+        GiaoDien-->>NguoiDung: 12 Hiển thị giao diện thông tin ứng dụng
+    end

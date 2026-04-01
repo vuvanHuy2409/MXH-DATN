@@ -1,0 +1,79 @@
+---
+title: Sơ đồ tuần tự - Quên mật khẩu
+---
+sequenceDiagram
+    actor NguoiDung as Người dùng
+    participant GiaoDien as :Giao diện\nQuên mật khẩu
+    participant DieuKhien as :Điều khiển\nQuên mật khẩu
+    participant HeTong as :Hệ thống\n(Database/Cache)
+
+    NguoiDung->>GiaoDien: 1 Nhấn "Quên mật khẩu?" trên trang đăng nhập
+    GiaoDien-->>NguoiDung: 2 Hiển thị form nhập email/mã sinh viên
+    NguoiDung->>GiaoDien: 3 Nhập email hoặc mã sinh viên
+    NguoiDung->>GiaoDien: 4 Nhấn "Gửi mã OTP"
+
+    rect rgb(240, 240, 240)
+        Note over NguoiDung, HeTong: Quá trình xử lý quên mật khẩu
+
+        rect rgb(220, 235, 220)
+            Note over NguoiDung, HeTong: Đặt lại mật khẩu thành công
+            GiaoDien->>DieuKhien: 5 Gửi yêu cầu
+            DieuKhien->>HeTong: 6 Tìm kiếm tài khoản theo email (bao gồm thêm đuôi @eaut.edu.vn)
+            HeTong-->>DieuKhien: 7 Kết quả: Tìm thấy tài khoản
+            DieuKhien->>HeTong: 8 Tạo mã OTP 6 số, lưu vào Cache (hiệu lực 1 phút)
+            DieuKhien->>HeTong: 9 Gửi mã OTP đến email người dùng (Laravel Mail)
+            HeTong-->>DieuKhien: 10 Email đã được gửi thành công
+            DieuKhien-->>GiaoDien: 11 Chuyển hướng sang trang đặt lại mật khẩu (kèm email)
+            GiaoDien-->>NguoiDung: 12 Hiển thị form nhập OTP + mật khẩu mới + xác nhận mật khẩu
+            NguoiDung->>GiaoDien: 13 Nhập mã OTP nhận được từ email
+            NguoiDung->>GiaoDien: 14 Nhập mật khẩu mới và xác nhận mật khẩu
+            NguoiDung->>GiaoDien: 15 Nhấn "Đặt lại mật khẩu"
+            GiaoDien->>DieuKhien: 16 Gửi yêu cầu đặt lại mật khẩu (email, otp, password)
+            DieuKhien->>HeTong: 17 Xác thực OTP từ Cache
+            HeTong-->>DieuKhien: 18 Kết quả: OTP hợp lệ
+            DieuKhien->>HeTong: 19 Cập nhật mật khẩu mới vào CSDL & xóa OTP khỏi Cache
+            HeTong-->>DieuKhien: 20 Kết quả: Cập nhật thành công
+            DieuKhien-->>GiaoDien: 21 Chuyển hướng sang trang đăng nhập
+            GiaoDien-->>NguoiDung: 22 Hiển thị thông báo: "Mật khẩu đã được thay đổi thành công."
+        end
+
+        Note over NguoiDung, HeTong: Đặt lại mật khẩu không thành công
+
+        alt Email không tồn tại trong hệ thống
+            GiaoDien->>DieuKhien: Gửi yêu cầu
+            DieuKhien->>HeTong: Tìm kiếm tài khoản theo email
+            HeTong-->>DieuKhien: Kết quả: Không tìm thấy tài khoản
+            DieuKhien-->>GiaoDien: Trả về lỗi: "Email không tồn tại trong hệ thống."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+
+        alt Mã OTP đã hết hạn (quá 1 phút)
+            GiaoDien->>DieuKhien: Gửi yêu cầu đặt lại mật khẩu
+            DieuKhien->>HeTong: Kiểm tra OTP trong Cache
+            HeTong-->>DieuKhien: Kết quả: OTP không còn trong Cache (đã hết hạn)
+            DieuKhien-->>GiaoDien: Trả về lỗi: "Mã OTP đã hết hạn (chỉ có hiệu lực trong 1 phút)."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+
+        alt Mã OTP không chính xác
+            GiaoDien->>DieuKhien: Gửi yêu cầu đặt lại mật khẩu
+            DieuKhien->>HeTong: Kiểm tra OTP trong Cache
+            HeTong-->>DieuKhien: Kết quả: OTP không khớp
+            DieuKhien-->>GiaoDien: Trả về lỗi: "Mã OTP không chính xác."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+
+        alt Mật khẩu mới không hợp lệ (ít hơn 6 ký tự hoặc không khớp)
+            GiaoDien->>DieuKhien: Gửi yêu cầu
+            DieuKhien-->>GiaoDien: Trả về lỗi: "Mật khẩu phải có ít nhất 6 ký tự và phải khớp nhau."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi validation
+        end
+
+        alt Mất kết nối hệ thống/Database
+            GiaoDien->>DieuKhien: Gửi yêu cầu
+            DieuKhien->>HeTong: Thử kết nối
+            HeTong-->>DieuKhien: Lỗi kết nối (Timeout/Error)
+            DieuKhien-->>GiaoDien: Trả về lỗi: "Lỗi kết nối CSDL"
+            GiaoDien-->>NguoiDung: Hiển thị Popup báo lỗi
+        end
+    end

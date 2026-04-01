@@ -1,0 +1,93 @@
+---
+title: Sơ đồ tuần tự - Tham gia nhóm chat bằng mã
+---
+sequenceDiagram
+    actor NguoiDung as Người dùng
+    participant GiaoDien as :Giao diện\nTin nhắn
+    participant DieuKhien as :Hệ thống
+    participant HeTong as :Hệ thống\n(Database)
+
+    %% =============================================
+    %% BƯỚC KHỞI ĐẦU
+    %% =============================================
+    NguoiDung->>GiaoDien: 1 Đăng nhập vào hệ thống
+    GiaoDien->>DieuKhien: 2 Xác thực tài khoản
+    DieuKhien-->>GiaoDien: 3 Xác thực thành công
+    GiaoDien-->>NguoiDung: 4 Hiển thị giao diện Trang chủ
+
+    %% =============================================
+    %% TRUY CẬP TIN NHẮN
+    %% =============================================
+    NguoiDung->>GiaoDien: 5 Truy cập vào biểu tượng tin nhắn
+    GiaoDien->>DieuKhien: 6 Tải danh sách cuộc hội thoại
+    DieuKhien->>HeTong: 7 Truy vấn conversations của người dùng
+    HeTong-->>DieuKhien: 8 Kết quả: Danh sách cuộc hội thoại
+    DieuKhien-->>GiaoDien: 9 Trả về danh sách
+    GiaoDien-->>NguoiDung: 10 Hiển thị danh sách cuộc hội thoại
+
+    %% =============================================
+    %% MỞ FORM NHẬP MÃ
+    %% =============================================
+    NguoiDung->>GiaoDien: 11 Nhấn "Tham gia nhóm bằng mã"
+    GiaoDien->>DieuKhien: 12 Gửi yêu cầu hiển thị form nhập mã
+    DieuKhien-->>GiaoDien: 13 Trả về cửa sổ nhập mã nhóm
+    GiaoDien-->>NguoiDung: 14 Hiển thị ô nhập mã nhóm\\n"Nhập mã để tham gia nhóm"
+
+    %% =============================================
+    %% NHẬP MÃ VÀ KIỂM TRA
+    %% =============================================
+    NguoiDung->>GiaoDien: 15 Nhập mã nhóm (5 ký tự)\\nvà nhấn "Tham gia"
+    GiaoDien->>DieuKhien: 16 Gửi yêu cầu POST /messages/join-by-code\\n(code=mã_5_ký_tự)
+
+    DieuKhien->>DieuKhien: 17 Validate định dạng mã:\\n(code: required, string, size:5)\\nChuyển mã thành chữ hoa (strtoupper)
+
+    %% ---- Sai định dạng ----
+    rect rgb(255, 220, 220)
+        Note over NguoiDung, HeTong: Mã sai định dạng
+
+        alt Mã không đủ 5 ký tự
+            DieuKhien-->>GiaoDien: Trả về lỗi validation 422
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi định dạng\\nGiữ nguyên form để nhập lại
+        end
+    end
+
+    DieuKhien->>HeTong: 18 Kiểm tra mã trong CSDL\\nTruy vấn conversations\\ntheo join_code và type=group
+
+    %% ---- Mã không tồn tại ----
+    rect rgb(255, 220, 220)
+        Note over NguoiDung, HeTong: Mã không tồn tại
+
+        HeTong-->>DieuKhien: 19a Kết quả: Không tìm thấy nhóm
+        DieuKhien-->>GiaoDien: 20a Trả về lỗi:\\n"Mã nhóm không tồn tại."
+        GiaoDien-->>NguoiDung: 21a Hiển thị thông báo lỗi\\nGiữ nguyên form để nhập lại
+    end
+
+    %% ---- Mã hợp lệ ----
+    rect rgb(220, 235, 220)
+        Note over NguoiDung, HeTong: Mã hợp lệ — Tham gia thành công
+
+        HeTong-->>DieuKhien: 19b Kết quả: Tìm thấy nhóm chat
+        DieuKhien->>HeTong: 20b Kiểm tra người dùng đã là thành viên chưa\\nNếu chưa: Thêm vào bảng participants\\n(role=member, status=active, joined_at=now)\\nTạo tin nhắn hệ thống:\\n"username đã gia nhập nhóm bằng mã mời."
+        HeTong-->>DieuKhien: 21b Kết quả: Lưu thành công
+        DieuKhien-->>GiaoDien: 22b Redirect đến /messages/{conversation_id}
+        GiaoDien-->>NguoiDung: 23b Hiển thị giao diện cuộc hội thoại nhóm\\nNgười dùng đã là thành viên của nhóm
+    end
+
+    %% =============================================
+    %% LỖI CHUNG
+    %% =============================================
+    rect rgb(255, 235, 200)
+        Note over NguoiDung, HeTong: Lỗi chung
+
+        alt Người dùng đã là thành viên nhóm
+            DieuKhien-->>GiaoDien: Redirect thẳng đến /messages/{conversation_id}
+            GiaoDien-->>NguoiDung: Hiển thị giao diện nhóm chat hiện tại
+        end
+
+        alt Mất kết nối hệ thống/Database
+            DieuKhien->>HeTong: Thực hiện truy vấn
+            HeTong-->>DieuKhien: Lỗi kết nối (Timeout/Error)
+            DieuKhien-->>GiaoDien: Trả về lỗi 500: "Đã xảy ra lỗi hệ thống."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+    end

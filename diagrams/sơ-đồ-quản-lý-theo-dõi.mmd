@@ -1,0 +1,114 @@
+---
+title: Sơ đồ tuần tự - Quản lý người theo dõi và đang theo dõi
+---
+sequenceDiagram
+    actor NguoiDung as Người dùng
+    participant GiaoDien as :Giao diện\nTrang cá nhân
+    participant DieuKhien as :Hệ thống
+    participant HeTong as :Hệ thống\n(Database/Cache)
+
+    %% =============================================
+    %% BƯỚC KHỞI ĐẦU
+    %% =============================================
+    NguoiDung->>GiaoDien: 1 Đăng nhập vào hệ thống
+    GiaoDien->>DieuKhien: 2 Xác thực tài khoản
+    DieuKhien-->>GiaoDien: 3 Xác thực thành công
+    GiaoDien-->>NguoiDung: 4 Hiển thị giao diện Trang chủ
+
+    NguoiDung->>GiaoDien: 5 Truy cập trang cá nhân
+    GiaoDien->>DieuKhien: 6 Gửi yêu cầu GET /profile
+    DieuKhien->>HeTong: 7 Truy vấn thông tin hồ sơ + số lượng followers/following
+    HeTong-->>DieuKhien: 8 Kết quả: Dữ liệu hồ sơ
+    DieuKhien-->>GiaoDien: 9 Trả về dữ liệu
+    GiaoDien-->>NguoiDung: 10 Hiển thị trang cá nhân
+
+    NguoiDung->>GiaoDien: 11 Chọn chức năng "Người theo dõi" hoặc "Đang theo dõi"
+    GiaoDien->>DieuKhien: 12a Gửi yêu cầu GET /api/users/{id}/followers
+    GiaoDien->>DieuKhien: 12b Gửi yêu cầu GET /api/users/{id}/following
+    DieuKhien->>HeTong: 13 Truy xuất CSDL: danh sách followers + following (kèm followers_count)
+    HeTong-->>DieuKhien: 14 Kết quả: Hai danh sách tương ứng
+    DieuKhien-->>GiaoDien: 15 Trả về dữ liệu 2 danh sách
+    GiaoDien-->>NguoiDung: 16 Hiển thị 2 cửa sổ danh sách (Người theo dõi / Đang theo dõi)
+
+    %% =============================================
+    %% NHÁNH 1: QUẢN LÝ NGƯỜI THEO DÕI (Followers)
+    %% =============================================
+    rect rgb(220, 235, 220)
+        Note over NguoiDung, HeTong: Nhánh 1 — Quản lý người theo dõi
+
+        NguoiDung->>GiaoDien: 17 Tìm kiếm hoặc chọn xoá một người theo dõi
+        GiaoDien-->>NguoiDung: 18 Hiển thị thông báo xác nhận xoá
+
+        NguoiDung->>GiaoDien: 19 Xác nhận "Đồng ý xoá"
+        GiaoDien->>DieuKhien: 20 Gửi yêu cầu POST /users/{user}/follow\n(bỏ theo dõi ngược — xoá người đang follow mình)
+        DieuKhien->>HeTong: 21 Xoá bản ghi Follow\n(follower_id=người_theo_dõi, following_id=mình)
+        HeTong-->>DieuKhien: 22 Kết quả: Xoá thành công
+        DieuKhien->>HeTong: 23 Giảm following_count của người đó\nGiảm follower_count của mình
+        HeTong-->>DieuKhien: 24 Cập nhật thành công
+        DieuKhien->>HeTong: 25 Xoá cache liên quan\n(follower_ids, friends, friend_ids)
+        DieuKhien-->>GiaoDien: 26 Trả về kết quả thành công
+        GiaoDien-->>NguoiDung: 27 Cập nhật lại giao diện danh sách người theo dõi
+    end
+
+    %% =============================================
+    %% NHÁNH 2: QUẢN LÝ ĐANG THEO DÕI (Following)
+    %% =============================================
+    rect rgb(200, 230, 255)
+        Note over NguoiDung, HeTong: Nhánh 2 — Quản lý đang theo dõi
+
+        NguoiDung->>GiaoDien: 28 Tìm kiếm hoặc chọn xoá một người đang theo dõi
+        GiaoDien-->>NguoiDung: 29 Hiển thị thông báo xác nhận bỏ theo dõi
+
+        NguoiDung->>GiaoDien: 30 Xác nhận "Đồng ý bỏ theo dõi"
+        GiaoDien->>DieuKhien: 31 Gửi yêu cầu POST /users/{user}/follow\n(toggle — bỏ theo dõi người đó)
+        DieuKhien->>HeTong: 32 Kiểm tra bản ghi Follow\n(follower_id=mình, following_id=người_đó)
+        HeTong-->>DieuKhien: 33 Kết quả: Đang theo dõi (tồn tại)
+        DieuKhien->>HeTong: 34 Xoá bản ghi Follow
+        HeTong-->>DieuKhien: 35 Kết quả: Xoá thành công
+        DieuKhien->>HeTong: 36 Giảm following_count của mình\nGiảm follower_count của người đó
+        HeTong-->>DieuKhien: 37 Cập nhật thành công
+        DieuKhien->>HeTong: 38 Xoá cache liên quan\n(following, follower_ids, friends, friend_ids)
+        DieuKhien-->>GiaoDien: 39 Trả về kết quả thành công
+        GiaoDien-->>NguoiDung: 40 Cập nhật lại giao diện danh sách đang theo dõi
+    end
+
+    %% =============================================
+    %% NHÁNH 3: THEO DÕI MỚI (từ danh sách gợi ý)
+    %% =============================================
+    rect rgb(255, 245, 210)
+        Note over NguoiDung, HeTong: Nhánh 3 — Theo dõi người dùng mới
+
+        NguoiDung->>GiaoDien: 41 Nhấn nút "Theo dõi" trên một người dùng
+        GiaoDien->>DieuKhien: 42 Gửi yêu cầu POST /users/{user}/follow
+        DieuKhien->>HeTong: 43 Kiểm tra bản ghi Follow\n(follower_id=mình, following_id=người_đó)
+        HeTong-->>DieuKhien: 44 Kết quả: Chưa theo dõi (không tồn tại)
+        DieuKhien->>HeTong: 45 Tạo bản ghi Follow mới
+        HeTong-->>DieuKhien: 46 Kết quả: Lưu thành công
+        DieuKhien->>HeTong: 47 Tăng following_count của mình\nTăng follower_count của người đó
+        DieuKhien->>HeTong: 48 Tạo thông báo "follow" cho người được theo dõi
+        HeTong-->>DieuKhien: 49 Kết quả: Thông báo đã tạo
+        DieuKhien->>HeTong: 50 Kiểm tra mutual follow\n(người đó có đang follow lại mình không)
+        HeTong-->>DieuKhien: 51 Kết quả: Mutual follow → Tự động tạo cuộc hội thoại trực tiếp
+        DieuKhien->>HeTong: 52 Xoá cache liên quan\n(following, follower_ids, friends, friend_ids)
+        DieuKhien-->>GiaoDien: 53 Trả về kết quả thành công (status="followed")
+        GiaoDien-->>NguoiDung: 54 Cập nhật lại giao diện danh sách + số lượng theo dõi
+    end
+
+    %% =============================================
+    %% LỖI CHUNG
+    %% =============================================
+    rect rgb(255, 220, 220)
+        Note over NguoiDung, HeTong: Lỗi chung
+
+        alt Tự theo dõi chính mình
+            DieuKhien-->>GiaoDien: Bỏ qua yêu cầu (redirect back)
+            GiaoDien-->>NguoiDung: Không có thay đổi
+        end
+
+        alt Mất kết nối hệ thống/Database
+            DieuKhien->>HeTong: Thực hiện thao tác
+            HeTong-->>DieuKhien: Lỗi kết nối (Timeout/Error)
+            DieuKhien-->>GiaoDien: Trả về lỗi 500: "Đã xảy ra lỗi hệ thống."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+    end

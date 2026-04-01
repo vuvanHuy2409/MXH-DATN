@@ -308,7 +308,8 @@
     }
 
     [data-theme="dark"] .comment-bubble {
-        border-color: rgba(255,255,255,0.2) !important;
+        border-color: rgba(255,255,255,0.08) !important;
+        background: rgba(22,22,32,0.85) !important;
     }
 
     .nested-replies {
@@ -326,6 +327,33 @@
         border: 1px solid rgba(0,0,0,0.3) !important;
         padding: 8px 14px !important;
         border-radius: 16px !important;
+    }
+
+    [data-theme="dark"] .comment-bubble.nested {
+        background: rgba(18,18,28,0.8) !important;
+        border-color: rgba(255,255,255,0.06) !important;
+    }
+
+    [data-theme="dark"] #quickReplyIndicator {
+        background: rgba(94,158,255,0.08) !important;
+        border-top-color: rgba(255,255,255,0.07) !important;
+    }
+
+    [data-theme="dark"] #commentImagePreviewContainer {
+        background: rgba(255,255,255,0.03) !important;
+    }
+
+    [data-theme="dark"] form[onsubmit="submitReply(event)"] > div > div:nth-child(2) {
+        background: rgba(255,255,255,0.05) !important;
+        border-color: rgba(255,255,255,0.08) !important;
+    }
+
+    [data-theme="dark"] #replyContent {
+        color: var(--text-color) !important;
+    }
+
+    [data-theme="dark"] #replyContent::placeholder {
+        color: rgba(255,255,255,0.3) !important;
     }
 </style>
 @endsection

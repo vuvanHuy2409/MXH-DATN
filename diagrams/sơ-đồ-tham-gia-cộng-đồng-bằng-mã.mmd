@@ -1,0 +1,80 @@
+---
+title: Sơ đồ tuần tự - Tham gia cộng đồng bằng mã
+---
+sequenceDiagram
+    actor NguoiDung as Người dùng
+    participant GiaoDien as :Giao diện\nCộng đồng
+    participant DieuKhien as :Hệ thống
+    participant HeTong as :Hệ thống\n(Database)
+
+    %% =============================================
+    %% BƯỚC KHỞI ĐẦU
+    %% =============================================
+    NguoiDung->>GiaoDien: 1 Đăng nhập vào hệ thống
+    GiaoDien->>DieuKhien: 2 Xác thực tài khoản
+    DieuKhien-->>GiaoDien: 3 Xác thực thành công
+    GiaoDien-->>NguoiDung: 4 Hiển thị giao diện Trang chủ
+
+    NguoiDung->>GiaoDien: 5 Truy cập vào biểu tượng Cộng đồng
+    GiaoDien->>DieuKhien: 6 Tải danh sách cộng đồng của người dùng
+    DieuKhien->>HeTong: 7 Truy vấn social_groups của người dùng
+    HeTong-->>DieuKhien: 8 Kết quả: Danh sách cộng đồng
+    DieuKhien-->>GiaoDien: 9 Trả về danh sách
+    GiaoDien-->>NguoiDung: 10 Hiển thị giao diện Cộng đồng
+
+    %% =============================================
+    %% MỞ FORM NHẬP MÃ
+    %% =============================================
+    NguoiDung->>GiaoDien: 11 Chọn vào biểu tượng tham gia cộng đồng bằng mã
+    GiaoDien->>DieuKhien: 12 Gửi yêu cầu hiển thị form nhập mã
+    DieuKhien-->>GiaoDien: 13 Trả về giao diện nhập mã
+    GiaoDien-->>NguoiDung: 14 Hiển thị giao diện nhập mã cộng đồng
+
+    %% =============================================
+    %% NHẬP MÃ VÀ KIỂM TRA
+    %% =============================================
+    NguoiDung->>GiaoDien: 15 Nhập mã cộng đồng (5 ký tự) và xác nhận
+    GiaoDien->>DieuKhien: 16 Gửi yêu cầu POST /groups/join-by-code\\n(code=mã_5_ký_tự)
+
+    DieuKhien->>DieuKhien: 17 Validate: code required, string, size:5\\nChuyển mã thành chữ hoa (strtoupper)
+
+    DieuKhien->>HeTong: 18 Kiểm tra mã trong CSDL\\nTruy vấn social_groups theo join_code
+
+    %% ---- Mã không hợp lệ ----
+    rect rgb(255, 220, 220)
+        Note over NguoiDung, HeTong: Mã không hợp lệ
+
+        HeTong-->>DieuKhien: 19a Kết quả: Không tìm thấy cộng đồng
+        DieuKhien-->>GiaoDien: 20a Trả về lỗi: "Mã nhóm không chính xác."
+        GiaoDien-->>NguoiDung: 21a Hiển thị thông báo lỗi\\nGiữ nguyên form để nhập lại
+    end
+
+    %% ---- Mã hợp lệ ----
+    rect rgb(220, 235, 220)
+        Note over NguoiDung, HeTong: Mã hợp lệ — Tham gia thành công
+
+        HeTong-->>DieuKhien: 19b Kết quả: Tìm thấy cộng đồng
+        DieuKhien->>HeTong: 20b Kiểm tra người dùng đã là thành viên chưa\\nNếu chưa: Thêm người dùng vào cộng đồng (role=member)
+        HeTong-->>DieuKhien: 21b Kết quả: Lưu thành công
+        DieuKhien-->>GiaoDien: 22b Redirect đến /groups/{slug}\\n(kèm thông báo "Bạn đã tham gia nhóm thành công!")
+        GiaoDien-->>NguoiDung: 23b Hiển thị giao diện cộng đồng mới
+    end
+
+    %% =============================================
+    %% LỖI CHUNG
+    %% =============================================
+    rect rgb(255, 235, 200)
+        Note over NguoiDung, HeTong: Lỗi chung
+
+        alt Mã không đúng định dạng (không đủ 5 ký tự)
+            DieuKhien-->>GiaoDien: Trả về lỗi validation 422
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi trong form
+        end
+
+        alt Mất kết nối hệ thống/Database
+            DieuKhien->>HeTong: Thực hiện truy vấn
+            HeTong-->>DieuKhien: Lỗi kết nối (Timeout/Error)
+            DieuKhien-->>GiaoDien: Trả về lỗi 500: "Đã xảy ra lỗi hệ thống."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+    end

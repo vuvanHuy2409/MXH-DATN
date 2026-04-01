@@ -102,7 +102,7 @@
     </div>
 
     <!-- Contact Section -->
-    <div style="background: var(--accent-color); padding: 30px; border-radius: 28px; color: white; text-align: center; box-shadow: 0 20px 40px rgba(0, 113, 227, 0.2);">
+    <div style="background: var(--accent-color); padding: 30px; border-radius: 28px; color: white; text-align: center; box-shadow: 0 20px 40px rgba(0, 98, 255, 0.2);">
         <h3 style="margin: 0 0 10px 0; font-size: 20px;">Vẫn cần hỗ trợ?</h3>
         <p style="opacity: 0.9; margin-bottom: 25px; font-size: 15px;">Chúng tôi luôn sẵn sàng lắng nghe ý kiến của bạn.</p>
         <div style="display: flex; justify-content: center;">

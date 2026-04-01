@@ -1,0 +1,56 @@
+---
+title: Sơ đồ tuần tự - Chia sẻ lại bài viết
+---
+sequenceDiagram
+    actor NguoiDung as Người dùng
+    participant GiaoDien as :Giao diện\nBài viết
+    participant DieuKhien as :Điều khiển\nRepost
+    participant HeTong as :Hệ thống\n(Database)
+
+    NguoiDung->>GiaoDien: 1 Nhấn nút "Chia sẻ lại" trên bài viết
+
+    rect rgb(240, 240, 240)
+        Note over NguoiDung, HeTong: Quá trình xử lý tương tác Repost (AJAX)
+
+        rect rgb(220, 235, 220)
+            Note over NguoiDung, HeTong: Chia sẻ lại thành công (chưa repost trước đó)
+            GiaoDien->>DieuKhien: 2 Gửi yêu cầu POST /posts/{id}/repost
+            DieuKhien->>HeTong: 3 Kiểm tra bản ghi reposts (user_id + post_id)
+            HeTong-->>DieuKhien: 4 Kết quả: Chưa tồn tại
+            DieuKhien->>HeTong: 5 Tạo bản ghi Repost mới
+            HeTong-->>DieuKhien: 6 Kết quả: Lưu thành công
+            DieuKhien->>HeTong: 7 Tạo thông báo cho chủ bài viết (nếu không phải chính mình)
+            HeTong-->>DieuKhien: 8 Kết quả: Thông báo đã tạo
+            DieuKhien->>HeTong: 9 Đếm lại tổng số reposts (loadCount)
+            HeTong-->>DieuKhien: 10 Kết quả: Trả về reposts_count
+            DieuKhien-->>GiaoDien: 11 JSON: status="reposted", count=số_repost_mới
+            GiaoDien-->>NguoiDung: 12 Cập nhật icon repost xanh + số lượt chia sẻ tăng lên
+        end
+
+        rect rgb(235, 220, 220)
+            Note over NguoiDung, HeTong: Hủy chia sẻ lại (đã repost trước đó)
+            GiaoDien->>DieuKhien: 13 Gửi yêu cầu POST /posts/{id}/repost
+            DieuKhien->>HeTong: 14 Kiểm tra bản ghi reposts (user_id + post_id)
+            HeTong-->>DieuKhien: 15 Kết quả: Đã tồn tại
+            DieuKhien->>HeTong: 16 Xóa bản ghi Repost
+            HeTong-->>DieuKhien: 17 Kết quả: Xóa thành công
+            DieuKhien->>HeTong: 18 Đếm lại tổng số reposts (loadCount)
+            HeTong-->>DieuKhien: 19 Kết quả: Trả về reposts_count
+            DieuKhien-->>GiaoDien: 20 JSON: status="unreposted", count=số_repost_mới
+            GiaoDien-->>NguoiDung: 21 Cập nhật icon repost mặc định + số lượt chia sẻ giảm xuống
+        end
+
+        alt Người dùng chưa đăng nhập
+            GiaoDien->>DieuKhien: Gửi yêu cầu
+            DieuKhien-->>GiaoDien: Trả về lỗi 401 Unauthorized
+            GiaoDien-->>NguoiDung: Chuyển hướng sang trang đăng nhập
+        end
+
+        alt Bài viết không tồn tại
+            GiaoDien->>DieuKhien: Gửi yêu cầu
+            DieuKhien->>HeTong: Tìm kiếm bài viết theo post_id
+            HeTong-->>DieuKhien: Kết quả: Không tìm thấy
+            DieuKhien-->>GiaoDien: Trả về lỗi 404 Not Found
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+    end

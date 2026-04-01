@@ -32,4 +32,16 @@ class Appointment extends Model
     {
         return $this->belongsTo(User::class, 'creator_id');
     }
+
+    public function appointmentParticipants()
+    {
+        return $this->hasMany(AppointmentParticipant::class);
+    }
+
+    public function participants()
+    {
+        return $this->belongsToMany(User::class, 'appointment_participants')
+                    ->withPivot('status', 'reminded', 'reminded_at')
+                    ->withTimestamps();
+    }
 }

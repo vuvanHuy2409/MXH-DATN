@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Notification;
 use App\Models\Repost;
 use App\Models\Post;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class RepostController extends Controller
@@ -29,7 +29,7 @@ class RepostController extends Controller
 
             // Tạo thông báo
             if ($post->user_id !== $userId) {
-                \App\Models\Notification::create([
+                Notification::create([
                     'user_id' => $post->user_id,
                     'actor_id' => $userId,
                     'type' => 'repost',
@@ -38,12 +38,11 @@ class RepostController extends Controller
             }
         }
 
-        // Lấy lại số lượng repost mới nhất
-        $count = Repost::where('post_id', $post->id)->count();
+        $post->loadCount('reposts');
 
         return response()->json([
             'status' => $status,
-            'count' => $count
+            'count' => $post->reposts_count,
         ]);
     }
 }

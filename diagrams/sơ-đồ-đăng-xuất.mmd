@@ -1,0 +1,46 @@
+---
+title: Sơ đồ tuần tự - Đăng xuất
+---
+sequenceDiagram
+    actor NguoiDung as Người dùng
+    participant GiaoDien as :Giao diện\nMenu hệ thống
+    participant DieuKhien as :Hệ thống
+
+    %% =============================================
+    %% BƯỚC KHỞI ĐẦU
+    %% =============================================
+    NguoiDung->>GiaoDien: 1 Đăng nhập vào hệ thống
+    GiaoDien->>DieuKhien: 2 Xác thực tài khoản
+    DieuKhien-->>GiaoDien: 3 Xác thực thành công
+    GiaoDien-->>NguoiDung: 4 Hiển thị giao diện Trang chủ
+
+    NguoiDung->>GiaoDien: 5 Chọn chức năng menu hệ thống
+    GiaoDien->>DieuKhien: 6 Gửi yêu cầu GET /settings
+    DieuKhien-->>GiaoDien: 7 Trả về giao diện menu hệ thống
+    GiaoDien-->>NguoiDung: 8 Hiển thị giao diện Menu hệ thống
+
+    %% =============================================
+    %% ĐĂNG XUẤT
+    %% =============================================
+    NguoiDung->>GiaoDien: 9 Chọn chức năng Đăng xuất
+    GiaoDien-->>NguoiDung: 10 Hiển thị popup xác nhận Đăng xuất
+
+    rect rgb(220, 235, 220)
+        Note over NguoiDung, DieuKhien: Xác nhận đăng xuất thành công
+
+        NguoiDung->>GiaoDien: 11 Xác nhận Đăng xuất
+        GiaoDien->>DieuKhien: 12 Gửi yêu cầu POST /logout
+        DieuKhien->>DieuKhien: 13 Auth::logout() — huỷ phiên đăng nhập
+        DieuKhien->>DieuKhien: 14 session()->invalidate() — xoá toàn bộ dữ liệu session
+        DieuKhien->>DieuKhien: 15 session()->regenerateToken() — tạo lại CSRF token
+        DieuKhien-->>GiaoDien: 16 Redirect về /login
+        GiaoDien-->>NguoiDung: 17 Chuyển hướng về giao diện Đăng nhập
+    end
+
+    rect rgb(255, 220, 220)
+        Note over NguoiDung, DieuKhien: Huỷ đăng xuất
+
+        alt Người dùng nhấn "Huỷ" trên popup
+            GiaoDien-->>NguoiDung: Đóng popup, giữ nguyên trạng thái đăng nhập
+        end
+    end

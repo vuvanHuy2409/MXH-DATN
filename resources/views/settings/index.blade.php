@@ -17,7 +17,7 @@
             <!-- Chỉnh sửa hồ sơ -->
             <div onclick="window.location.href='{{ route('profile.me') }}'" class="settings-item">
                 <div class="settings-item-left">
-                    <div class="icon-box" style="background: rgba(0, 113, 227, 0.1); color: #0071e3;">
+                    <div class="icon-box" style="background: rgba(0, 98, 255, 0.1); color: #0062FF;">
                         <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                     </div>
                     <span>Chỉnh sửa hồ sơ</span>
@@ -79,7 +79,7 @@
             <!-- Về sản phẩm -->
             <div onclick="openAboutProductModal()" class="settings-item">
                 <div class="settings-item-left">
-                    <div class="icon-box" style="background: rgba(0, 113, 227, 0.1); color: #0071e3;">
+                    <div class="icon-box" style="background: rgba(0, 98, 255, 0.1); color: #0062FF;">
                         <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
                     </div>
                     <span>Về sản phẩm</span>
@@ -126,7 +126,7 @@
 
             <div onclick="openFeedbackModal()" class="settings-item">
                 <div class="settings-item-left">
-                    <div class="icon-box" style="background: rgba(0, 122, 255, 0.1); color: #007aff;">
+                    <div class="icon-box" style="background: rgba(0, 98, 255, 0.1); color: #0062FF;">
                         <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
                     </div>
                     <span>Đóng góp ý kiến</span>
@@ -148,7 +148,7 @@
 
 <!-- Password Modal -->
 <div id="passwordModal" class="modal" style="display: none; background: rgba(0,0,0,0.2); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); align-items: center; justify-content: center;">
-    <div class="modal-content glass-bubble" style="max-width: 400px; padding: 35px; border-radius: 35px; border: 1px solid rgba(255,255,255,0.5);">
+    <div class="modal-content glass-bubble" style="max-width: 400px; padding: 35px; border-radius: 35px; border: 1px solid rgba(255,255,255,0.5); width: 90%;">
         <div style="text-align: center; margin-bottom: 25px;">
             <div style="width: 60px; height: 60px; background: rgba(255, 149, 0, 0.1); color: #ff9500; border-radius: 20px; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center;">
                 <svg viewBox="0 0 24 24" width="30" height="30" stroke="currentColor" stroke-width="2.5" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
@@ -156,24 +156,46 @@
             <h3 style="margin: 0; font-size: 22px; font-weight: 800;">Đổi mật khẩu</h3>
             <p style="color: var(--secondary-text); font-size: 14px; margin-top: 5px;">Bảo vệ tài khoản của bạn</p>
         </div>
-        
+
+        @if($errors->has('current_password') || $errors->has('new_password'))
+            <div style="background: rgba(255,59,48,0.08); border: 1px solid rgba(255,59,48,0.2); border-radius: 14px; padding: 12px 16px; margin-bottom: 18px; font-size: 13px; color: #ff3b30;">
+                @foreach($errors->get('current_password') as $err) <div>{{ $err }}</div> @endforeach
+                @foreach($errors->get('new_password') as $err) <div>{{ $err }}</div> @endforeach
+            </div>
+        @endif
+
         <form action="{{ route('settings.change-password') }}" method="POST">
             @csrf
             <div style="margin-bottom: 15px;">
                 <label class="input-label">Mật khẩu hiện tại</label>
-                <input type="password" name="current_password" required class="modern-input">
+                <div style="position: relative;">
+                    <input type="password" name="current_password" id="current_password" required class="modern-input" style="padding-right: 46px; {{ $errors->has('current_password') ? 'border-color: #ff3b30;' : '' }}">
+                    <button type="button" onclick="togglePwd('current_password','eye1')" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--secondary-text);padding:0;display:flex;">
+                        <svg id="eye1" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    </button>
+                </div>
             </div>
-            
+
             <div style="margin-bottom: 15px;">
-                <label class="input-label">Mật khẩu mới</label>
-                <input type="password" name="new_password" required class="modern-input">
+                <label class="input-label">Mật khẩu mới <span style="color:var(--secondary-text);font-weight:400;">(ít nhất 6 ký tự)</span></label>
+                <div style="position: relative;">
+                    <input type="password" name="new_password" id="new_password" required class="modern-input" style="padding-right: 46px; {{ $errors->has('new_password') ? 'border-color: #ff3b30;' : '' }}">
+                    <button type="button" onclick="togglePwd('new_password','eye2')" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--secondary-text);padding:0;display:flex;">
+                        <svg id="eye2" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    </button>
+                </div>
             </div>
-            
+
             <div style="margin-bottom: 25px;">
-                <label class="input-label">Xác nhận mật khẩu</label>
-                <input type="password" name="new_password_confirmation" required class="modern-input">
+                <label class="input-label">Xác nhận mật khẩu mới</label>
+                <div style="position: relative;">
+                    <input type="password" name="new_password_confirmation" id="pwd_confirm" required class="modern-input" style="padding-right: 46px;">
+                    <button type="button" onclick="togglePwd('pwd_confirm','eye3')" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--secondary-text);padding:0;display:flex;">
+                        <svg id="eye3" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    </button>
+                </div>
             </div>
-            
+
             <div style="display: flex; gap: 12px;">
                 <button type="button" onclick="closePasswordModal()" style="flex: 1; padding: 15px; border-radius: 18px; border: 1px solid var(--glass-border); background: transparent; font-weight: 600; cursor: pointer;">Hủy</button>
                 <button type="submit" class="btn-post" style="flex: 2; padding: 15px; border-radius: 18px; font-weight: 700;">Cập nhật</button>
@@ -186,7 +208,7 @@
 <div id="feedbackModal" class="modal" style="display: none; background: rgba(0,0,0,0.2); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); align-items: center; justify-content: center;">
     <div class="modal-content glass-bubble" style="max-width: 500px; padding: 35px; border-radius: 35px; border: 1px solid rgba(255,255,255,0.5); width: 90%;">
         <div style="text-align: center; margin-bottom: 25px;">
-            <div style="width: 60px; height: 60px; background: rgba(0, 122, 255, 0.1); color: #007aff; border-radius: 20px; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center;">
+            <div style="width: 60px; height: 60px; background: rgba(0, 98, 255, 0.1); color: #0062FF; border-radius: 20px; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center;">
                 <svg viewBox="0 0 24 24" width="30" height="30" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
             </div>
             <h3 style="margin: 0; font-size: 22px; font-weight: 800;">Đóng góp ý kiến</h3>
@@ -213,7 +235,7 @@
 <div id="aboutProductModal" class="modal" style="display: none; background: rgba(0,0,0,0.2); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); align-items: center; justify-content: center;">
     <div class="modal-content glass-bubble" style="max-width: 500px; padding: 35px; border-radius: 35px; border: 1px solid rgba(255,255,255,0.5); width: 90%;">
         <div style="text-align: center; margin-bottom: 25px;">
-            <div style="width: 60px; height: 60px; background: rgba(0, 113, 227, 0.1); color: #0071e3; border-radius: 20px; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center;">
+            <div style="width: 60px; height: 60px; background: rgba(0, 98, 255, 0.1); color: #0062FF; border-radius: 20px; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center;">
                 <svg viewBox="0 0 24 24" width="30" height="30" stroke="currentColor" stroke-width="2.5" fill="none"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
             </div>
             <h3 style="margin: 0; font-size: 22px; font-weight: 800;">Về E-Connect</h3>
@@ -262,6 +284,18 @@
         document.getElementById('passwordModal').style.display = 'none';
         document.body.classList.remove('modal-open');
     }
+    function togglePwd(inputId, eyeId) {
+        const input = document.getElementById(inputId);
+        const eye   = document.getElementById(eyeId);
+        const show  = input.type === 'password';
+        input.type  = show ? 'text' : 'password';
+        eye.innerHTML = show
+            ? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>'
+            : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+    }
+    @if($errors->has('current_password') || $errors->has('new_password'))
+        document.addEventListener('DOMContentLoaded', () => openPasswordModal());
+    @endif
     function openFeedbackModal() {
         document.getElementById('feedbackModal').style.display = 'flex';
         document.body.classList.add('modal-open');
@@ -338,6 +372,25 @@
         box-shadow: 0 8px 20px rgba(0,0,0,0.05);
         background: rgba(255, 255, 255, 0.9);
     }
+    [data-theme="dark"] .settings-item {
+        background: rgba(22, 22, 32, 0.8);
+        border-color: rgba(255, 255, 255, 0.06);
+    }
+    [data-theme="dark"] .settings-item:hover {
+        background: rgba(30, 30, 44, 0.95);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+        border-color: rgba(77, 148, 255, 0.2);
+    }
+    [data-theme="dark"] .modern-input {
+        background: rgba(255, 255, 255, 0.05);
+        color: #eeeef0;
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+    [data-theme="dark"] .modern-input:focus {
+        background: rgba(255, 255, 255, 0.07);
+        border-color: rgba(77, 148, 255, 0.4);
+        box-shadow: 0 0 0 4px rgba(77, 148, 255, 0.1);
+    }
     .settings-item-left {
         display: flex;
         align-items: center;
@@ -360,7 +413,7 @@
         width: 100%; padding: 14px; border-radius: 14px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.02); outline: none; transition: all 0.2s; box-sizing: border-box;
     }
     .modern-input:focus {
-        background: #fff; border-color: var(--accent-color); box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1);
+        background: #fff; border-color: var(--accent-color); box-shadow: 0 0 0 4px rgba(0, 98, 255, 0.1);
     }
 </style>
 @endsection

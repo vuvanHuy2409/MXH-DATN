@@ -2,19 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Faculty;
 use App\Models\SocialGroup;
-use App\Models\Post;
 use App\Models\StudentDetail;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class SocialGroupController extends Controller
 {
     public function index(Request $request, $slug = null)
     {
         $myGroups = Auth::user()->socialGroups()->withCount('members')->get();
-        $faculties = \App\Models\Faculty::all();
+        $faculties = Faculty::all();
         $studentDetails = StudentDetail::select('faculty_id', 'class')->distinct()->get();
         
         // Nếu không có slug, tự động chọn nhóm đầu tiên (nếu có)
@@ -127,7 +129,7 @@ class SocialGroupController extends Controller
         $query = $request->query('q');
         $existingMemberIds = $group->members()->pluck('users.id')->toArray();
 
-        $users = \App\Models\User::where('username', 'LIKE', "%{$query}%")
+        $users = User::where('username', 'LIKE', "%{$query}%")
             ->whereNotIn('id', $existingMemberIds)
             ->limit(10)
             ->get(['id', 'username', 'avatar_url']);
@@ -219,29 +221,14 @@ class SocialGroupController extends Controller
             'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
-        if ($request->hasFile('avatar')) {
-            $file = $request->file('avatar');
-            $filename = time() . '_' . $group->id . '.' . $file->getClientOriginalExtension();
-            
-            // Ensure the directory exists
-            if (!file_exists(public_path('uploads/groups/avatars'))) {
-                mkdir(public_path('uploads/groups/avatars'), 0755, true);
-            }
-            
-            $file->move(public_path('uploads/groups/avatars'), $filename);
-            
-            // Delete old avatar if it's not a default one
-            if ($group->avatar_url && !str_contains($group->avatar_url, 'default.png')) {
-                $oldPath = public_path($group->avatar_url);
-                if (file_exists($oldPath)) {
-                    @unlink($oldPath);
-                }
-            }
-
-            $group->update([
-                'avatar_url' => '/uploads/groups/avatars/' . $filename
-            ]);
+        // Delete old avatar if it's not a default one
+        if ($group->avatar_url && !str_contains($group->avatar_url, 'default.png')) {
+            $oldRelative = ltrim(str_replace('/storage/', '', $group->avatar_url), '/');
+            Storage::disk('public')->delete($oldRelative);
         }
+
+        $path = $request->file('avatar')->store('groups/avatars', 'public');
+        $group->update(['avatar_url' => '/storage/' . $path]);
 
         return back()->with('status', 'Ảnh nhóm đã được cập nhật thành công!');
     }

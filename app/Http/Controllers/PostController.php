@@ -2,8 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Comment;
+use App\Models\GroupMember;
 use App\Models\Post;
+use App\Models\PostMedia;
+use App\Models\Repost;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class PostController extends Controller
 {
@@ -14,10 +20,14 @@ class PostController extends Controller
     {
         $userId = auth()->id();
         $user = auth()->user();
-        $followingIds = $user->following()->pluck('users.id')->toArray();
 
-        // Lấy danh sách ID các nhóm mà người dùng hiện tại đã tham gia
-        $myGroupIds = \App\Models\GroupMember::where('user_id', $userId)->pluck('group_id')->toArray();
+        // Cache danh sách following/follower/group mỗi 5 phút để giảm query lặp lại
+        $followingIds = Cache::remember("user_{$userId}_following", 300, fn() =>
+            $user->following()->pluck('users.id')->toArray()
+        );
+        $myGroupIds = Cache::remember("user_{$userId}_groups", 300, fn() =>
+            GroupMember::where('user_id', $userId)->pluck('group_id')->toArray()
+        );
 
         // 1. DÀNH CHO BẠN: Lấy bài viết cá nhân (công khai), nhóm công khai, và nhóm riêng tư mình đã tham gia
         $posts = Post::where(function($query) use ($myGroupIds, $followingIds, $userId) {
@@ -47,7 +57,7 @@ class PostController extends Controller
             ->get();
 
         // 2. ĐANG THEO DÕI: 
-        $repostedPostIds = \App\Models\Repost::whereIn('user_id', $followingIds)
+        $repostedPostIds = Repost::whereIn('user_id', $followingIds)
             ->pluck('post_id')
             ->toArray();
 
@@ -64,14 +74,19 @@ class PostController extends Controller
             ->limit(50)
             ->get();
 
-        $meFollowerIds = auth()->user()->followers()->pluck('follower_id')->toArray();
-        foreach ($posts as $post) {
-            $post->user->follows_me = in_array($post->user_id, $meFollowerIds);
-        }
+        // Cache danh sách follower (người theo dõi mình) 5 phút
+        $meFollowerIds = Cache::remember("user_{$userId}_follower_ids", 300, fn() =>
+            $user->followers()->pluck('follower_id')->toArray()
+        );
 
+        // Dùng flip() để O(1) lookup thay vì in_array() O(n)
+        $meFollowerMap = array_flip($meFollowerIds);
+        foreach ($posts as $post) {
+            $post->user->follows_me = isset($meFollowerMap[$post->user_id]);
+        }
         foreach ($followingPosts as $post) {
             $post->followed_reposters = $post->reposts->pluck('user.username')->toArray();
-            $post->user->follows_me = in_array($post->user_id, $meFollowerIds);
+            $post->user->follows_me = isset($meFollowerMap[$post->user_id]);
         }
 
         return view('posts.index', compact('posts', 'followingPosts'));
@@ -101,9 +116,6 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
-        ini_set('memory_limit', '512M');
-        ini_set('max_execution_time', '300');
-        
         try {
             $request->validate([
                 'content' => 'required|max:500',
@@ -137,7 +149,7 @@ class PostController extends Controller
                         $path = $file->store('posts/files', 'public');
                     }
 
-                    \App\Models\PostMedia::create([
+                    PostMedia::create([
                         'post_id' => $post->id,
                         'media_url' => '/storage/' . $path,
                         'file_name' => $originalName,
@@ -148,7 +160,7 @@ class PostController extends Controller
 
             return redirect()->back()->with('status', 'Bài viết đã được đăng!');
         } catch (\Exception $e) {
-            \Log::error("Post creation failed: " . $e->getMessage());
+            Log::error("Post creation failed: " . $e->getMessage());
             return redirect()->back()->withErrors(['content' => 'Đã xảy ra lỗi khi đăng bài: ' . $e->getMessage()])->withInput();
         }
     }
@@ -243,13 +255,13 @@ class PostController extends Controller
      */
     public function destroyComment($commentId)
     {
-        $comment = \App\Models\Comment::findOrFail($commentId);
-        
+        $comment = Comment::findOrFail($commentId);
+
         if ($comment->user_id !== auth()->id()) {
             return response()->json(['message' => __('Không có quyền')], 403);
         }
 
-        $post = \App\Models\Post::find($comment->post_id);
+        $post = Post::find($comment->post_id);
         
         // Tính tổng số mục sẽ bị xóa (chính nó + các phản hồi con)
         $countToDelete = 1 + $comment->replies()->count();

@@ -7,10 +7,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-main: #D1E9F6;
-            --glass-bg: rgba(255, 255, 255, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.4);
-            --accent-color: #0071e3;
+            --bg-main: #F8FAFC;
+            --glass-bg: rgba(255, 255, 255, 0.88);
+            --glass-border: #E2E8F0;
+            --accent-color: #0062FF;
             --secondary-text: #6e6e73;
         }
 

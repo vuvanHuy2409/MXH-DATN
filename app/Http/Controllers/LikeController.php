@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Like;
+use App\Models\Notification;
 use App\Models\Post;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class LikeController extends Controller
@@ -31,7 +31,7 @@ class LikeController extends Controller
 
             // Tạo thông báo (Chỉ tạo nếu người like không phải là chủ bài viết)
             if ($post->user_id !== $userId) {
-                \App\Models\Notification::create([
+                Notification::create([
                     'user_id' => $post->user_id,
                     'actor_id' => $userId,
                     'type' => 'like',
@@ -40,7 +40,7 @@ class LikeController extends Controller
             }
         }
 
-        if (request()->ajax()) {
+        if (request()->wantsJson()) {
             return response()->json(['status' => $status, 'count' => $post->like_count]);
         }
 

@@ -1,0 +1,105 @@
+---
+title: Sơ đồ tuần tự - Quản lý thành viên nhóm chat
+---
+sequenceDiagram
+    actor NguoiDung as Người dùng
+    participant GiaoDien as :Giao diện\nTin nhắn
+    participant DieuKhien as :Hệ thống
+    participant HeTong as :Hệ thống\n(Database)
+
+    %% =============================================
+    %% BƯỚC KHỞI ĐẦU
+    %% =============================================
+    NguoiDung->>GiaoDien: 1 Đăng nhập vào hệ thống
+    GiaoDien->>DieuKhien: 2 Xác thực tài khoản
+    DieuKhien-->>GiaoDien: 3 Xác thực thành công
+    GiaoDien-->>NguoiDung: 4 Hiển thị giao diện Trang chủ
+
+    NguoiDung->>GiaoDien: 5 Truy cập vào biểu tượng tin nhắn
+    GiaoDien->>DieuKhien: 6 Tải danh sách cuộc hội thoại
+    DieuKhien->>HeTong: 7 Truy vấn conversations của người dùng
+    HeTong-->>DieuKhien: 8 Kết quả: Danh sách cuộc hội thoại
+    DieuKhien-->>GiaoDien: 9 Trả về danh sách
+    GiaoDien-->>NguoiDung: 10 Hiển thị danh sách cuộc hội thoại
+
+    NguoiDung->>GiaoDien: 11 Chọn vào nhóm chat cần quản lý
+    GiaoDien->>DieuKhien: 12 Tải nội dung nhóm chat
+    DieuKhien->>HeTong: 13 Kiểm tra thành viên + tải lịch sử tin nhắn
+    HeTong-->>DieuKhien: 14 Kết quả: Hợp lệ + dữ liệu nhóm
+    DieuKhien-->>GiaoDien: 15 Trả về dữ liệu nhóm chat
+    GiaoDien-->>NguoiDung: 16 Hiển thị giao diện nhóm chat
+
+    NguoiDung->>GiaoDien: 17 Nhấn vào biểu tượng thông tin nhóm
+    GiaoDien->>DieuKhien: 18 Gửi yêu cầu GET /messages/{conversation}/members
+    DieuKhien->>HeTong: 19 Truy vấn danh sách thành viên nhóm\\n(kèm role: admin/member)
+    HeTong-->>DieuKhien: 20 Kết quả: Danh sách thành viên
+    DieuKhien-->>GiaoDien: 21 Trả về danh sách thành viên
+    GiaoDien-->>NguoiDung: 22 Hiển thị popup thông tin thành viên nhóm chat
+
+    %% =============================================
+    %% NHÁNH A: RỜI NHÓM (thành viên thường)
+    %% =============================================
+    rect rgb(220, 235, 220)
+        Note over NguoiDung, HeTong: Tùy chọn A — Rời nhóm (mọi thành viên)
+
+        NguoiDung->>GiaoDien: 23a Nhấn "Rời nhóm" và xác nhận
+        GiaoDien->>DieuKhien: 24a Gửi yêu cầu POST /messages/{conversation}/leave
+        DieuKhien->>HeTong: 25a Tạo tin nhắn hệ thống:\\n"username đã rời khỏi nhóm."\\nXoá bản ghi participant của người dùng
+        HeTong-->>DieuKhien: 26a Kết quả: Cập nhật thành công
+        DieuKhien-->>GiaoDien: 27a Redirect về /messages
+        GiaoDien-->>NguoiDung: 28a Hiển thị thông báo rời nhóm thành công\\nChuyển về danh sách tin nhắn
+    end
+
+    %% =============================================
+    %% NHÁNH B: XOÁ THÀNH VIÊN (quản trị viên)
+    %% =============================================
+    rect rgb(220, 235, 220)
+        Note over NguoiDung, HeTong: Tùy chọn B — Xoá thành viên (chỉ quản trị viên)
+
+        NguoiDung->>GiaoDien: 23b Chọn thành viên cần xoá\\nvà xác nhận
+        GiaoDien->>DieuKhien: 24b Gửi yêu cầu POST /messages/{conversation}/kick/{user}
+        DieuKhien->>DieuKhien: 25b Kiểm tra quyền:\\nChỉ creator_id mới được xoá thành viên
+        DieuKhien->>HeTong: 26b Tạo tin nhắn hệ thống:\\n"username đã bị quản trị viên mời ra khỏi nhóm."\\nXoá bản ghi participant của thành viên bị xoá
+        HeTong-->>DieuKhien: 27b Kết quả: Cập nhật thành công
+        DieuKhien-->>GiaoDien: 28b JSON: status="success"
+        GiaoDien-->>NguoiDung: 29b Cập nhật danh sách thành viên\\nThành viên biến mất khỏi nhóm
+    end
+
+    %% =============================================
+    %% NHÁNH C: THÊM THÀNH VIÊN (quản trị viên)
+    %% =============================================
+    rect rgb(220, 235, 220)
+        Note over NguoiDung, HeTong: Tùy chọn C — Thêm thành viên (chỉ quản trị viên)
+
+        NguoiDung->>GiaoDien: 23c Chọn "Thêm thành viên"\\ntìm kiếm và chọn người dùng
+        GiaoDien->>DieuKhien: 24c Gửi yêu cầu POST /messages/{conversation}/members\\n(user_ids[])
+        DieuKhien->>DieuKhien: 25c Kiểm tra quyền: phải là admin\\nValidate: user_ids required, array, min:1
+        DieuKhien->>HeTong: 26c Thêm từng thành viên vào bảng participants\\n(role=member, status=active)\\nTạo tin nhắn hệ thống cho mỗi thành viên được thêm:\\n"username đã được thêm vào nhóm."
+        HeTong-->>DieuKhien: 27c Kết quả: Lưu thành công
+        DieuKhien-->>GiaoDien: 28c JSON: status="success"
+        GiaoDien-->>NguoiDung: 29c Cập nhật danh sách thành viên\\nHiển thị thông báo trong cuộc hội thoại
+    end
+
+    %% =============================================
+    %% LỖI CHUNG
+    %% =============================================
+    rect rgb(255, 235, 200)
+        Note over NguoiDung, HeTong: Lỗi chung
+
+        alt Không có quyền thực hiện\\n(không phải admin/creator)
+            DieuKhien-->>GiaoDien: Trả về lỗi 403 Forbidden
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+
+        alt Không phải thành viên nhóm chat
+            DieuKhien-->>GiaoDien: Trả về lỗi 403 Forbidden
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+
+        alt Mất kết nối hệ thống/Database
+            DieuKhien->>HeTong: Thực hiện cập nhật dữ liệu
+            HeTong-->>DieuKhien: Lỗi kết nối (Timeout/Error)
+            DieuKhien-->>GiaoDien: Trả về lỗi 500: "Đã xảy ra lỗi hệ thống."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+    end

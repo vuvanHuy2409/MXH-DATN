@@ -109,7 +109,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/messages/{message}', [ConversationController::class, 'deleteMessage'])->name('messages.delete_message');
         Route::post('/appointments', [ConversationController::class, 'createAppointment'])->name('messages.create_appointment');
         Route::get('/appointments', [ConversationController::class, 'getAppointments'])->name('messages.get_appointments');
-        Route::delete('/delete', [ConversationController::class, 'deleteChat'])->name('messages.delete_chat');
+        Route::delete('/appointments/{appointment}', [ConversationController::class, 'cancelAppointment'])->name('messages.cancel_appointment');
     });
 
     // Profile cá nhân (Your Profile)

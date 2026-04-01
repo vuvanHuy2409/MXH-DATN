@@ -1,0 +1,74 @@
+---
+title: Sơ đồ tuần tự - Gửi phản hồi & báo lỗi
+---
+sequenceDiagram
+    actor NguoiDung as Người dùng
+    participant GiaoDien as :Giao diện\nMenu hệ thống
+    participant DieuKhien as :Hệ thống
+    participant MailServer as :Mail Server
+
+    %% =============================================
+    %% BƯỚC KHỞI ĐẦU
+    %% =============================================
+    NguoiDung->>GiaoDien: 1 Đăng nhập vào hệ thống
+    GiaoDien->>DieuKhien: 2 Xác thực tài khoản
+    DieuKhien-->>GiaoDien: 3 Xác thực thành công
+    GiaoDien-->>NguoiDung: 4 Hiển thị giao diện Trang chủ
+
+    NguoiDung->>GiaoDien: 5 Chọn chức năng menu hệ thống
+    GiaoDien->>DieuKhien: 6 Gửi yêu cầu GET /settings
+    DieuKhien-->>GiaoDien: 7 Trả về giao diện menu hệ thống
+    GiaoDien-->>NguoiDung: 8 Hiển thị giao diện Menu hệ thống
+
+    NguoiDung->>GiaoDien: 9 Chọn chức năng Gửi phản hồi & báo lỗi
+    GiaoDien->>DieuKhien: 10 Gửi yêu cầu GET /settings/help
+    DieuKhien-->>GiaoDien: 11 Trả về giao diện nhập nội dung
+    GiaoDien-->>NguoiDung: 12 Hiển thị giao diện nhập nội dung phản hồi/báo lỗi
+
+    NguoiDung->>GiaoDien: 13 Nhập nội dung phản hồi hoặc báo lỗi và nhấn "Gửi"
+    GiaoDien->>DieuKhien: 14 Gửi yêu cầu POST /settings/feedback (content)
+
+    %% =============================================
+    %% KIỂM TRA DỮ LIỆU
+    %% =============================================
+    DieuKhien->>DieuKhien: 15 Validate nội dung\n(required, min:10, max:2000 ký tự)
+
+    rect rgb(255, 220, 220)
+        Note over NguoiDung, MailServer: Dữ liệu không hợp lệ
+
+        alt Nội dung bỏ trống hoặc ít hơn 10 ký tự
+            DieuKhien-->>GiaoDien: Trả về lỗi validation:\n"Vui lòng nhập nội dung ít nhất 10 ký tự."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi, giữ nguyên nội dung đã nhập
+        end
+
+        alt Nội dung vượt quá 2000 ký tự
+            DieuKhien-->>GiaoDien: Trả về lỗi validation:\n"Nội dung không được vượt quá 2000 ký tự."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi, giữ nguyên nội dung đã nhập
+        end
+    end
+
+    %% =============================================
+    %% GỬI MAIL THÀNH CÔNG
+    %% =============================================
+    rect rgb(220, 235, 220)
+        Note over NguoiDung, MailServer: Gửi phản hồi thành công
+
+        DieuKhien->>MailServer: 16 Gửi FeedbackMail đến quản trị viên\n(nội dung phản hồi + thông tin người dùng)
+        MailServer-->>DieuKhien: 17 Kết quả: Email đã được gửi thành công
+        DieuKhien-->>GiaoDien: 18 Redirect về trang cài đặt kèm thông báo:\n"Cảm ơn bạn! Ý kiến của bạn đã được gửi đi thành công."
+        GiaoDien-->>NguoiDung: 19 Thông báo gửi phản hồi thành công
+    end
+
+    %% =============================================
+    %% LỖI GỬI MAIL
+    %% =============================================
+    rect rgb(255, 220, 220)
+        Note over NguoiDung, MailServer: Lỗi gửi mail
+
+        alt Hệ thống mail gặp lỗi
+            DieuKhien->>MailServer: Gửi FeedbackMail
+            MailServer-->>DieuKhien: Lỗi kết nối Mail Server (Exception)
+            DieuKhien-->>GiaoDien: Trả về lỗi:\n"Có lỗi xảy ra khi gửi phản hồi.\nVui lòng thử lại sau."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+    end

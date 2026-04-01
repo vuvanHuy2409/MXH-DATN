@@ -1,0 +1,83 @@
+---
+title: Sơ đồ tuần tự - Tạo nhóm chat
+---
+sequenceDiagram
+    actor NguoiDung as Người dùng
+    participant GiaoDien as :Giao diện\nTin nhắn
+    participant DieuKhien as :Hệ thống
+    participant HeTong as :Hệ thống\n(Database)
+
+    %% =============================================
+    %% BƯỚC KHỞI ĐẦU
+    %% =============================================
+    NguoiDung->>GiaoDien: 1 Đăng nhập vào hệ thống
+    GiaoDien->>DieuKhien: 2 Xác thực tài khoản
+    DieuKhien-->>GiaoDien: 3 Xác thực thành công
+    GiaoDien-->>NguoiDung: 4 Hiển thị giao diện Trang chủ
+
+    %% =============================================
+    %% TRUY CẬP TIN NHẮN
+    %% =============================================
+    NguoiDung->>GiaoDien: 5 Truy cập vào biểu tượng tin nhắn
+    GiaoDien->>DieuKhien: 6 Tải danh sách cuộc hội thoại
+    DieuKhien->>HeTong: 7 Truy vấn conversations của người dùng
+    HeTong-->>DieuKhien: 8 Kết quả: Danh sách cuộc hội thoại
+    DieuKhien-->>GiaoDien: 9 Trả về danh sách
+    GiaoDien-->>NguoiDung: 10 Hiển thị danh sách cuộc hội thoại
+
+    %% =============================================
+    %% MỞ FORM TẠO NHÓM
+    %% =============================================
+    NguoiDung->>GiaoDien: 11 Nhấn vào biểu tượng tạo nhóm chat mới
+    GiaoDien->>DieuKhien: 12 Gửi yêu cầu tải danh sách bạn bè
+    DieuKhien->>HeTong: 13 Truy vấn danh sách bạn bè\\n(theo dõi lẫn nhau)
+    HeTong-->>DieuKhien: 14 Kết quả: Danh sách bạn bè
+    DieuKhien-->>GiaoDien: 15 Trả về form tạo nhóm\\n(kèm danh sách thành viên có thể chọn)
+    GiaoDien-->>NguoiDung: 16 Hiển thị form tạo nhóm:\\n(ô nhập tên nhóm + danh sách chọn thành viên)
+
+    %% =============================================
+    %% NHẬP THÔNG TIN VÀ KIỂM TRA
+    %% =============================================
+    NguoiDung->>GiaoDien: 17 Nhập tên nhóm, chọn thành viên\\n(tối thiểu 2 người) và nhấn "Tạo nhóm"
+    GiaoDien->>DieuKhien: 18 Gửi yêu cầu POST /messages/group\\n(name, user_ids[])
+
+    DieuKhien->>DieuKhien: 19 Validate dữ liệu:\\n(name: required, string, max:100;\\nuser_ids: required, array, min:1;\\nuser_ids.*: exists:users,id)
+
+    %% ---- Không hợp lệ ----
+    rect rgb(255, 220, 220)
+        Note over NguoiDung, HeTong: Dữ liệu không hợp lệ
+
+        alt Tên nhóm bỏ trống
+            DieuKhien-->>GiaoDien: Trả về lỗi validation 422:\\n"Vui lòng nhập tên nhóm."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi\\nGiữ nguyên dữ liệu đã nhập
+        end
+
+        alt Chưa chọn đủ thành viên (< 2 người)
+            DieuKhien-->>GiaoDien: Trả về lỗi validation 422:\\n"Vui lòng chọn tối thiểu 2 thành viên."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi\\nGiữ nguyên dữ liệu đã nhập
+        end
+    end
+
+    %% ---- Hợp lệ ----
+    rect rgb(220, 235, 220)
+        Note over NguoiDung, HeTong: Dữ liệu hợp lệ — Tạo nhóm thành công
+
+        DieuKhien->>HeTong: 20 Tạo cuộc hội thoại nhóm trong CSDL\\n(type=group, name, join_code tự động)\\nThêm người tạo với role=admin\\nThêm các thành viên với role=member
+        HeTong-->>DieuKhien: 21 Kết quả: Lưu thành công\\n(trả về conversation mới)
+        DieuKhien-->>GiaoDien: 22 Redirect đến /messages/{conversation_id}
+        GiaoDien-->>NguoiDung: 23 Hiển thị giao diện nhóm chat mới\\ntrên danh sách cuộc hội thoại
+    end
+
+    %% =============================================
+    %% LỖI CHUNG
+    %% =============================================
+    rect rgb(255, 235, 200)
+        Note over NguoiDung, HeTong: Lỗi chung
+
+        alt Mất kết nối hệ thống/Database
+            DieuKhien->>HeTong: Thực hiện lưu dữ liệu
+            HeTong-->>DieuKhien: Lỗi kết nối (Timeout/Error)
+            DieuKhien-->>GiaoDien: Trả về lỗi 500: "Đã xảy ra lỗi hệ thống."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+    end

@@ -1,0 +1,63 @@
+---
+title: Sơ đồ tuần tự - Đăng bài viết
+---
+sequenceDiagram
+    actor NguoiDung as Người dùng
+    participant GiaoDien as :Giao diện\nBảng tin
+    participant DieuKhien as :Điều khiển\nBài viết
+    participant HeTong as :Hệ thống\n(Database/Storage)
+
+    NguoiDung->>GiaoDien: 1 Mở trang bảng tin
+    GiaoDien-->>NguoiDung: 2 Hiển thị form đăng bài (nội dung, ảnh/file, link)
+    NguoiDung->>GiaoDien: 3 Nhập nội dung bài viết
+    NguoiDung->>GiaoDien: 4 Đính kèm ảnh/GIF/tài liệu (tuỳ chọn)
+    NguoiDung->>GiaoDien: 5 Thêm đường dẫn link (tuỳ chọn)
+    NguoiDung->>GiaoDien: 6 Nhấn "Đăng bài"
+
+    rect rgb(240, 240, 240)
+        Note over NguoiDung, HeTong: Quá trình xử lý đăng bài viết
+
+        rect rgb(220, 235, 220)
+            Note over NguoiDung, HeTong: Đăng bài viết thành công
+            GiaoDien->>DieuKhien: 7 Gửi yêu cầu (content, media[], link_url, group_id)
+            DieuKhien->>DieuKhien: 8 Validate dữ liệu đầu vào
+            DieuKhien->>HeTong: 9 Lưu bài viết vào bảng posts (user_id, content, link_url, group_id)
+            HeTong-->>DieuKhien: 10 Kết quả: Tạo bài viết thành công (trả về post_id)
+            DieuKhien->>DieuKhien: 11 Kiểm tra có file đính kèm không
+            DieuKhien->>HeTong: 12 Upload từng file lên Storage (posts/images hoặc posts/files)
+            HeTong-->>DieuKhien: 13 Kết quả: Trả về đường dẫn file đã lưu
+            DieuKhien->>HeTong: 14 Lưu thông tin media vào bảng post_media (post_id, media_url, media_type)
+            HeTong-->>DieuKhien: 15 Kết quả: Lưu media thành công
+            DieuKhien-->>GiaoDien: 16 Redirect về trang trước kèm thông báo thành công
+            GiaoDien-->>NguoiDung: 17 Hiển thị thông báo: "Bài viết đã được đăng!" và cập nhật bảng tin
+        end
+
+        Note over NguoiDung, HeTong: Đăng bài viết không thành công
+
+        alt Nội dung bài viết bị bỏ trống
+            GiaoDien->>DieuKhien: Gửi yêu cầu
+            DieuKhien-->>GiaoDien: Trả về lỗi: "Vui lòng nhập nội dung bài viết!"
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi validation
+        end
+
+        alt Nội dung vượt quá 500 ký tự
+            GiaoDien->>DieuKhien: Gửi yêu cầu
+            DieuKhien-->>GiaoDien: Trả về lỗi: "Nội dung không được vượt quá 500 ký tự."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi validation
+        end
+
+        alt File đính kèm vượt quá kích thước cho phép (100MB)
+            GiaoDien->>DieuKhien: Gửi yêu cầu (kèm file quá lớn)
+            DieuKhien-->>GiaoDien: Trả về lỗi: "File đính kèm không được vượt quá 100MB."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi, giữ nguyên nội dung đã nhập
+        end
+
+        alt Lỗi hệ thống khi xử lý bài viết (Exception)
+            GiaoDien->>DieuKhien: Gửi yêu cầu
+            DieuKhien->>HeTong: Thực hiện lưu bài viết / upload file
+            HeTong-->>DieuKhien: Lỗi hệ thống (Storage Error / DB Error)
+            DieuKhien->>DieuKhien: Ghi log lỗi (Log::error)
+            DieuKhien-->>GiaoDien: Trả về lỗi: "Đã xảy ra lỗi khi đăng bài."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi, giữ nguyên nội dung đã nhập
+        end
+    end

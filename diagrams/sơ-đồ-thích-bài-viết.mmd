@@ -1,0 +1,52 @@
+---
+title: Sơ đồ tuần tự - Thích bài viết
+---
+sequenceDiagram
+    actor NguoiDung as Người dùng
+    participant GiaoDien as :Giao diện\nBài viết
+    participant DieuKhien as :Điều khiển\nLike
+    participant HeTong as :Hệ thống\n(Database)
+
+    NguoiDung->>GiaoDien: 1 Nhấn nút "Thích" trên bài viết
+
+    rect rgb(240, 240, 240)
+        Note over NguoiDung, HeTong: Quá trình xử lý tương tác Like (AJAX)
+
+        rect rgb(220, 235, 220)
+            Note over NguoiDung, HeTong: Thích bài viết thành công (chưa thích trước đó)
+            GiaoDien->>DieuKhien: 2 Gửi yêu cầu POST /posts/{id}/like
+            DieuKhien->>HeTong: 3 Kiểm tra bản ghi likes (user_id + post_id)
+            HeTong-->>DieuKhien: 4 Kết quả: Chưa tồn tại
+            DieuKhien->>HeTong: 5 Tạo bản ghi Like mới + tăng like_count
+            HeTong-->>DieuKhien: 6 Kết quả: Lưu thành công
+            DieuKhien->>HeTong: 7 Tạo thông báo cho chủ bài viết (nếu không phải chính mình)
+            HeTong-->>DieuKhien: 8 Kết quả: Thông báo đã tạo
+            DieuKhien-->>GiaoDien: 9 JSON: status="liked", count=số_like_mới
+            GiaoDien-->>NguoiDung: 10 Cập nhật icon tim đỏ + số lượt thích tăng lên
+        end
+
+        rect rgb(235, 220, 220)
+            Note over NguoiDung, HeTong: Bỏ thích bài viết (đã thích trước đó)
+            GiaoDien->>DieuKhien: 11 Gửi yêu cầu POST /posts/{id}/like
+            DieuKhien->>HeTong: 12 Kiểm tra bản ghi likes (user_id + post_id)
+            HeTong-->>DieuKhien: 13 Kết quả: Đã tồn tại
+            DieuKhien->>HeTong: 14 Xóa bản ghi Like + giảm like_count
+            HeTong-->>DieuKhien: 15 Kết quả: Xóa thành công
+            DieuKhien-->>GiaoDien: 16 JSON: status="unliked", count=số_like_mới
+            GiaoDien-->>NguoiDung: 17 Cập nhật icon tim trống + số lượt thích giảm xuống
+        end
+
+        alt Người dùng chưa đăng nhập
+            GiaoDien->>DieuKhien: Gửi yêu cầu
+            DieuKhien-->>GiaoDien: Trả về lỗi 401 Unauthorized
+            GiaoDien-->>NguoiDung: Chuyển hướng sang trang đăng nhập
+        end
+
+        alt Bài viết không tồn tại
+            GiaoDien->>DieuKhien: Gửi yêu cầu
+            DieuKhien->>HeTong: Tìm kiếm bài viết theo post_id
+            HeTong-->>DieuKhien: Kết quả: Không tìm thấy
+            DieuKhien-->>GiaoDien: Trả về lỗi 404 Not Found
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+    end

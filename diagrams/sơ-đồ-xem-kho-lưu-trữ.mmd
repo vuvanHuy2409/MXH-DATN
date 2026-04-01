@@ -1,0 +1,74 @@
+---
+title: Sơ đồ tuần tự - Xem kho lưu trữ (Ảnh, file, video)
+---
+sequenceDiagram
+    actor NguoiDung as Người dùng
+    participant GiaoDien as :Giao diện\nTin nhắn
+    participant DieuKhien as :Hệ thống
+    participant HeTong as :Hệ thống\n(Database)
+
+    %% =============================================
+    %% BƯỚC KHỞI ĐẦU
+    %% =============================================
+    NguoiDung->>GiaoDien: 1 Đăng nhập vào hệ thống
+    GiaoDien->>DieuKhien: 2 Xác thực tài khoản
+    DieuKhien-->>GiaoDien: 3 Xác thực thành công
+    GiaoDien-->>NguoiDung: 4 Hiển thị giao diện Trang chủ
+
+    NguoiDung->>GiaoDien: 5 Truy cập vào biểu tượng tin nhắn
+    GiaoDien->>DieuKhien: 6 Tải danh sách cuộc hội thoại
+    DieuKhien->>HeTong: 7 Truy vấn conversations của người dùng
+    HeTong-->>DieuKhien: 8 Kết quả: Danh sách cuộc hội thoại
+    DieuKhien-->>GiaoDien: 9 Trả về danh sách
+    GiaoDien-->>NguoiDung: 10 Hiển thị cửa sổ tin nhắn
+
+    NguoiDung->>GiaoDien: 11 Chọn vào cuộc hội thoại bất kì
+    GiaoDien->>DieuKhien: 12 Tải nội dung cuộc hội thoại
+    DieuKhien->>HeTong: 13 Kiểm tra thành viên + tải lịch sử tin nhắn
+    HeTong-->>DieuKhien: 14 Kết quả: Hợp lệ + lịch sử tin nhắn
+    DieuKhien-->>GiaoDien: 15 Trả về dữ liệu hội thoại
+    GiaoDien-->>NguoiDung: 16 Hiển thị giao diện cuộc hội thoại
+
+    %% =============================================
+    %% XEM KHO LƯU TRỮ
+    %% =============================================
+    NguoiDung->>GiaoDien: 17 Chọn vào chức năng kho lưu trữ\n(trong phần mở rộng hội thoại)
+    GiaoDien->>DieuKhien: 18 Gửi yêu cầu GET /messages/{conversation}/media
+
+    DieuKhien->>HeTong: 19 Kiểm tra tư cách thành viên cuộc hội thoại
+    HeTong-->>DieuKhien: 20 Kết quả: Là thành viên
+
+    DieuKhien->>HeTong: 21 Truy vấn 100 tin nhắn mới nhất\ncó message_type IN (image, video, file, link)\nhoặc nội dung text chứa URL (http, .com, .vn, .net, .org, .edu, .gov)
+    HeTong-->>DieuKhien: 22 Kết quả: Danh sách media/file/link
+
+    rect rgb(220, 235, 220)
+        Note over NguoiDung, HeTong: Có dữ liệu trong kho lưu trữ
+
+        DieuKhien-->>GiaoDien: 23 JSON: Danh sách ảnh, file, video, link
+        GiaoDien-->>NguoiDung: 24 Hiển thị cửa sổ giao diện\nfile, ảnh, link theo từng tab
+    end
+
+    rect rgb(255, 220, 220)
+        Note over NguoiDung, HeTong: Kho lưu trữ trống
+
+        alt Chưa có file/ảnh/link nào được chia sẻ
+            DieuKhien-->>GiaoDien: JSON: Danh sách rỗng
+            GiaoDien-->>NguoiDung: Hiển thị thông báo\n"Chưa có nội dung nào được chia sẻ"
+        end
+    end
+
+    rect rgb(255, 235, 200)
+        Note over NguoiDung, HeTong: Lỗi chung
+
+        alt Không phải thành viên cuộc hội thoại
+            DieuKhien-->>GiaoDien: Trả về lỗi 403 Forbidden
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+
+        alt Mất kết nối hệ thống/Database
+            DieuKhien->>HeTong: Thực hiện truy vấn
+            HeTong-->>DieuKhien: Lỗi kết nối (Timeout/Error)
+            DieuKhien-->>GiaoDien: Trả về lỗi 500: "Đã xảy ra lỗi hệ thống."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+    end

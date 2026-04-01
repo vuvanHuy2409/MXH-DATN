@@ -1,0 +1,147 @@
+---
+title: Sơ đồ tuần tự - Gửi và Báo cáo tin nhắn
+---
+sequenceDiagram
+    actor NguoiDung as Người dùng
+    participant GiaoDien as :Giao diện\nTin nhắn
+    participant DieuKhien as :Hệ thống
+    participant AI as :Hệ thống AI\nKiểm duyệt
+    participant HeTong as :Hệ thống\n(Database/Storage)
+
+    %% =============================================
+    %% BƯỚC KHỞI ĐẦU
+    %% =============================================
+    NguoiDung->>GiaoDien: 1 Đăng nhập vào hệ thống
+    GiaoDien->>DieuKhien: 2 Xác thực tài khoản
+    DieuKhien-->>GiaoDien: 3 Xác thực thành công
+    GiaoDien-->>NguoiDung: 4 Hiển thị giao diện Trang chủ
+
+    NguoiDung->>GiaoDien: 5 Nhấn vào biểu tượng Tin nhắn
+    GiaoDien->>DieuKhien: 6 Tải danh sách cuộc trò chuyện
+    DieuKhien->>HeTong: 7 Truy vấn conversations của người dùng
+    HeTong-->>DieuKhien: 8 Kết quả: Danh sách cuộc trò chuyện
+    DieuKhien-->>GiaoDien: 9 Trả về danh sách
+    GiaoDien-->>NguoiDung: 10 Hiển thị giao diện tin nhắn
+
+    NguoiDung->>GiaoDien: 11 Mở một cuộc trò chuyện
+    GiaoDien->>DieuKhien: 12 Kiểm tra tư cách thành viên cuộc trò chuyện
+    DieuKhien->>HeTong: 13 Truy vấn participants
+    HeTong-->>DieuKhien: 14 Kết quả: Là thành viên
+    DieuKhien-->>GiaoDien: 15 Tải lịch sử tin nhắn
+    GiaoDien-->>NguoiDung: 16 Hiển thị giao diện hội thoại
+
+    %% =============================================
+    %% NHÁNH 1: GỬI TIN NHẮN VĂN BẢN
+    %% =============================================
+    rect rgb(220, 235, 220)
+        Note over NguoiDung, HeTong: Nhánh 1 — Gửi tin nhắn văn bản
+
+        NguoiDung->>GiaoDien: 17 Soạn nội dung văn bản và nhấn "Gửi"
+        GiaoDien->>DieuKhien: 18 Gửi yêu cầu POST /messages/{conversation} (content, message_type=text)
+        DieuKhien->>HeTong: 19 Kiểm tra quan hệ bạn bè (chat 1-1)
+        HeTong-->>DieuKhien: 20 Kết quả: Đang là bạn bè (follow hai chiều)
+        DieuKhien->>DieuKhien: 21 Validate (content max:1000)
+        DieuKhien->>AI: 22 Gửi nội dung văn bản qua API cho AI kiểm duyệt
+
+        AI->>AI: 23 Phân tích ngôn ngữ và tính điểm vi phạm
+
+        alt Nội dung vi phạm
+            AI-->>DieuKhien: 24a Kết quả: Vi phạm
+            DieuKhien-->>GiaoDien: 25a Trả về lỗi: "Nội dung vi phạm tiêu chuẩn cộng đồng"
+            GiaoDien-->>NguoiDung: 26a Hiển thị thông báo vi phạm, yêu cầu soạn lại
+        end
+
+        rect rgb(200, 230, 255)
+            Note over NguoiDung, HeTong: Nội dung không vi phạm
+            AI-->>DieuKhien: 24b Kết quả: Không vi phạm
+            DieuKhien->>HeTong: 25b Lưu tin nhắn vào bảng messages\n(conversation_id, sender_id, content, message_type=text)
+            HeTong-->>DieuKhien: 26b Kết quả: Lưu thành công
+            DieuKhien->>HeTong: 27b Cập nhật last_message_id cho conversation
+            HeTong-->>DieuKhien: 28b Kết quả: Cập nhật thành công
+            DieuKhien-->>GiaoDien: 29b JSON: Trả về đối tượng message (kèm thông tin sender)
+            GiaoDien-->>NguoiDung: 30b Hiển thị tin nhắn mới lên giao diện hội thoại
+        end
+    end
+
+    %% =============================================
+    %% NHÁNH 2: GỬI TIN NHẮN ẢNH / FILE
+    %% =============================================
+    rect rgb(255, 245, 210)
+        Note over NguoiDung, HeTong: Nhánh 2 — Gửi tin nhắn ảnh / file
+
+        NguoiDung->>GiaoDien: 31 Chọn ảnh hoặc file và nhấn "Gửi"
+        GiaoDien->>DieuKhien: 32 Gửi yêu cầu POST /messages/{conversation}\n(image max:40MB hoặc file max:200MB)
+        DieuKhien->>HeTong: 33 Kiểm tra quan hệ bạn bè (chat 1-1)
+        HeTong-->>DieuKhien: 34 Kết quả: Đang là bạn bè
+        DieuKhien->>DieuKhien: 35 Validate file (kích thước, định dạng)
+
+        alt File vượt quá giới hạn hoặc sai định dạng
+            DieuKhien-->>GiaoDien: Trả về lỗi validation
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+
+        rect rgb(200, 230, 255)
+            Note over NguoiDung, HeTong: File hợp lệ
+            DieuKhien->>HeTong: 36 Upload file lên Storage\n(messages/images hoặc messages/files)
+            HeTong-->>DieuKhien: 37 Kết quả: Trả về đường dẫn file
+            DieuKhien->>HeTong: 38 Lưu tin nhắn vào bảng messages\n(conversation_id, sender_id, content=path, message_type, metadata)
+            HeTong-->>DieuKhien: 39 Kết quả: Lưu thành công
+            DieuKhien->>HeTong: 40 Cập nhật last_message_id cho conversation
+            HeTong-->>DieuKhien: 41 Kết quả: Cập nhật thành công
+            DieuKhien-->>GiaoDien: 42 JSON: Trả về đối tượng message
+            GiaoDien-->>NguoiDung: 43 Hiển thị ảnh / file lên giao diện hội thoại
+        end
+    end
+
+    %% =============================================
+    %% NHÁNH 3: BÁO CÁO TIN NHẮN
+    %% =============================================
+    rect rgb(240, 225, 255)
+        Note over NguoiDung, HeTong: Nhánh 3 — Báo cáo tin nhắn
+
+        NguoiDung->>GiaoDien: 44 Nhấn giữ hoặc nhấn "..." trên tin nhắn
+        GiaoDien-->>NguoiDung: 45 Hiển thị menu tuỳ chọn (Báo cáo)
+        NguoiDung->>GiaoDien: 46 Chọn "Báo cáo tin nhắn"
+        GiaoDien-->>NguoiDung: 47 Hiển thị modal báo cáo (chọn lý do, nhập chi tiết)
+        NguoiDung->>GiaoDien: 48 Chọn lý do + nhập chi tiết (tuỳ chọn)
+        NguoiDung->>GiaoDien: 49 Nhấn "Gửi báo cáo"
+
+        rect rgb(200, 230, 255)
+            Note over NguoiDung, HeTong: Báo cáo thành công
+            GiaoDien->>DieuKhien: 50 Gửi yêu cầu POST /reports\n(reported_id=message_id, type="message", reason, details)
+            DieuKhien->>DieuKhien: 51 Validate dữ liệu (reported_id, type, reason bắt buộc)
+            DieuKhien->>HeTong: 52 Lưu báo cáo vào bảng reports\n(user_id, reported_id, type, reason, details)
+            HeTong-->>DieuKhien: 53 Kết quả: Lưu thành công
+            DieuKhien-->>GiaoDien: 54 JSON: success=true,\n"Báo cáo của bạn đã được gửi thành công."
+            GiaoDien-->>NguoiDung: 55 Đóng modal, hiển thị thông báo thành công
+        end
+
+        alt Thiếu lý do báo cáo
+            DieuKhien-->>GiaoDien: Trả về lỗi 422: "Vui lòng chọn lý do báo cáo."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi trong modal
+        end
+    end
+
+    %% =============================================
+    %% CÁC LỖI CHUNG
+    %% =============================================
+    rect rgb(255, 220, 220)
+        Note over NguoiDung, HeTong: Các lỗi chung
+
+        alt Không còn là bạn bè (đã hủy theo dõi)
+            DieuKhien-->>GiaoDien: Trả về lỗi 403:\n"Người này đã hủy theo dõi bạn.\nBạn không thể gửi tin nhắn."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+
+        alt Không phải thành viên cuộc trò chuyện
+            DieuKhien-->>GiaoDien: Trả về lỗi 403 Forbidden
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+
+        alt Mất kết nối hệ thống/Database
+            DieuKhien->>HeTong: Thực hiện thao tác
+            HeTong-->>DieuKhien: Lỗi kết nối (Timeout/Error)
+            DieuKhien-->>GiaoDien: Trả về lỗi 500: "Đã xảy ra lỗi hệ thống."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+    end

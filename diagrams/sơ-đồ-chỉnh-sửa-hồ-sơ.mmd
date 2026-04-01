@@ -1,0 +1,77 @@
+---
+title: Sơ đồ tuần tự - Chỉnh sửa hồ sơ cá nhân
+---
+sequenceDiagram
+    actor NguoiDung as Người dùng
+    participant GiaoDien as :Giao diện\nTrang cá nhân
+    participant DieuKhien as :Hệ thống
+    participant HeTong as :Hệ thống\n(Database/Storage)
+
+    %% =============================================
+    %% BƯỚC KHỞI ĐẦU
+    %% =============================================
+    NguoiDung->>GiaoDien: 1 Đăng nhập vào hệ thống
+    GiaoDien->>DieuKhien: 2 Xác thực tài khoản
+    DieuKhien-->>GiaoDien: 3 Xác thực thành công
+    GiaoDien-->>NguoiDung: 4 Hiển thị giao diện Trang chủ
+
+    NguoiDung->>GiaoDien: 5 Chọn chức năng Trang cá nhân
+    GiaoDien->>DieuKhien: 6 Gửi yêu cầu GET /profile
+    DieuKhien->>HeTong: 7 Truy vấn thông tin người dùng
+    HeTong-->>DieuKhien: 8 Kết quả: Dữ liệu hồ sơ (bio, avatar_url, link_url)
+    DieuKhien-->>GiaoDien: 9 Trả về dữ liệu hồ sơ
+    GiaoDien-->>NguoiDung: 10 Hiển thị giao diện Trang cá nhân
+
+    NguoiDung->>GiaoDien: 11 Nhấn "Chỉnh sửa hồ sơ"
+    GiaoDien->>DieuKhien: 12 Gửi yêu cầu GET /profile/edit
+    DieuKhien-->>GiaoDien: 13 Trả về form chỉnh sửa (dữ liệu hiện tại)
+    GiaoDien-->>NguoiDung: 14 Hiển thị form chỉnh sửa hồ sơ
+
+    NguoiDung->>GiaoDien: 15 Nhập Tiểu sử (max 160 ký tự),\nLink liên kết, chọn Ảnh đại diện và nhấn "Lưu"
+    GiaoDien->>DieuKhien: 16 Gửi yêu cầu POST /profile/edit\n(bio, link_url, avatar)
+
+    %% =============================================
+    %% KIỂM TRA ĐỊNH DẠNG DỮ LIỆU
+    %% =============================================
+    DieuKhien->>DieuKhien: 17 Kiểm tra định dạng dữ liệu\n(bio max:160, avatar: jpeg/png/jpg/gif, max:10MB)
+
+    %% ---- Không hợp lệ ----
+    rect rgb(255, 220, 220)
+        Note over NguoiDung, HeTong: Dữ liệu không hợp lệ
+
+        alt Tiểu sử vượt quá 160 ký tự
+            DieuKhien-->>GiaoDien: Trả về lỗi validation:\n"Tiểu sử không được vượt quá 160 ký tự."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi định dạng,\nyêu cầu nhập lại
+        end
+
+        alt Ảnh đại diện sai định dạng hoặc vượt 10MB
+            DieuKhien-->>GiaoDien: Trả về lỗi validation:\n"Ảnh không hợp lệ hoặc vượt quá 10MB.\nChỉ chấp nhận jpeg, png, jpg, gif."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi định dạng/dung lượng,\nyêu cầu chọn lại ảnh
+        end
+    end
+
+    %% ---- Hợp lệ ----
+    rect rgb(220, 235, 220)
+        Note over NguoiDung, HeTong: Dữ liệu hợp lệ — Cập nhật thành công
+
+        DieuKhien->>HeTong: 18 Upload ảnh đại diện mới lên Storage\n(/public/avatars/{timestamp}_{user_id}.ext) nếu có
+        HeTong-->>DieuKhien: 19 Kết quả: Trả về đường dẫn ảnh mới (/avatars/...)
+        DieuKhien->>HeTong: 20 Lưu thông tin vào CSDL\n(bio, link_url, avatar_url)
+        HeTong-->>DieuKhien: 21 Kết quả: Cập nhật thành công
+        DieuKhien-->>GiaoDien: 22 Redirect về /profile kèm thông báo:\n"Hồ sơ đã được cập nhật!"
+        GiaoDien-->>NguoiDung: 23 Thông báo thành công và tải lại giao diện Trang cá nhân
+    end
+
+    %% =============================================
+    %% LỖI CHUNG
+    %% =============================================
+    rect rgb(255, 235, 200)
+        Note over NguoiDung, HeTong: Lỗi chung
+
+        alt Mất kết nối hệ thống/Database
+            DieuKhien->>HeTong: Thực hiện lưu dữ liệu
+            HeTong-->>DieuKhien: Lỗi kết nối (Timeout/Error)
+            DieuKhien-->>GiaoDien: Trả về lỗi 500: "Đã xảy ra lỗi hệ thống."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+    end

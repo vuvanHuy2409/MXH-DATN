@@ -1,0 +1,83 @@
+---
+title: Sơ đồ tuần tự - Xoá tin nhắn / Nhóm chat
+---
+sequenceDiagram
+    actor NguoiDung as Người dùng
+    participant GiaoDien as :Giao diện\nTin nhắn
+    participant DieuKhien as :Hệ thống
+    participant HeTong as :Hệ thống\n(Database)
+
+    %% =============================================
+    %% BƯỚC KHỞI ĐẦU
+    %% =============================================
+    NguoiDung->>GiaoDien: 1 Đăng nhập vào hệ thống
+    GiaoDien->>DieuKhien: 2 Xác thực tài khoản
+    DieuKhien-->>GiaoDien: 3 Xác thực thành công
+    GiaoDien-->>NguoiDung: 4 Hiển thị giao diện Trang chủ
+
+    NguoiDung->>GiaoDien: 5 Truy cập vào biểu tượng tin nhắn
+    GiaoDien->>DieuKhien: 6 Tải danh sách cuộc hội thoại
+    DieuKhien->>HeTong: 7 Truy vấn conversations của người dùng
+    HeTong-->>DieuKhien: 8 Kết quả: Danh sách cuộc hội thoại
+    DieuKhien-->>GiaoDien: 9 Trả về danh sách
+    GiaoDien-->>NguoiDung: 10 Hiển thị cửa sổ tin nhắn
+
+    NguoiDung->>GiaoDien: 11 Chọn vào cuộc hội thoại bất kì
+    GiaoDien->>DieuKhien: 12 Tải nội dung cuộc hội thoại
+    DieuKhien->>HeTong: 13 Kiểm tra thành viên + tải lịch sử tin nhắn
+    HeTong-->>DieuKhien: 14 Kết quả: Hợp lệ + lịch sử tin nhắn
+    DieuKhien-->>GiaoDien: 15 Trả về dữ liệu hội thoại
+    GiaoDien-->>NguoiDung: 16 Hiển thị giao diện cuộc hội thoại
+
+    %% =============================================
+    %% XOÁ TIN NHẮN CỤ THỂ
+    %% =============================================
+    NguoiDung->>GiaoDien: 17 Chọn mở rộng tin nhắn cần xoá\\nvà chọn chức năng "Xoá tin nhắn"
+    GiaoDien-->>NguoiDung: 18 Hiển thị popup xác nhận xoá tin nhắn
+
+    rect rgb(220, 235, 220)
+        Note over NguoiDung, HeTong: Xoá tin nhắn thành công
+
+        NguoiDung->>GiaoDien: 19 Xác nhận xoá
+        GiaoDien->>DieuKhien: 20 Gửi yêu cầu DELETE /messages/{conversation}/message/{message}
+        DieuKhien->>HeTong: 21 Kiểm tra quyền (người gửi hoặc admin nhóm)\\nXoá tin nhắn khỏi CSDL
+        HeTong-->>DieuKhien: 22 Kết quả: Xoá thành công
+        DieuKhien-->>GiaoDien: 23 JSON: status="success"
+        GiaoDien-->>NguoiDung: 24 Ẩn tin nhắn khỏi giao diện hội thoại
+    end
+
+    %% =============================================
+    %% XOÁ CUỘC HỘI THOẠI / NHÓM CHAT
+    %% =============================================
+    NguoiDung->>GiaoDien: 25 Chọn chức năng Xoá cuộc hội thoại\\n(trong phần mở rộng cuộc hội thoại)
+    GiaoDien-->>NguoiDung: 26 Hiển thị popup xác nhận xoá
+
+    rect rgb(220, 235, 220)
+        Note over NguoiDung, HeTong: Xoá cuộc hội thoại thành công
+
+        NguoiDung->>GiaoDien: 27 Xác nhận xoá
+        GiaoDien->>DieuKhien: 28 Gửi yêu cầu DELETE /messages/{conversation}/delete-chat
+        DieuKhien->>HeTong: 29 Nếu là nhóm: Tạo tin nhắn hệ thống\\n"username đã rời khỏi nhóm"\\nXoá bản ghi participant của người dùng khỏi CSDL
+        HeTong-->>DieuKhien: 30 Kết quả: Xoá thành công
+        DieuKhien-->>GiaoDien: 31 JSON: status="success"
+        GiaoDien-->>NguoiDung: 32 Ẩn cuộc hội thoại trong danh sách tin nhắn
+    end
+
+    %% =============================================
+    %% LỖI CHUNG
+    %% =============================================
+    rect rgb(255, 235, 200)
+        Note over NguoiDung, HeTong: Lỗi chung
+
+        alt Không có quyền xoá tin nhắn\\n(không phải người gửi hoặc admin nhóm)
+            DieuKhien-->>GiaoDien: Trả về lỗi 403 Forbidden
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+
+        alt Mất kết nối hệ thống/Database
+            DieuKhien->>HeTong: Thực hiện xoá dữ liệu
+            HeTong-->>DieuKhien: Lỗi kết nối (Timeout/Error)
+            DieuKhien-->>GiaoDien: Trả về lỗi 500: "Đã xảy ra lỗi hệ thống."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+    end

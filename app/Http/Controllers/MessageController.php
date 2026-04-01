@@ -37,10 +37,9 @@ class MessageController extends Controller
 
         $request->validate([
             'content' => 'nullable|string|max:1000',
-            'message_type' => 'nullable|in:text,image,video,file,call_log,post_share',
+            'message_type' => 'nullable|in:text,image,file,call_log,post_share',
             'image' => 'nullable|file|max:40960',
-            'video' => 'nullable|file|max:102400',
-            'file' => 'nullable|file|max:102400',
+            'file' => 'nullable|file|max:204800', // 200MB
             'metadata' => 'nullable|array',
         ]);
 

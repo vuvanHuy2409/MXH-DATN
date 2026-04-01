@@ -1,0 +1,90 @@
+---
+title: Sơ đồ tuần tự - Tạo cộng đồng mới
+---
+sequenceDiagram
+    actor NguoiDung as Người dùng
+    participant GiaoDien as :Giao diện\nCộng đồng
+    participant DieuKhien as :Hệ thống
+    participant HeTong as :Hệ thống\n(Database)
+
+    %% =============================================
+    %% BƯỚC KHỞI ĐẦU
+    %% =============================================
+    NguoiDung->>GiaoDien: 1 Đăng nhập vào hệ thống
+    GiaoDien->>DieuKhien: 2 Xác thực tài khoản
+    DieuKhien-->>GiaoDien: 3 Xác thực thành công
+    GiaoDien-->>NguoiDung: 4 Hiển thị giao diện Trang chủ
+
+    NguoiDung->>GiaoDien: 5 Truy cập vào biểu tượng Cộng đồng
+    GiaoDien->>DieuKhien: 6 Tải danh sách cộng đồng của người dùng
+    DieuKhien->>HeTong: 7 Truy vấn social_groups của người dùng
+    HeTong-->>DieuKhien: 8 Kết quả: Danh sách cộng đồng
+    DieuKhien-->>GiaoDien: 9 Trả về danh sách
+    GiaoDien-->>NguoiDung: 10 Hiển thị giao diện Cộng đồng
+
+    %% =============================================
+    %% MỞ FORM TẠO CỘNG ĐỒNG
+    %% =============================================
+    NguoiDung->>GiaoDien: 11 Chọn vào biểu tượng tạo cộng đồng
+    GiaoDien-->>NguoiDung: 12 Hiển thị form chọn loại cộng đồng\\n(Lớp học / Cơ bản)
+
+    NguoiDung->>GiaoDien: 13 Chọn loại cộng đồng (Lớp hoặc Cơ bản)
+    GiaoDien-->>NguoiDung: 14 Hiển thị form nhập thông tin cộng đồng
+
+    %% =============================================
+    %% NHÁNH: TẠO CỘNG ĐỒNG THEO LỚP (type=class)
+    %% =============================================
+    rect rgb(220, 235, 220)
+        Note over NguoiDung, HeTong: Chọn loại: Lớp học (type=class) — chỉ giáo viên
+
+        NguoiDung->>GiaoDien: 15a Nhập tên cộng đồng, tên lớp, mô tả\\nvà nhấn "Tạo cộng đồng"
+        GiaoDien->>DieuKhien: 16a Gửi yêu cầu POST /groups\\n(type=class, name, class_name, description)
+
+        DieuKhien->>DieuKhien: 17a Validate dữ liệu\\n(type: in:community,class;\\nname: required, max:255, unique;\\nclass_name: required; description: max:1000)\\nKiểm tra quyền: chỉ giáo viên mới tạo được loại Lớp
+
+        DieuKhien->>HeTong: 18a Tạo cộng đồng (privacy=private)\\nThêm người tạo vào nhóm với role=admin\\nTruy vấn danh sách sinh viên theo class_name\\nThêm tất cả thành viên lớp vào cộng đồng (role=member)
+        HeTong-->>DieuKhien: 19a Kết quả: Lưu thành công
+        DieuKhien-->>GiaoDien: 20a Redirect đến /groups/{slug}
+        GiaoDien-->>NguoiDung: 21a Hiển thị giao diện cộng đồng mới\\n(đã có đầy đủ thành viên lớp)
+    end
+
+    %% =============================================
+    %% NHÁNH: TẠO CỘNG ĐỒNG CƠ BẢN (type=community)
+    %% =============================================
+    rect rgb(220, 235, 220)
+        Note over NguoiDung, HeTong: Chọn loại: Cơ bản (type=community)
+
+        NguoiDung->>GiaoDien: 15b Nhập tên cộng đồng, quyền riêng tư\\n(công khai / riêng tư), mô tả\\nvà nhấn "Tạo cộng đồng"
+        GiaoDien->>DieuKhien: 16b Gửi yêu cầu POST /groups\\n(type=community, name, privacy, description)
+
+        DieuKhien->>DieuKhien: 17b Validate dữ liệu\\n(name: required, max:255, unique;\\nprivacy: required, in:public,private;\\ndescription: max:1000)
+
+        DieuKhien->>HeTong: 18b Tạo cộng đồng với privacy đã chọn\\nThêm người tạo vào nhóm với role=admin\\nLưu thông tin vào CSDL
+        HeTong-->>DieuKhien: 19b Kết quả: Lưu thành công
+        DieuKhien-->>GiaoDien: 20b Redirect đến /groups/{slug}
+        GiaoDien-->>NguoiDung: 21b Hiển thị giao diện cộng đồng mới
+    end
+
+    %% =============================================
+    %% LỖI CHUNG
+    %% =============================================
+    rect rgb(255, 235, 200)
+        Note over NguoiDung, HeTong: Lỗi chung
+
+        alt Dữ liệu không hợp lệ (thiếu tên, tên đã tồn tại,...)
+            DieuKhien-->>GiaoDien: Trả về lỗi validation 422
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi, giữ nguyên dữ liệu đã nhập
+        end
+
+        alt Không có quyền tạo cộng đồng theo lớp\\n(người dùng không phải giáo viên)
+            DieuKhien-->>GiaoDien: Trả về lỗi:\\n"Chỉ giáo viên mới có quyền tạo cộng đồng theo lớp học."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+
+        alt Mất kết nối hệ thống/Database
+            DieuKhien->>HeTong: Thực hiện lưu dữ liệu
+            HeTong-->>DieuKhien: Lỗi kết nối (Timeout/Error)
+            DieuKhien-->>GiaoDien: Trả về lỗi 500: "Đã xảy ra lỗi hệ thống."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+    end

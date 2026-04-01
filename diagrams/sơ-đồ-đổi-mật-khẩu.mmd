@@ -1,0 +1,62 @@
+---
+title: Sơ đồ tuần tự - Đổi mật khẩu
+---
+sequenceDiagram
+    actor NguoiDung as Người dùng
+    participant GiaoDien as :Giao diện\nCài đặt
+    participant DieuKhien as :Điều khiển\nCài đặt
+    participant HeTong as :Hệ thống\n(Database)
+
+    NguoiDung->>GiaoDien: 1 Mở trang Cài đặt
+    GiaoDien-->>NguoiDung: 2 Hiển thị trang cài đặt
+    NguoiDung->>GiaoDien: 3 Nhấn "Bảo mật & Mật khẩu"
+    GiaoDien-->>NguoiDung: 4 Hiển thị modal đổi mật khẩu
+    NguoiDung->>GiaoDien: 5 Nhập mật khẩu hiện tại, mật khẩu mới, xác nhận mật khẩu
+    NguoiDung->>GiaoDien: 6 Nhấn "Cập nhật"
+
+    rect rgb(240, 240, 240)
+        Note over NguoiDung, HeTong: Quá trình xử lý đổi mật khẩu
+
+        rect rgb(220, 235, 220)
+            Note over NguoiDung, HeTong: Đổi mật khẩu thành công
+            GiaoDien->>DieuKhien: 7 Gửi yêu cầu (current_password, new_password, confirmation)
+            DieuKhien->>HeTong: 8 Truy vấn lấy password_hash của tài khoản
+            HeTong-->>DieuKhien: 9 Kết quả: Trả về password_hash
+            DieuKhien->>DieuKhien: 10 Hash::check — xác thực mật khẩu hiện tại
+            DieuKhien->>HeTong: 11 Cập nhật password_hash mới vào CSDL
+            HeTong-->>DieuKhien: 12 Kết quả: Cập nhật thành công
+            DieuKhien-->>GiaoDien: 13 Redirect về cài đặt kèm thông báo thành công
+            GiaoDien-->>NguoiDung: 14 Hiển thị thông báo: "Mật khẩu đã được thay đổi thành công."
+        end
+
+        Note over NguoiDung, HeTong: Đổi mật khẩu không thành công
+
+        alt Thiếu thông tin hoặc dữ liệu không hợp lệ
+            GiaoDien->>DieuKhien: Gửi yêu cầu
+            DieuKhien-->>GiaoDien: Trả về lỗi validation: "Vui lòng nhập đầy đủ thông tin!"
+            GiaoDien-->>NguoiDung: Hiển thị lỗi trong modal, tự mở lại modal
+        end
+
+        alt Mật khẩu mới ít hơn 6 ký tự hoặc không khớp xác nhận
+            GiaoDien->>DieuKhien: Gửi yêu cầu
+            DieuKhien-->>GiaoDien: Trả về lỗi: "Mật khẩu phải có ít nhất 6 ký tự và phải khớp nhau."
+            GiaoDien-->>NguoiDung: Hiển thị lỗi trong modal, tự mở lại modal
+        end
+
+        alt Mật khẩu hiện tại không chính xác
+            GiaoDien->>DieuKhien: Gửi yêu cầu
+            DieuKhien->>HeTong: Truy vấn lấy password_hash của tài khoản
+            HeTong-->>DieuKhien: Kết quả: Trả về password_hash
+            DieuKhien->>DieuKhien: Hash::check — kết quả: không khớp
+            DieuKhien-->>GiaoDien: Trả về lỗi: "Mật khẩu hiện tại không chính xác."
+            GiaoDien-->>NguoiDung: Hiển thị lỗi trong modal, tự mở lại modal
+        end
+
+        alt Mất kết nối hệ thống/Database
+            GiaoDien->>DieuKhien: Gửi yêu cầu
+            DieuKhien->>HeTong: Thử kết nối
+            HeTong-->>DieuKhien: Lỗi kết nối (Timeout/Error)
+            DieuKhien-->>GiaoDien: Trả về lỗi: "Lỗi kết nối CSDL"
+            GiaoDien-->>NguoiDung: Hiển thị Popup báo lỗi
+        end
+    end

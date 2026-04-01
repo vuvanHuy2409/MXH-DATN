@@ -8,6 +8,7 @@ use App\Models\Conversation;
 use App\Models\Participant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class FollowController extends Controller
@@ -56,6 +57,18 @@ class FollowController extends Controller
                 ConversationController::findOrCreateDirect($me->id, $user->id);
             }
         }
+
+        // Xóa cache liên quan để dữ liệu mới phản ánh ngay
+        Cache::forget("user_{$me->id}_following");
+        Cache::forget("user_{$me->id}_follower_ids");
+        Cache::forget("user_{$me->id}_friends");
+        Cache::forget("user_{$me->id}_friend_ids");
+        Cache::forget("user_{$user->id}_follower_ids");
+        Cache::forget("user_{$user->id}_friends");
+        Cache::forget("user_{$user->id}_friend_ids");
+        Cache::forget("friend_{$me->id}_{$user->id}");
+        Cache::forget("friend_{$user->id}_{$me->id}");
+        Cache::forget("unread_notif_{$user->id}");
 
         return back();
     }

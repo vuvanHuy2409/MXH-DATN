@@ -1,0 +1,75 @@
+---
+title: Sơ đồ tuần tự - Báo cáo và Sao chép link bài viết
+---
+sequenceDiagram
+    actor NguoiDung as Người dùng
+    participant GiaoDien as :Giao diện\nBài viết
+    participant DieuKhien as :Điều khiển\nBáo cáo
+    participant HeTong as :Hệ thống\n(Database)
+
+    NguoiDung->>GiaoDien: 1 Nhấn menu "..." trên bài viết
+    GiaoDien-->>NguoiDung: 2 Hiển thị menu tuỳ chọn (Báo cáo / Sao chép link)
+
+    %% =============================================
+    %% CHỨC NĂNG 1: BÁO CÁO BÀI VIẾT
+    %% =============================================
+    rect rgb(240, 240, 240)
+        Note over NguoiDung, HeTong: Chức năng 1 — Báo cáo bài viết
+
+        NguoiDung->>GiaoDien: 3 Chọn "Báo cáo bài viết"
+        GiaoDien-->>NguoiDung: 4 Hiển thị modal báo cáo (chọn lý do, nhập chi tiết)
+        NguoiDung->>GiaoDien: 5 Chọn lý do báo cáo
+        NguoiDung->>GiaoDien: 6 Nhập thêm chi tiết (tuỳ chọn)
+        NguoiDung->>GiaoDien: 7 Nhấn "Gửi báo cáo"
+
+        rect rgb(220, 235, 220)
+            Note over NguoiDung, HeTong: Báo cáo thành công
+            GiaoDien->>DieuKhien: 8 Gửi yêu cầu POST /reports (reported_id, type="post", reason, details)
+            DieuKhien->>DieuKhien: 9 Validate dữ liệu (reported_id, type, reason bắt buộc)
+            DieuKhien->>HeTong: 10 Lưu báo cáo vào bảng reports (user_id, reported_id, type, reason, details)
+            HeTong-->>DieuKhien: 11 Kết quả: Lưu thành công
+            DieuKhien-->>GiaoDien: 12 JSON: success=true, "Báo cáo của bạn đã được gửi thành công."
+            GiaoDien-->>NguoiDung: 13 Đóng modal, hiển thị thông báo thành công
+        end
+
+        alt Thiếu lý do báo cáo hoặc dữ liệu không hợp lệ
+            GiaoDien->>DieuKhien: Gửi yêu cầu (thiếu reason hoặc type)
+            DieuKhien-->>GiaoDien: Trả về lỗi 422: "Vui lòng chọn lý do báo cáo."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi trong modal
+        end
+
+        alt Người dùng chưa đăng nhập
+            GiaoDien->>DieuKhien: Gửi yêu cầu
+            DieuKhien-->>GiaoDien: Trả về lỗi 401 Unauthorized
+            GiaoDien-->>NguoiDung: Chuyển hướng sang trang đăng nhập
+        end
+
+        alt Mất kết nối hệ thống/Database
+            GiaoDien->>DieuKhien: Gửi yêu cầu
+            DieuKhien->>HeTong: Thực hiện lưu báo cáo
+            HeTong-->>DieuKhien: Lỗi kết nối (Timeout/Error)
+            DieuKhien-->>GiaoDien: Trả về lỗi 500: "Đã xảy ra lỗi hệ thống."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+    end
+
+    %% =============================================
+    %% CHỨC NĂNG 2: SAO CHÉP LINK BÀI VIẾT
+    %% =============================================
+    rect rgb(240, 240, 240)
+        Note over NguoiDung, HeTong: Chức năng 2 — Sao chép link bài viết
+
+        NguoiDung->>GiaoDien: 14 Chọn "Sao chép link"
+
+        rect rgb(220, 235, 220)
+            Note over NguoiDung, HeTong: Sao chép thành công
+            GiaoDien->>GiaoDien: 15 Tạo đường dẫn bài viết (/posts/{id})
+            GiaoDien->>GiaoDien: 16 Ghi link vào Clipboard (navigator.clipboard.writeText)
+            GiaoDien-->>NguoiDung: 17 Hiển thị thông báo: "Đã sao chép link bài viết!"
+        end
+
+        alt Trình duyệt không hỗ trợ Clipboard API
+            GiaoDien->>GiaoDien: Thử ghi vào Clipboard — thất bại
+            GiaoDien-->>NguoiDung: Hiển thị link dạng text để người dùng tự sao chép thủ công
+        end
+    end

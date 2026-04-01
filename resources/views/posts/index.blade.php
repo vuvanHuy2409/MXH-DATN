@@ -1,44 +1,169 @@
 @extends('layouts.app')
 
 @section('content')
+<style>
+    /* ── Create post card ── */
+    .create-post-card {
+        margin: 10px 0 22px;
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: 22px;
+        box-shadow: var(--glass-shadow);
+        overflow: hidden;
+        transition: box-shadow 0.25s, transform 0.25s;
+    }
+    .create-post-card:hover {
+        box-shadow: 0 12px 32px rgba(0,98,255,0.08), 0 0 0 1px rgba(0,98,255,0.1);
+        transform: translateY(-1px);
+    }
+    [data-theme="dark"] .create-post-card {
+        background: rgba(18,20,34,0.82);
+        border-color: rgba(255,255,255,0.07);
+    }
+    [data-theme="dark"] .create-post-card:hover {
+        box-shadow: 0 12px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(77,148,255,0.2);
+    }
+
+    .create-post-top {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 16px 20px 14px;
+        cursor: pointer;
+    }
+    .create-post-avatar {
+        width: 44px; height: 44px;
+        border-radius: 14px;
+        background-size: cover;
+        background-position: center;
+        flex-shrink: 0;
+        border: 2px solid rgba(255,255,255,0.8);
+        box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    }
+    .create-post-placeholder {
+        flex-grow: 1;
+        background: rgba(0,0,0,0.04);
+        border-radius: 12px;
+        padding: 11px 16px;
+        font-size: 14.5px;
+        font-weight: 500;
+        color: var(--secondary-text);
+        transition: background 0.2s;
+    }
+    .create-post-top:hover .create-post-placeholder { background: rgba(0,98,255,0.05); }
+    [data-theme="dark"] .create-post-placeholder { background: rgba(255,255,255,0.05); }
+    [data-theme="dark"] .create-post-top:hover .create-post-placeholder { background: rgba(77,148,255,0.08); }
+
+    .create-post-btn {
+        background: #0062FF;
+        color: #fff;
+        padding: 9px 20px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 13.5px;
+        flex-shrink: 0;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 4px 14px rgba(0,98,255,0.3);
+        transition: all 0.2s;
+    }
+    .create-post-btn:hover { background: #0052D9; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,98,255,0.4); }
+
+    .create-post-actions {
+        display: flex;
+        gap: 2px;
+        padding: 4px 14px 10px;
+        border-top: 1px solid var(--glass-border);
+    }
+    [data-theme="dark"] .create-post-actions { border-top-color: rgba(255,255,255,0.05); }
+
+    .cp-action-btn {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 14px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--secondary-text);
+        cursor: pointer;
+        transition: all 0.18s;
+        border: none;
+        background: transparent;
+        font-family: inherit;
+    }
+    .cp-action-btn:hover { background: rgba(0,98,255,0.06); color: #0062FF; }
+    [data-theme="dark"] .cp-action-btn:hover { background: rgba(77,148,255,0.1); color: #4D94FF; }
+
+    /* ── Feed tabs ── */
+    .feed-tabs {
+        display: flex;
+        gap: 4px;
+        margin: 6px 0 20px;
+        background: rgba(0,0,0,0.03);
+        padding: 4px;
+        border-radius: 16px;
+        width: fit-content;
+    }
+    [data-theme="dark"] .feed-tabs { background: rgba(255,255,255,0.04); }
+
+    .tab-item {
+        padding: 8px 22px;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 13.5px;
+        border-radius: 12px;
+        transition: all 0.25s ease;
+        color: var(--secondary-text);
+    }
+    .tab-item.active {
+        background: white;
+        color: var(--text-color);
+        box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+    }
+    [data-theme="dark"] .tab-item.active {
+        background: rgba(77,148,255,0.14);
+        color: #4D94FF;
+        box-shadow: 0 3px 12px rgba(77,148,255,0.18);
+    }
+</style>
+
 <div style="padding: 0 10px;">
-    <!-- Create Post Trigger -->
-    <div class="glass-bubble" style="margin: 10px 0 25px; padding: 18px 25px; cursor: pointer; display: flex; align-items: center; gap: 15px; border-radius: 24px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid var(--glass-border);" onclick="openModal()" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 15px 35px rgba(0,0,0,0.08)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--glass-shadow)'">
-        <div class="avatar" style="background-image: url('{{ auth()->user()->avatar_url }}'); background-size: cover; width: 44px; height: 44px; border: 2px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.05); flex-shrink: 0;"></div>
-        <div style="color: var(--secondary-text); font-size: 16px; font-weight: 500; flex-grow: 1; opacity: 0.7;">Có gì mới hôm nay, {{ explode(' ', auth()->user()->studentDetail->full_name ?? auth()->user()->username)[0] }}?</div>
-        <div style="background: var(--accent-color); color: white; padding: 8px 18px; border-radius: 12px; font-weight: 700; font-size: 14px; box-shadow: 0 8px 20px rgba(0, 113, 227, 0.2); flex-shrink: 0;">Đăng</div>
+    <!-- Create Post Card -->
+    <div class="create-post-card">
+        <div class="create-post-top" onclick="openModal()">
+            <div class="create-post-avatar" style="background-image: url('{{ auth()->user()->avatar_url }}')"></div>
+            <div class="create-post-placeholder">Có gì mới hôm nay, {{ explode(' ', auth()->user()->studentDetail->full_name ?? auth()->user()->username)[0] }}?</div>
+            <button class="create-post-btn" type="button" onclick="event.stopPropagation(); openModal()">Đăng</button>
+        </div>
+        <div class="create-post-actions">
+            <button class="cp-action-btn" onclick="openModal()" type="button">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+                </svg>
+                Ảnh/Video
+            </button>
+            <button class="cp-action-btn" onclick="openModal()" type="button">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none">
+                    <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/>
+                </svg>
+                Tài liệu
+            </button>
+            <button class="cp-action-btn" onclick="openModal()" type="button">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none">
+                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                </svg>
+                Link
+            </button>
+        </div>
     </div>
 
     <!-- Navigation Tabs -->
-    <div style="display: flex; gap: 5px; margin: 20px 0; background: rgba(0,0,0,0.03); padding: 5px; border-radius: 18px; width: fit-content;">
-        <div id="tab-foryou" onclick="switchTab('foryou')" class="tab-item active">
-            Dành cho bạn
-        </div>
-        <div id="tab-following" onclick="switchTab('following')" class="tab-item">
-            Đang theo dõi
-        </div>
+    <div class="feed-tabs">
+        <div id="tab-foryou" onclick="switchTab('foryou')" class="tab-item active">Dành cho bạn</div>
+        <div id="tab-following" onclick="switchTab('following')" class="tab-item">Đang theo dõi</div>
     </div>
-
-    <style>
-        .tab-item {
-            padding: 8px 24px;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: 14px;
-            border-radius: 14px;
-            transition: all 0.3s ease;
-            color: var(--secondary-text);
-        }
-        .tab-item.active {
-            background: white;
-            color: var(--text-color);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-        [data-theme="dark"] .tab-item.active {
-            background: var(--glass-bg);
-            color: white;
-        }
-    </style>
 
     <!-- Tab Content: Dành cho bạn -->
     <div id="content-foryou">

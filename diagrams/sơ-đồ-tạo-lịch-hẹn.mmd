@@ -1,0 +1,94 @@
+---
+title: Sơ đồ tuần tự - Tạo lịch hẹn
+---
+sequenceDiagram
+    actor NguoiDung as Người dùng
+    participant GiaoDien as :Giao diện\nTin nhắn
+    participant DieuKhien as :Hệ thống
+    participant HeTong as :Hệ thống\n(Database)
+
+    %% =============================================
+    %% BƯỚC KHỞI ĐẦU
+    %% =============================================
+    NguoiDung->>GiaoDien: 1 Đăng nhập vào hệ thống
+    GiaoDien->>DieuKhien: 2 Xác thực tài khoản
+    DieuKhien-->>GiaoDien: 3 Xác thực thành công
+    GiaoDien-->>NguoiDung: 4 Hiển thị giao diện Trang chủ
+
+    NguoiDung->>GiaoDien: 5 Truy cập vào biểu tượng tin nhắn
+    GiaoDien->>DieuKhien: 6 Tải danh sách cuộc hội thoại
+    DieuKhien->>HeTong: 7 Truy vấn conversations của người dùng
+    HeTong-->>DieuKhien: 8 Kết quả: Danh sách cuộc hội thoại
+    DieuKhien-->>GiaoDien: 9 Trả về danh sách
+    GiaoDien-->>NguoiDung: 10 Hiển thị cửa sổ tin nhắn
+
+    NguoiDung->>GiaoDien: 11 Chọn vào cuộc hội thoại bất kì
+    GiaoDien->>DieuKhien: 12 Tải nội dung cuộc hội thoại
+    DieuKhien->>HeTong: 13 Kiểm tra tư cách thành viên + tải lịch sử tin nhắn
+    HeTong-->>DieuKhien: 14 Kết quả: Hợp lệ + lịch sử tin nhắn
+    DieuKhien-->>GiaoDien: 15 Trả về dữ liệu hội thoại
+    GiaoDien-->>NguoiDung: 16 Hiển thị giao diện cuộc hội thoại
+
+    %% =============================================
+    %% MỞ CHỨC NĂNG TẠO LỊCH HẸN
+    %% =============================================
+    NguoiDung->>GiaoDien: 17 Chọn chức năng Tạo lịch hẹn\ntrong phần mở rộng cuộc hội thoại
+    GiaoDien->>DieuKhien: 18 Gửi yêu cầu GET /messages/{conversation}/appointments
+    DieuKhien->>HeTong: 19 Kiểm tra tư cách thành viên cuộc hội thoại
+    HeTong-->>DieuKhien: 20 Kết quả: Là thành viên
+    DieuKhien-->>GiaoDien: 21 Trả về danh sách lịch hẹn sắp tới (status=upcoming)
+    GiaoDien-->>NguoiDung: 22 Hiển thị cửa sổ tạo lịch hẹn
+
+    %% =============================================
+    %% TẠO LỊCH HẸN
+    %% =============================================
+    NguoiDung->>GiaoDien: 23 Nhập tiêu đề, ngày/tháng/năm, giờ,\nđịa điểm (tuỳ chọn), mô tả (tuỳ chọn)\nvà nhấn "Tạo lịch hẹn"
+    GiaoDien->>DieuKhien: 24 Gửi yêu cầu POST /messages/{conversation}/appointments\n(title, appointment_time, location, description)
+
+    DieuKhien->>DieuKhien: 25 Validate dữ liệu\n(title: required, max:255;\nappointment_time: required, date;\nlocation: max:255; description: max:1000)
+
+    rect rgb(255, 220, 220)
+        Note over NguoiDung, HeTong: Dữ liệu không hợp lệ
+
+        alt Thiếu tiêu đề hoặc ngày giờ
+            DieuKhien-->>GiaoDien: Trả về lỗi validation:\n"Vui lòng nhập đầy đủ tiêu đề và thời gian."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi, giữ nguyên dữ liệu đã nhập
+        end
+
+        alt Ngày giờ không đúng định dạng
+            DieuKhien-->>GiaoDien: Trả về lỗi validation:\n"Thời gian không hợp lệ."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+    end
+
+    rect rgb(220, 235, 220)
+        Note over NguoiDung, HeTong: Tạo lịch hẹn thành công
+
+        DieuKhien->>HeTong: 26 Lưu lịch hẹn vào bảng appointments\n(conversation_id, creator_id, title,\nappointment_time, location, description, status=upcoming)
+        HeTong-->>DieuKhien: 27 Kết quả: Lưu thành công (trả về appointment)
+        DieuKhien->>HeTong: 28 Tạo tin nhắn hệ thống vào bảng messages\n(message_type=system, content=thông tin lịch hẹn,\nmetadata={appointment_id, type=appointment_created})
+        HeTong-->>DieuKhien: 29 Kết quả: Tin nhắn hệ thống đã tạo
+        DieuKhien->>HeTong: 30 Cập nhật conversation.updated_at (touch)
+        HeTong-->>DieuKhien: 31 Kết quả: Cập nhật thành công
+        DieuKhien-->>GiaoDien: 32 JSON: status="success", appointment (kèm thông tin creator)
+        GiaoDien-->>NguoiDung: 33 Hiển thị thông báo lịch hẹn trên cuộc hội thoại\n(tiêu đề, thời gian, địa điểm, mô tả)
+    end
+
+    %% =============================================
+    %% LỖI CHUNG
+    %% =============================================
+    rect rgb(255, 235, 200)
+        Note over NguoiDung, HeTong: Lỗi chung
+
+        alt Không phải thành viên cuộc hội thoại
+            DieuKhien-->>GiaoDien: Trả về lỗi 403 Forbidden
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+
+        alt Mất kết nối hệ thống/Database
+            DieuKhien->>HeTong: Thực hiện lưu dữ liệu
+            HeTong-->>DieuKhien: Lỗi kết nối (Timeout/Error)
+            DieuKhien-->>GiaoDien: Trả về lỗi 500: "Đã xảy ra lỗi hệ thống."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+    end

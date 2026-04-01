@@ -1,0 +1,96 @@
+---
+title: Sơ đồ tuần tự - Báo cáo tin nhắn
+---
+sequenceDiagram
+    actor NguoiDung as Người dùng
+    participant GiaoDien as :Giao diện\nTin nhắn
+    participant DieuKhien as :Hệ thống
+    participant AI as :Hệ thống AI\nKiểm duyệt
+    participant HeTong as :Hệ thống\n(Database)
+
+    %% =============================================
+    %% BƯỚC KHỞI ĐẦU
+    %% =============================================
+    NguoiDung->>GiaoDien: 1 Đăng nhập vào hệ thống
+    GiaoDien->>DieuKhien: 2 Xác thực tài khoản
+    DieuKhien-->>GiaoDien: 3 Xác thực thành công
+    GiaoDien-->>NguoiDung: 4 Hiển thị giao diện Trang chủ
+
+    NguoiDung->>GiaoDien: 5 Truy cập vào biểu tượng tin nhắn
+    GiaoDien->>DieuKhien: 6 Tải danh sách cuộc hội thoại
+    DieuKhien->>HeTong: 7 Truy vấn conversations của người dùng
+    HeTong-->>DieuKhien: 8 Kết quả: Danh sách cuộc hội thoại
+    DieuKhien-->>GiaoDien: 9 Trả về danh sách
+    GiaoDien-->>NguoiDung: 10 Hiển thị cửa sổ tin nhắn
+
+    NguoiDung->>GiaoDien: 11 Chọn vào cuộc hội thoại bất kì
+    GiaoDien->>DieuKhien: 12 Tải nội dung cuộc hội thoại
+    DieuKhien->>HeTong: 13 Kiểm tra thành viên + tải lịch sử tin nhắn
+    HeTong-->>DieuKhien: 14 Kết quả: Hợp lệ + lịch sử tin nhắn
+    DieuKhien-->>GiaoDien: 15 Trả về dữ liệu hội thoại
+    GiaoDien-->>NguoiDung: 16 Hiển thị giao diện cuộc hội thoại
+
+    %% =============================================
+    %% MỞ RỘNG & CHỌN BÁO CÁO
+    %% =============================================
+    NguoiDung->>GiaoDien: 17 Chọn mở rộng của tin nhắn cần báo cáo
+    GiaoDien-->>NguoiDung: 18 Hiển thị cửa sổ popup mở rộng\n(Báo cáo, Ghim, Xoá,...)
+
+    NguoiDung->>GiaoDien: 19 Chọn chức năng Báo cáo tin nhắn
+    GiaoDien-->>NguoiDung: 20 Hiển thị form chọn lý do báo cáo
+    NguoiDung->>GiaoDien: 21 Chọn lý do và nhấn "Gửi báo cáo"
+    GiaoDien->>DieuKhien: 22 Gửi yêu cầu POST /reports\n(reported_id=message_id, type="message", reason, details)
+    DieuKhien->>HeTong: 23 Lưu báo cáo vào bảng reports
+    HeTong-->>DieuKhien: 24 Kết quả: Lưu thành công
+
+    %% =============================================
+    %% AI KIỂM DUYỆT NỘI DUNG TIN NHẮN
+    %% =============================================
+    DieuKhien->>AI: 25 Gửi nội dung văn bản tin nhắn qua API cho AI kiểm duyệt
+    AI->>AI: 26 Phân tích ngôn ngữ và tính điểm vi phạm
+
+    %% ---- Không hợp lệ (vi phạm) ----
+    rect rgb(255, 220, 220)
+        Note over NguoiDung, HeTong: Kết quả: Không hợp lệ — Nội dung vi phạm
+
+        AI-->>DieuKhien: 27a Kết quả: Không hợp lệ (điểm vi phạm vượt ngưỡng)
+        DieuKhien->>HeTong: 28a Cập nhật trạng thái báo cáo: đã xem xét, vi phạm
+        HeTong-->>DieuKhien: 29a Cập nhật thành công
+        DieuKhien-->>GiaoDien: 30a Trả về kết quả xử lý
+        GiaoDien-->>NguoiDung: 31a Hiển thị thông báo:\n"Đã xem xét tin nhắn,\ncảm ơn bạn đã báo cáo!"
+    end
+
+    %% ---- Hợp lệ (không vi phạm) ----
+    rect rgb(220, 235, 220)
+        Note over NguoiDung, HeTong: Kết quả: Hợp lệ — Không phát hiện vi phạm
+
+        AI-->>DieuKhien: 27b Kết quả: Hợp lệ (không vi phạm)
+        DieuKhien->>HeTong: 28b Cập nhật trạng thái báo cáo: đã xem xét, không vi phạm
+        HeTong-->>DieuKhien: 29b Cập nhật thành công
+        DieuKhien-->>GiaoDien: 30b Trả về kết quả xử lý
+        GiaoDien-->>NguoiDung: 31b Hiển thị thông báo:\n"Hệ thống không phát hiện vi phạm\ntrong tin nhắn này."
+    end
+
+    %% =============================================
+    %% LỖI CHUNG
+    %% =============================================
+    rect rgb(255, 235, 200)
+        Note over NguoiDung, HeTong: Lỗi chung
+
+        alt Thiếu lý do báo cáo
+            DieuKhien-->>GiaoDien: Trả về lỗi 422:\n"Vui lòng chọn lý do báo cáo."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi trong form
+        end
+
+        alt Không phải thành viên cuộc hội thoại
+            DieuKhien-->>GiaoDien: Trả về lỗi 403 Forbidden
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+
+        alt Mất kết nối hệ thống/Database
+            DieuKhien->>HeTong: Thực hiện thao tác
+            HeTong-->>DieuKhien: Lỗi kết nối (Timeout/Error)
+            DieuKhien-->>GiaoDien: Trả về lỗi 500: "Đã xảy ra lỗi hệ thống."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+    end

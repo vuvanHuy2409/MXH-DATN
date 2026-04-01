@@ -1,0 +1,103 @@
+---
+title: Sơ đồ tuần tự - Bình luận bài viết
+---
+sequenceDiagram
+    actor NguoiDung as Người dùng
+    participant GiaoDien as :Giao diện\nTrang chủ
+    participant DieuKhien as :Hệ thống
+    participant AI as :Hệ thống AI\nKiểm duyệt
+    participant HeTong as :Hệ thống\n(Database/Storage)
+
+    %% =============================================
+    %% BƯỚC KHỞI ĐẦU
+    %% =============================================
+    NguoiDung->>GiaoDien: 1 Đăng nhập vào hệ thống
+    GiaoDien->>DieuKhien: 2 Xác thực tài khoản
+    DieuKhien-->>GiaoDien: 3 Xác thực thành công
+    GiaoDien-->>NguoiDung: 4 Hiển thị giao diện Trang chủ
+
+    NguoiDung->>GiaoDien: 5 Nhấn biểu tượng bình luận trên bài viết
+    GiaoDien-->>NguoiDung: 6 Hiển thị giao diện bình luận
+
+    %% =============================================
+    %% NHÁNH 1: BÌNH LUẬN BẰNG VĂN BẢN
+    %% =============================================
+    rect rgb(220, 235, 220)
+        Note over NguoiDung, HeTong: Nhánh 1 — Bình luận bằng văn bản
+
+        NguoiDung->>GiaoDien: 7 Soạn văn bản và nhấn "Gửi"
+        GiaoDien->>DieuKhien: 8 Gửi yêu cầu POST /posts/{id}/reply (content)
+        DieuKhien->>AI: 9 Gửi nội dung văn bản qua API cho AI kiểm duyệt
+        AI->>AI: 10 Phân tích ngôn ngữ và tính điểm vi phạm
+
+        alt Nội dung vi phạm
+            AI-->>DieuKhien: 11a Kết quả: Vi phạm (điểm vượt ngưỡng)
+            DieuKhien-->>GiaoDien: 12a Trả về lỗi: "Nội dung vi phạm tiêu chuẩn cộng đồng"
+            GiaoDien-->>NguoiDung: 13a Hiển thị thông báo vi phạm, yêu cầu soạn lại
+        end
+
+        rect rgb(200, 230, 255)
+            Note over NguoiDung, HeTong: Nội dung không vi phạm
+            AI-->>DieuKhien: 11b Kết quả: Không vi phạm
+            DieuKhien->>HeTong: 12b Lưu bình luận vào bảng comments\n(user_id, post_id, content, parent_id)
+            HeTong-->>DieuKhien: 13b Kết quả: Lưu thành công
+            DieuKhien->>HeTong: 14b Tăng reply_count cho bài viết
+            DieuKhien->>HeTong: 15b Tạo thông báo cho chủ bài viết (nếu không phải chính mình)
+            HeTong-->>DieuKhien: 16b Kết quả: Thông báo đã tạo
+            DieuKhien-->>GiaoDien: 17b JSON: Trả về đối tượng comment (kèm thông tin user)
+            GiaoDien-->>NguoiDung: 18b Hiển thị bình luận mới lên giao diện, cập nhật số lượng
+        end
+    end
+
+    %% =============================================
+    %% NHÁNH 2: BÌNH LUẬN BẰNG ẢNH
+    %% =============================================
+    rect rgb(255, 245, 210)
+        Note over NguoiDung, HeTong: Nhánh 2 — Bình luận bằng ảnh
+
+        NguoiDung->>GiaoDien: 19 Chọn ảnh và nhấn "Gửi"
+        GiaoDien->>DieuKhien: 20 Gửi yêu cầu POST /posts/{id}/reply (image)
+        DieuKhien->>DieuKhien: 21 Validate ảnh (định dạng hợp lệ, max 10MB)
+
+        alt Ảnh không hợp lệ hoặc vượt 10MB
+            DieuKhien-->>GiaoDien: Trả về lỗi validation: "Ảnh không hợp lệ hoặc vượt quá 10MB."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+
+        rect rgb(200, 230, 255)
+            Note over NguoiDung, HeTong: Ảnh hợp lệ
+            DieuKhien->>HeTong: 22 Upload ảnh lên Storage (/comments/images)
+            HeTong-->>DieuKhien: 23 Kết quả: Trả về đường dẫn ảnh
+            DieuKhien->>HeTong: 24 Lưu bình luận vào bảng comments\n(user_id, post_id, image_url, parent_id)
+            HeTong-->>DieuKhien: 25 Kết quả: Lưu thành công
+            DieuKhien->>HeTong: 26 Tăng reply_count cho bài viết
+            DieuKhien->>HeTong: 27 Tạo thông báo cho chủ bài viết (nếu không phải chính mình)
+            HeTong-->>DieuKhien: 28 Kết quả: Thông báo đã tạo
+            DieuKhien-->>GiaoDien: 29 JSON: Trả về đối tượng comment (kèm thông tin user)
+            GiaoDien-->>NguoiDung: 30 Hiển thị bình luận ảnh mới lên giao diện, cập nhật số lượng
+        end
+    end
+
+    %% =============================================
+    %% CÁC LỖI CHUNG
+    %% =============================================
+    rect rgb(255, 220, 220)
+        Note over NguoiDung, HeTong: Các lỗi chung
+
+        alt Bài viết thuộc nhóm — người dùng chưa là thành viên
+            DieuKhien-->>GiaoDien: Trả về lỗi 403: "Bạn cần tham gia cộng đồng này để bình luận."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+
+        alt Nội dung và ảnh đều bỏ trống
+            DieuKhien-->>GiaoDien: Trả về lỗi 422: "Vui lòng nhập nội dung hoặc chọn ảnh."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+
+        alt Mất kết nối hệ thống/Database
+            DieuKhien->>HeTong: Thực hiện thao tác
+            HeTong-->>DieuKhien: Lỗi kết nối (Timeout/Error)
+            DieuKhien-->>GiaoDien: Trả về lỗi 500: "Đã xảy ra lỗi hệ thống."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+    end

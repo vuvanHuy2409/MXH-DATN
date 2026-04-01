@@ -1,0 +1,78 @@
+---
+title: Sơ đồ tuần tự - Cài đặt quyền riêng tư cộng đồng
+---
+sequenceDiagram
+    actor NguoiDung as Người dùng
+    participant GiaoDien as :Giao diện\nCộng đồng
+    participant DieuKhien as :Hệ thống
+    participant HeTong as :Hệ thống\n(Database)
+
+    %% =============================================
+    %% BƯỚC KHỞI ĐẦU
+    %% =============================================
+    NguoiDung->>GiaoDien: 1 Đăng nhập vào hệ thống
+    GiaoDien->>DieuKhien: 2 Xác thực tài khoản
+    DieuKhien-->>GiaoDien: 3 Xác thực thành công
+    GiaoDien-->>NguoiDung: 4 Hiển thị giao diện Trang chủ
+
+    NguoiDung->>GiaoDien: 5 Truy cập vào biểu tượng Cộng đồng
+    GiaoDien->>DieuKhien: 6 Tải danh sách cộng đồng của người dùng
+    DieuKhien->>HeTong: 7 Truy vấn social_groups của người dùng
+    HeTong-->>DieuKhien: 8 Kết quả: Danh sách cộng đồng
+    DieuKhien-->>GiaoDien: 9 Trả về danh sách
+    GiaoDien-->>NguoiDung: 10 Hiển thị giao diện các Cộng đồng
+
+    %% =============================================
+    %% CHỌN CỘNG ĐỒNG
+    %% =============================================
+    NguoiDung->>GiaoDien: 11 Chọn cộng đồng bất kì
+    GiaoDien->>DieuKhien: 12 Tải nội dung cộng đồng
+    DieuKhien->>HeTong: 13 Truy vấn thông tin cộng đồng + kiểm tra thành viên
+    HeTong-->>DieuKhien: 14 Kết quả: Hợp lệ + dữ liệu cộng đồng
+    DieuKhien-->>GiaoDien: 15 Trả về dữ liệu cộng đồng
+    GiaoDien-->>NguoiDung: 16 Hiển thị giao diện Cộng đồng
+
+    %% =============================================
+    %% THAY ĐỔI QUYỀN RIÊNG TƯ
+    %% =============================================
+    NguoiDung->>GiaoDien: 17 Chọn "Thay đổi quyền riêng tư cộng đồng"\\ntrong phần mở rộng
+    GiaoDien->>DieuKhien: 18 Gửi yêu cầu tải giao diện cài đặt quyền riêng tư
+    DieuKhien-->>GiaoDien: 19 Trả về giao diện thay đổi quyền riêng tư\\n(hiển thị trạng thái hiện tại: Công khai / Riêng tư)
+    GiaoDien-->>NguoiDung: 20 Hiển thị giao diện thay đổi quyền riêng tư cộng đồng
+
+    NguoiDung->>GiaoDien: 21 Chọn quyền riêng tư mới\\n(Công khai hoặc Riêng tư) và xác nhận
+    GiaoDien->>DieuKhien: 22 Gửi yêu cầu PUT /groups/{group}\\n(privacy=public hoặc privacy=private)
+
+    DieuKhien->>DieuKhien: 23 Kiểm tra quyền: chỉ admin mới được thay đổi\\nValidate: privacy required, in:public,private
+
+    rect rgb(255, 220, 220)
+        Note over NguoiDung, HeTong: Không có quyền thay đổi
+
+        alt Người dùng không phải admin của cộng đồng
+            DieuKhien-->>GiaoDien: Trả về lỗi 403 Forbidden
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+    end
+
+    rect rgb(220, 235, 220)
+        Note over NguoiDung, HeTong: Thay đổi quyền riêng tư thành công
+
+        DieuKhien->>HeTong: 24 Cập nhật trường privacy trong CSDL\\n(public hoặc private)
+        HeTong-->>DieuKhien: 25 Kết quả: Cập nhật thành công
+        DieuKhien-->>GiaoDien: 26 Redirect về trang cộng đồng\\n(kèm thông báo "Thông tin nhóm đã được cập nhật.")
+        GiaoDien-->>NguoiDung: 27 Thông báo thay đổi thành công\\nHiển thị trạng thái quyền riêng tư mới
+    end
+
+    %% =============================================
+    %% LỖI CHUNG
+    %% =============================================
+    rect rgb(255, 235, 200)
+        Note over NguoiDung, HeTong: Lỗi chung
+
+        alt Mất kết nối hệ thống/Database
+            DieuKhien->>HeTong: Thực hiện cập nhật dữ liệu
+            HeTong-->>DieuKhien: Lỗi kết nối (Timeout/Error)
+            DieuKhien-->>GiaoDien: Trả về lỗi 500: "Đã xảy ra lỗi hệ thống."
+            GiaoDien-->>NguoiDung: Hiển thị thông báo lỗi
+        end
+    end

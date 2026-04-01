@@ -11,43 +11,64 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* Apple Glassmorphism Colors - Updated to Pale Sky Blue */
-            --bg-main: #D1E9F6;
-            --glass-bg: rgba(255, 255, 255, 0.75);
-            --glass-border: rgba(255, 255, 255, 0.5);
-            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
+            --bg-main: #F8FAFC;
+            --glass-bg: rgba(255, 255, 255, 0.88);
+            --glass-border: #E2E8F0;
+            --glass-shadow: 0 4px 24px 0 rgba(0, 98, 255, 0.06), 0 0 0 1px rgba(226, 232, 240, 0.7);
 
-            --text-color: #1d1d1f;
-            --secondary-text: #6e6e73;
-            --accent-color: #0071e3;
+            --text-color: #0F172A;
+            --secondary-text: #64748B;
+            --accent-color: #0062FF;
 
-            --modal-overlay: rgba(0, 0, 0, 0.15);
-            --lightbox-bg: rgba(255, 255, 255, 0.85);
+            --modal-overlay: rgba(15, 23, 42, 0.12);
+            --lightbox-bg: rgba(255, 255, 255, 0.95);
             --card-radius: 20px;
         }
 
         [data-theme="dark"] {
-            --bg-main: #0a0a0a;
-            --glass-bg: rgba(28, 28, 30, 0.8);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --glass-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+            --bg-main: #0B0F1A;
+            --glass-bg: rgba(15, 20, 35, 0.88);
+            --glass-border: rgba(255, 255, 255, 0.07);
+            --glass-shadow: 0 16px 48px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255,255,255,0.04);
 
-            --text-color: #f5f5f7;
-            --secondary-text: #98989d;
-            --accent-color: #0a84ff;
-            --lightbox-bg: rgba(0, 0, 0, 0.85);
+            --text-color: #E8EEFF;
+            --secondary-text: #7B8DB0;
+            --accent-color: #4D94FF;
+            --accent-glow: rgba(77, 148, 255, 0.25);
+            --modal-overlay: rgba(0, 0, 0, 0.65);
+            --lightbox-bg: rgba(0, 0, 0, 0.92);
+
+            --sidebar-bg: rgba(10, 14, 28, 0.95);
+            --bubble-me: linear-gradient(135deg, #0a2a6e 0%, #0a2060 100%);
+            --bubble-other: rgba(20, 26, 46, 0.9);
+            --input-bg: rgba(10, 15, 30, 0.8);
         }
 
         [data-theme="dark"] body {
-            background-image: radial-gradient(at 0% 0%, hsla(240, 10%, 15%, 1) 0, transparent 50%),
-                radial-gradient(at 100% 100%, hsla(240, 10%, 10%, 1) 0, transparent 50%);
+            background-color: var(--bg-main);
+            background-image:
+                radial-gradient(ellipse at 15% 10%, rgba(0, 60, 180, 0.25) 0, transparent 45%),
+                radial-gradient(ellipse at 85% 90%, rgba(0, 30, 100, 0.2) 0, transparent 45%),
+                radial-gradient(ellipse at 50% 50%, rgba(5, 8, 20, 1) 0, transparent 80%);
+        }
+
+        /* Dark mode noise texture overlay */
+        [data-theme="dark"] body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.4;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background-color: var(--bg-main);
-            background-image: radial-gradient(at 0% 0%, hsla(200, 100%, 90%, 1) 0, transparent 50%),
-                radial-gradient(at 100% 100%, hsla(190, 100%, 85%, 1) 0, transparent 50%);
+            background-image:
+                radial-gradient(at 0% 0%, rgba(0, 98, 255, 0.05) 0, transparent 45%),
+                radial-gradient(at 100% 100%, rgba(226, 232, 240, 0.7) 0, transparent 45%);
             background-attachment: fixed;
             color: var(--text-color);
             margin: 0;
@@ -107,6 +128,208 @@
             background: rgba(255, 255, 255, 0.5);
             transform: scale(1.1);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] .sidebar-nav {
+            background: var(--sidebar-bg, rgba(18, 18, 26, 0.92));
+            border-color: rgba(255, 255, 255, 0.06);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.06);
+        }
+
+        [data-theme="dark"] .nav-item:hover,
+        [data-theme="dark"] .nav-item.active {
+            background: rgba(77, 148, 255, 0.12);
+            color: #4D94FF;
+            box-shadow: 0 0 20px rgba(77, 148, 255, 0.2), inset 0 0 15px rgba(77, 148, 255, 0.05);
+        }
+
+        [data-theme="dark"] .glass-bubble {
+            background: rgba(22, 22, 32, 0.88);
+            border-color: rgba(255, 255, 255, 0.06);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+
+        [data-theme="dark"] .main-content-glass {
+            background: rgba(18, 18, 28, 0.5);
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+
+        [data-theme="dark"] .dropdown-content {
+            background: rgba(22, 22, 32, 0.96);
+            border-color: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05);
+        }
+
+        [data-theme="dark"] .dropdown-content a:hover,
+        [data-theme="dark"] .dropdown-content button:hover {
+            background: rgba(77, 148, 255, 0.1);
+        }
+
+        [data-theme="dark"] input,
+        [data-theme="dark"] textarea,
+        [data-theme="dark"] .form-control {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.08);
+            color: #eeeef0;
+        }
+
+        [data-theme="dark"] input:focus,
+        [data-theme="dark"] textarea:focus {
+            background: rgba(255, 255, 255, 0.07);
+            border-color: rgba(77, 148, 255, 0.4) !important;
+            box-shadow: 0 0 0 3px rgba(77, 148, 255, 0.15);
+        }
+
+        [data-theme="dark"] .modal-content {
+            background: rgba(20, 20, 30, 0.96);
+            border-color: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 40px 80px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.05);
+        }
+
+        [data-theme="dark"] .avatar {
+            border-color: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        [data-theme="dark"] .post-card:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        [data-theme="dark"] .post-divider {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Main logo dark */
+        [data-theme="dark"] .main-logo {
+            background: rgba(20, 20, 30, 0.9);
+            border-color: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04);
+        }
+
+        [data-theme="dark"] .main-logo:hover {
+            box-shadow: 0 12px 40px rgba(77,148,255,0.15), 0 0 0 1px rgba(77,148,255,0.2);
+        }
+
+        /* Header dark */
+        [data-theme="dark"] header {
+            background: rgba(14, 14, 22, 0.6);
+            border-bottom-color: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Post modal dark */
+        [data-theme="dark"] #postModal .modal-content,
+        [data-theme="dark"] #postModal .glass-bubble {
+            background: rgba(18, 18, 28, 0.97);
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        [data-theme="dark"] #postModal [style*="rgba(0,0,0,0.05)"] {
+            background: rgba(255, 255, 255, 0.05) !important;
+        }
+
+        [data-theme="dark"] #postModal [style*="rgba(0,0,0,0.03)"] {
+            background: rgba(255, 255, 255, 0.04) !important;
+        }
+
+        /* Post action buttons dark */
+        [data-theme="dark"] #postModal label[style*="rgba(0,0,0,0.03)"],
+        [data-theme="dark"] #postModal div[style*="rgba(0,0,0,0.03)"] {
+            background: rgba(255, 255, 255, 0.04) !important;
+        }
+
+        /* Notification modal dark */
+        [data-theme="dark"] #notifModal .modal-content {
+            background: rgba(18, 18, 28, 0.97);
+        }
+
+        /* Comment modal dark */
+        [data-theme="dark"] .comment-modal {
+            background: rgba(18, 18, 28, 0.97);
+            border-color: rgba(255, 255, 255, 0.07);
+            box-shadow: -20px 0 60px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.04);
+        }
+
+        [data-theme="dark"] .comment-modal-footer {
+            background: rgba(14, 14, 22, 0.8);
+            border-top-color: rgba(255, 255, 255, 0.06);
+        }
+
+        /* Mobile bottom nav dark */
+        @media (max-width: 900px) {
+            [data-theme="dark"] .sidebar-nav {
+                background: rgba(14, 14, 22, 0.95);
+                border-color: rgba(255, 255, 255, 0.06);
+                box-shadow: 0 -10px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05);
+            }
+        }
+
+        /* Author badge dark */
+        [data-theme="dark"] .author-badge {
+            background: linear-gradient(135deg, #0a2a6e, #0a3a8f);
+            color: #93C5FD;
+            box-shadow: 0 2px 8px rgba(10,42,110,0.4);
+        }
+
+        /* Scrollbar dark (global) */
+        [data-theme="dark"] ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        [data-theme="dark"] ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        [data-theme="dark"] ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 6px;
+        }
+        [data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Repost dark */
+        [data-theme="dark"] .post-card.is-repost {
+            background: rgba(0, 195, 0, 0.04);
+            border-left-color: #00c300;
+        }
+
+        /* Nav badge dark */
+        [data-theme="dark"] .nav-badge {
+            border-color: rgba(14, 14, 22, 0.9);
+        }
+
+        /* Post media dark */
+        [data-theme="dark"] .post-media-horizontal .post-media-item {
+            background: rgba(255, 255, 255, 0.03);
+            border-color: rgba(255, 255, 255, 0.06);
+        }
+
+        [data-theme="dark"] .post-media-single {
+            border-color: rgba(255, 255, 255, 0.06);
+        }
+
+        /* Like btn dark */
+        [data-theme="dark"] .like-btn.liked svg {
+            filter: drop-shadow(0 0 6px rgba(255,59,48,0.5));
+        }
+
+        /* Link input container dark */
+        [data-theme="dark"] #linkInputContainer {
+            background: rgba(77, 148, 255, 0.04) !important;
+            border-color: rgba(77, 148, 255, 0.3) !important;
+        }
+
+        [data-theme="dark"] #linkInputContainer [style*="background: white"] {
+            background: rgba(255, 255, 255, 0.08) !important;
+        }
+
+        /* Dropdown hover in dark */
+        [data-theme="dark"] .dropdown-content .danger:hover {
+            background: rgba(255, 59, 48, 0.1) !important;
+        }
+
+        /* Comment thread line dark */
+        [data-theme="dark"] .comment-thread-line {
+            background: rgba(255, 255, 255, 0.08);
         }
 
         header {
@@ -329,9 +552,10 @@
 
         input:focus,
         textarea:focus {
-            background: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.7);
             outline: none;
-            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.3);
+            box-shadow: 0 0 0 3px rgba(0, 98, 255, 0.15);
+            border-color: rgba(0, 98, 255, 0.35) !important;
         }
 
         .btn-post,
@@ -343,13 +567,13 @@
             border-radius: 20px;
             font-weight: 600;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0, 122, 255, 0.4);
-            transition: transform 0.2s;
+            box-shadow: 0 4px 15px rgba(0, 98, 255, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
         .btn-post:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 122, 255, 0.5);
+            box-shadow: 0 6px 20px rgba(0, 98, 255, 0.45);
         }
 
         .avatar {
@@ -883,85 +1107,87 @@
     @yield('extra_content')
 
     <!-- Modal Window Đăng bài -->
-    <div id="postModal" class="modal" style="backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);">
-        <div class="modal-content glass-bubble" style="max-width: 600px; border-radius: 32px; padding: 0; overflow: hidden; border: 1px solid rgba(255,255,255,0.4); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);">
+    <div id="postModal" class="modal" style="backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); align-items: center; padding-top: 0;">
+        <div class="modal-content glass-bubble" style="max-width: 580px; border-radius: 28px; padding: 0; overflow: hidden; box-shadow: 0 32px 72px rgba(0,0,0,0.18);">
             <!-- Modal Header -->
-            <div style="padding: 20px 25px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05);">
-                <span style="width: 32px;"></span>
-                <h3 id="modalMainTitle" style="margin: 0; font-size: 18px; font-weight: 800; letter-spacing: -0.5px; color: var(--text-color);">Tạo bài viết</h3>
-                <div onclick="closeModal()" style="cursor: pointer; width: 34px; height: 34px; border-radius: 50%; background: rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.1)'" onmouseout="this.style.background='rgba(0,0,0,0.05)'">
-                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            <div style="padding: 18px 22px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center;">
+                <div style="width: 34px;"></div>
+                <h3 id="modalMainTitle" style="margin: 0; font-size: 17px; font-weight: 800; letter-spacing: -0.4px; color: var(--text-color);">Tạo bài viết</h3>
+                <div onclick="closeModal()" style="cursor: pointer; width: 34px; height: 34px; border-radius: 10px; background: rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; transition: all 0.2s; color: var(--secondary-text);" onmouseover="this.style.background='rgba(239,68,68,0.1)'; this.style.color='#ef4444'" onmouseout="this.style.background='rgba(0,0,0,0.05)'; this.style.color='var(--secondary-text)'">
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </div>
             </div>
 
-            <form action="{{ route('posts.store') }}" method="POST" enctype="multipart/form-data" style="padding: 0;">
+            <form action="{{ route('posts.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
-                <div style="padding: 25px; max-height: 65vh; overflow-y: auto;">
-                    <!-- User & Group Context Area -->
-                    <div id="modalContextArea" style="margin-bottom: 20px;">
-                        <div style="display: flex; align-items: center; gap: 14px;">
-                            <div style="position: relative;">
-                                <div class="avatar" style="background-image: url('{{ auth()->check() ? auth()->user()->avatar_url : '' }}'); background-size: cover; width: 52px; height: 52px; border: 2px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-radius: 16px !important;"></div>
-                                <div id="groupMiniAvatar" style="display: none; position: absolute; bottom: -4px; right: -4px; width: 24px; height: 24px; border-radius: 8px; border: 2px solid white; background-size: cover; background-color: var(--accent-color); box-shadow: 0 2px 6px rgba(0,0,0,0.2);"></div>
+                <div style="padding: 20px 22px; max-height: 62vh; overflow-y: auto;">
+                    <!-- User context -->
+                    <div id="modalContextArea" style="margin-bottom: 16px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="position: relative; flex-shrink: 0;">
+                                <div class="avatar" style="background-image: url('{{ auth()->check() ? auth()->user()->avatar_url : '' }}'); background-size: cover; width: 48px; height: 48px; border-radius: 15px !important; border: 2px solid rgba(255,255,255,0.9); box-shadow: 0 3px 10px rgba(0,0,0,0.1);"></div>
+                                <div id="groupMiniAvatar" style="display: none; position: absolute; bottom: -4px; right: -4px; width: 22px; height: 22px; border-radius: 7px; border: 2px solid white; background-size: cover; background-color: var(--accent-color); box-shadow: 0 2px 6px rgba(0,0,0,0.2);"></div>
                             </div>
                             <div>
-                                <div style="font-weight: 800; font-size: 16px; color: var(--text-color);">{{ auth()->check() ? auth()->user()->username : 'Khách' }}</div>
-                                <div id="modalPostStatus" style="font-size: 12px; color: var(--secondary-text); font-weight: 600; display: flex; align-items: center; gap: 5px; margin-top: 2px;">
-                                    <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                                <div style="font-weight: 800; font-size: 15px;">{{ auth()->check() ? auth()->user()->username : 'Khách' }}</div>
+                                <div id="modalPostStatus" style="font-size: 11.5px; color: var(--secondary-text); font-weight: 600; display: flex; align-items: center; gap: 4px; margin-top: 2px;">
+                                    <svg viewBox="0 0 24 24" width="11" height="11" stroke="currentColor" stroke-width="2.5" fill="none"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
                                     Công khai
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Textarea -->
+                    <!-- Error -->
                     @if($errors->has('content'))
-                        <div style="color: #ff3b30; font-size: 13px; font-weight: 700; margin-bottom: 10px;">{{ $errors->first('content') }}</div>
+                        <div style="color: #ff3b30; font-size: 13px; font-weight: 700; margin-bottom: 12px; background: rgba(255,59,48,0.08); padding: 10px 14px; border-radius: 10px; border-left: 3px solid #ff3b30;">{{ $errors->first('content') }}</div>
                     @endif
-                    <textarea name="content" id="postContentInput" rows="4" placeholder="Bạn đang nghĩ gì?" required autofocus maxlength="500" oninput="updateCharCount(this)"
-                              style="width: 100%; border: none; background: transparent; color: inherit; font-size: 18px; line-height: 1.6; outline: none; padding: 0; resize: none; min-height: 120px; font-weight: 500;">{{ old('content') }}</textarea>
-                    
-                    <div style="display: flex; justify-content: flex-end; margin-top: 5px;">
-                        <span id="charCountDisplay" style="font-size: 12px; color: var(--secondary-text); font-weight: 600; opacity: 0.6;">0/500</span>
+
+                    <!-- Textarea -->
+                    <textarea name="content" id="postContentInput" rows="4" placeholder="Bạn đang nghĩ gì? Hãy chia sẻ..." required autofocus maxlength="500" oninput="updateCharCount(this)"
+                              style="width: 100%; border: none; background: transparent; color: inherit; font-size: 17px; line-height: 1.65; outline: none; padding: 0; resize: none; min-height: 110px; font-weight: 500; font-family: inherit;">{{ old('content') }}</textarea>
+
+                    <div style="display: flex; justify-content: flex-end; margin-top: 4px;">
+                        <span id="charCountDisplay" style="font-size: 12px; color: var(--secondary-text); font-weight: 600; opacity: 0.55;">0/500</span>
                     </div>
 
-                    <!-- Link Input Area -->
-                    <div id="linkInputContainer" style="display: none; margin-top: 15px; background: rgba(0,113,227,0.03); padding: 15px; border-radius: 18px; border: 1px dashed var(--accent-color); animation: slideDown 0.3s ease;">
+                    <!-- Link Input -->
+                    <div id="linkInputContainer" style="display: none; margin-top: 14px; background: rgba(0,98,255,0.04); padding: 12px 16px; border-radius: 16px; border: 1px dashed rgba(0,98,255,0.35); animation: slideDown 0.3s ease;">
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <div style="width: 36px; height: 36px; border-radius: 10px; background: white; display: flex; align-items: center; justify-content: center; color: var(--accent-color); box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
-                                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                            <div style="width: 34px; height: 34px; border-radius: 10px; background: rgba(0,98,255,0.1); display: flex; align-items: center; justify-content: center; color: #0062FF; flex-shrink: 0;">
+                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
                             </div>
                             <input type="url" name="link_url" id="linkInput" placeholder="Dán link liên kết tại đây..."
-                                   style="flex-grow: 1; border: none; background: transparent; color: inherit; font-size: 14px; outline: none; font-weight: 600;">
+                                   style="flex-grow: 1; border: none; background: transparent; color: inherit; font-size: 14px; outline: none; font-weight: 600; font-family: inherit;">
                         </div>
                     </div>
 
-                    <!-- Media Preview Area -->
-                    <div id="mediaPreviewContainer" style="display: none; margin-top: 20px;">
-                        <div id="mediaPreviewGrid" style="display: flex; gap: 12px; overflow-x: auto; padding: 5px; scroll-snap-type: x mandatory; scrollbar-width: none;"></div>
+                    <!-- Media Preview -->
+                    <div id="mediaPreviewContainer" style="display: none; margin-top: 16px;">
+                        <div id="mediaPreviewGrid" style="display: flex; gap: 10px; overflow-x: auto; padding: 4px; scroll-snap-type: x mandatory; scrollbar-width: none;"></div>
                     </div>
                 </div>
 
-                <!-- Footer Actions -->
-                <div style="padding: 15px 25px 25px; border-top: 1px solid var(--glass-border); background: rgba(255,255,255,0.02); display: flex; justify-content: space-between; align-items: center;">
-                    <div style="display: flex; gap: 8px;">
-                        <label style="cursor: pointer; width: 44px; height: 44px; border-radius: 14px; background: rgba(0,0,0,0.03); display: flex; align-items: center; justify-content: center; color: var(--secondary-text); transition: all 0.2s;" 
-                               title="Thêm ảnh" onmouseover="this.style.background='rgba(0,113,227,0.1)'; this.style.color='var(--accent-color)'" onmouseout="this.style.background='rgba(0,0,0,0.03)'; this.style.color='var(--secondary-text)'">
-                            <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2.2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                            <input type="file" name="media[]" accept="image/*,.gif" id="mediaInput" style="display: none;" onchange="previewMedia(event)" multiple>
+                <!-- Footer -->
+                <div style="padding: 14px 22px 20px; border-top: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+                    <!-- Media buttons -->
+                    <div style="display: flex; gap: 4px;">
+                        <label style="cursor: pointer; width: 40px; height: 40px; border-radius: 12px; background: rgba(0,98,255,0.07); display: flex; align-items: center; justify-content: center; color: #0062FF; transition: all 0.2s; border: 1.5px solid transparent;" title="Thêm ảnh" onmouseover="this.style.background='rgba(0,98,255,0.14)'; this.style.borderColor='rgba(0,98,255,0.2)'" onmouseout="this.style.background='rgba(0,98,255,0.07)'; this.style.borderColor='transparent'">
+                            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                            <input type="file" name="media[]" accept="image/*,.gif" id="mediaInput" style="display:none;" onchange="previewMedia(event)" multiple>
                         </label>
-                        <label style="cursor: pointer; width: 44px; height: 44px; border-radius: 14px; background: rgba(0,0,0,0.03); display: flex; align-items: center; justify-content: center; color: var(--secondary-text); transition: all 0.2s;" 
-                               title="Thêm tài liệu" onmouseover="this.style.background='rgba(0,113,227,0.1)'; this.style.color='var(--accent-color)'" onmouseout="this.style.background='rgba(0,0,0,0.03)'; this.style.color='var(--secondary-text)'">
-                            <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2.2" fill="none"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
-                            <input type="file" name="media[]" id="fileInput" style="display: none;" onchange="previewMedia(event)" multiple>
+                        <label style="cursor: pointer; width: 40px; height: 40px; border-radius: 12px; background: rgba(77,148,255,0.07); display: flex; align-items: center; justify-content: center; color: #4D94FF; transition: all 0.2s; border: 1.5px solid transparent;" title="Thêm tài liệu" onmouseover="this.style.background='rgba(77,148,255,0.14)'; this.style.borderColor='rgba(77,148,255,0.2)'" onmouseout="this.style.background='rgba(77,148,255,0.07)'; this.style.borderColor='transparent'">
+                            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.2" fill="none"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+                            <input type="file" name="media[]" id="fileInput" style="display:none;" onchange="previewMedia(event)" multiple>
                         </label>
-                        <div onclick="toggleLinkInput()" id="linkToggleButton" style="cursor: pointer; width: 44px; height: 44px; border-radius: 14px; background: rgba(0,0,0,0.03); display: flex; align-items: center; justify-content: center; color: var(--secondary-text); transition: all 0.2s;" 
-                             title="Gán link" onmouseover="this.style.background='rgba(0,113,227,0.1)'; this.style.color='var(--accent-color)'" onmouseout="this.style.background='rgba(0,0,0,0.03)'; this.style.color='var(--secondary-text)'">
-                            <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2.2" fill="none"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                        <div onclick="toggleLinkInput()" id="linkToggleButton" style="cursor: pointer; width: 40px; height: 40px; border-radius: 12px; background: rgba(52,199,89,0.07); display: flex; align-items: center; justify-content: center; color: #34c759; transition: all 0.2s; border: 1.5px solid transparent;" title="Gán link" onmouseover="this.style.background='rgba(52,199,89,0.14)'; this.style.borderColor='rgba(52,199,89,0.2)'" onmouseout="this.style.background='rgba(52,199,89,0.07)'; this.style.borderColor='transparent'">
+                            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.2" fill="none"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
                         </div>
                     </div>
 
-                    <button type="submit" class="btn-post" style="padding: 12px 35px; border-radius: 16px; font-weight: 800; border: none; font-size: 15px; box-shadow: 0 10px 25px rgba(0, 113, 227, 0.3); transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 15px 30px rgba(0, 113, 227, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 25px rgba(0, 113, 227, 0.3)'">Đăng bài</button>
+                    <button type="submit" class="btn-post" style="padding: 11px 32px; border-radius: 14px; font-weight: 800; border: none; font-size: 14.5px; background: #0062FF; color: white; box-shadow: 0 8px 22px rgba(0,98,255,0.3); transition: all 0.25s; cursor: pointer; font-family: inherit;" onmouseover="this.style.background='#0052D9'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 12px 28px rgba(0,98,255,0.4)'" onmouseout="this.style.background='#0062FF'; this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 22px rgba(0,98,255,0.3)'">
+                        Đăng bài
+                    </button>
                 </div>
             </form>
         </div>

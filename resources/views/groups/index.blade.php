@@ -51,7 +51,7 @@
     }
 
     .group-item-sidebar.active {
-        background: rgba(0, 113, 227, 0.08);
+        background: rgba(0, 98, 255, 0.08);
         border-left-color: var(--accent-color);
     }
 
@@ -89,7 +89,7 @@
     select.modern-input:focus {
         border-color: var(--accent-color);
         background: #ffffff !important;
-        box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1);
+        box-shadow: 0 0 0 4px rgba(0, 98, 255, 0.1);
     }
 
     input.modern-input,
@@ -142,6 +142,46 @@
             width: 100%;
             border-right: none;
         }
+    }
+    [data-theme="dark"] .group-layout {
+        background: rgba(16,16,24,0.92);
+        border-color: rgba(255,255,255,0.07);
+    }
+    [data-theme="dark"] .group-sidebar {
+        background: rgba(18,18,28,0.95);
+        border-right-color: rgba(255,255,255,0.07);
+    }
+    [data-theme="dark"] .group-item-sidebar:hover {
+        background: rgba(255,255,255,0.05);
+    }
+    [data-theme="dark"] .group-item-sidebar.active {
+        background: rgba(94,158,255,0.1);
+    }
+    [data-theme="dark"] .group-sidebar button[onclick="openJoinByCodeModal()"] {
+        background: rgba(255,255,255,0.07) !important;
+        color: var(--text-color);
+    }
+    [data-theme="dark"] .modern-input {
+        background: rgba(255,255,255,0.06) !important;
+        border-color: rgba(255,255,255,0.12) !important;
+        color: var(--text-color) !important;
+        -webkit-text-fill-color: var(--text-color) !important;
+    }
+    [data-theme="dark"] .modern-input::placeholder {
+        color: rgba(255,255,255,0.35) !important;
+        -webkit-text-fill-color: rgba(255,255,255,0.35) !important;
+    }
+    [data-theme="dark"] .modern-input:focus {
+        background: rgba(255,255,255,0.09) !important;
+        border-color: rgba(94,158,255,0.5) !important;
+        box-shadow: 0 0 0 4px rgba(94,158,255,0.12);
+    }
+    [data-theme="dark"] .input-label {
+        color: var(--text-color) !important;
+    }
+    [data-theme="dark"] select.modern-input option {
+        background: #1a1a2e !important;
+        color: var(--text-color) !important;
     }
 </style>
 
@@ -292,7 +332,7 @@
             <div class="glass-bubble" style="margin-bottom: 30px; padding: 15px 25px; cursor: pointer; display: flex; align-items: center; gap: 15px; border-radius: 24px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);" onclick="openGroupPostModal('{{ $activeGroup->id }}', '{{ $activeGroup->name }}', '{{ $activeGroup->avatar_url }}')" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 15px 35px rgba(0,0,0,0.08)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--glass-shadow)'">
                 <div class="avatar" style="background-image: url('{{ auth()->user()->avatar_url }}'); background-size: cover; width: 44px; height: 44px; border: 2px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-radius: 14px !important;"></div>
                 <div style="color: var(--secondary-text); font-size: 15px; font-weight: 500; flex-grow: 1; opacity: 0.7;">Chia sẻ điều gì đó với nhóm {{ $activeGroup->name }}...</div>
-                <div style="background: var(--accent-color); color: white; padding: 8px 20px; border-radius: 14px; font-weight: 800; font-size: 14px; box-shadow: 0 8px 20px rgba(0, 113, 227, 0.2);">Đăng bài</div>
+                <div style="background: var(--accent-color); color: white; padding: 8px 20px; border-radius: 14px; font-weight: 800; font-size: 14px; box-shadow: 0 8px 20px rgba(0, 98, 255, 0.2);">Đăng bài</div>
             </div>
             @elseif($activeGroup->privacy === 'private')
             <div style="text-align: center; padding: 40px 20px; background: rgba(0,0,0,0.02); border-radius: 20px; margin-bottom: 20px;">

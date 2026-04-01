@@ -17,8 +17,8 @@
             $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
             $icons = [
                 'pdf' => ['color' => '#ff3b30', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M9 15l2 2 4-4"></path>'],
-                'doc' => ['color' => '#0071e3', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line>'],
-                'docx' => ['color' => '#0071e3', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line>'],
+                'doc' => ['color' => '#0062FF', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line>'],
+                'docx' => ['color' => '#0062FF', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line>'],
                 'xls' => ['color' => '#28a745', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><line x1="8" y1="9" x2="10" y2="9"></line>'],
                 'xlsx' => ['color' => '#28a745', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><line x1="8" y1="9" x2="10" y2="9"></line>'],
                 'ppt' => ['color' => '#fd7e14', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M9 13l3 3 3-3"></path>'],
@@ -276,9 +276,36 @@
         border-color: rgba(0,0,0,0.1);
     }
     [data-theme="dark"] .post-card-v2 {
-        border-color: rgba(255,255,255,0.2); /* Trong chế độ tối, viền đen sẽ mờ hơn hoặc chuyển sang trắng nhẹ để dễ nhìn */
+        border-color: rgba(255,255,255,0.07);
+        background: rgba(22,22,32,0.88);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    [data-theme="dark"] .post-card-v2:hover {
+        background: rgba(28,28,42,0.95);
+        box-shadow: 0 12px 35px rgba(0,0,0,0.45);
     }
     [data-theme="dark"] .action-btn-v2:hover {
-        background: rgba(255,255,255,0.08);
+        background: rgba(255,255,255,0.07);
+        border-color: rgba(255,255,255,0.08);
+    }
+    [data-theme="dark"] .post-card-v2 a[download] {
+        background: rgba(30,30,44,0.9) !important;
+        border-color: rgba(255,255,255,0.08) !important;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.3) !important;
+    }
+    [data-theme="dark"] .post-card-v2 a[download] > div:first-child {
+        background: rgba(255,255,255,0.05) !important;
+    }
+    [data-theme="dark"] .post-card-v2 a[href][target="_blank"] {
+        background: rgba(30,30,44,0.6) !important;
+        border-color: rgba(255,255,255,0.07) !important;
+    }
+    [data-theme="dark"] .post-card-v2 a[href][target="_blank"] > div:first-child {
+        background: rgba(255,255,255,0.06) !important;
+        box-shadow: none !important;
+    }
+    [data-theme="dark"] .post-card-v2 .media-horizontal-scroll > div {
+        border-color: rgba(255,255,255,0.07) !important;
+        background: rgba(20,20,30,0.8) !important;
     }
 </style>
