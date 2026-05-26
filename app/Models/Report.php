@@ -15,12 +15,12 @@ class Report extends Model
 
     public function reportedObject()
     {
-        if ($this->type === 'group') {
-            return $this->belongsTo(SocialGroup::class, 'reported_id');
-        } elseif ($this->type === 'post') {
+        if ($this->type === 'post') {
             return $this->belongsTo(Post::class, 'reported_id');
         } elseif ($this->type === 'user') {
             return $this->belongsTo(User::class, 'reported_id');
+        } elseif ($this->type === 'comment') {
+            return $this->belongsTo(Comment::class, 'reported_id');
         }
         return null;
     }

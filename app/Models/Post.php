@@ -15,10 +15,15 @@ class Post extends Model
     protected $fillable = [
         'user_id',
         'group_id',
+        'conversation_id',
+        'parent_id',
+        'post_type',
         'content',
         'link_url',
         'like_count',
         'reply_count',
+        'moderation_status',
+        'ai_flagged',
     ];
 
     public function user()

@@ -43,13 +43,10 @@ class AuthController extends Controller
         $request->validate(['email_prefix' => 'required']);
         $input = $request->email_prefix;
         
-        // Tìm user theo email gốc (cá nhân hoặc email trường đầy đủ)
-        $user = User::where('email', $input)->first();
-        
-        // Nếu không thấy, thử thêm đuôi trường (sinh viên)
-        if (!$user) {
-            $user = User::where('email', $input . '@eaut.edu.vn')->first();
-        }
+        // Tìm user theo email hoặc username (nếu email không có đuôi)
+        $user = User::where('email', $input)
+            ->orWhere('email', $input . '@eaut.edu.vn')
+            ->first();
 
         if (!$user) {
             return back()->withErrors(['email_prefix' => __('Email không tồn tại trong hệ thống.')])->withInput();
@@ -58,12 +55,17 @@ class AuthController extends Controller
         $email = $user->email;
         $otpCode = rand(100000, 999999);
         
-        // Lưu vào Cache trong 1 phút
-        Cache::put('otp_forgot_password_' . $email, $otpCode, now()->addMinute());
+        // Lưu vào Cache trong 2 phút
+        Cache::put('otp_forgot_password_' . $email, $otpCode, now()->addMinutes(2));
 
-        Mail::to($email)->send(new SendOtpMail($otpCode));
+        try {
+            Mail::to($email)->send(new SendOtpMail($otpCode));
+        } catch (\Exception $e) {
+            \Log::error('Mail Send Error: ' . $e->getMessage());
+            return back()->withErrors(['email_prefix' => __('Không thể gửi email. Vui lòng thử lại sau.')])->withInput();
+        }
 
-        return redirect()->route('password.reset.form', ['email' => $email])->with('status', __('Mã OTP đã được gửi về email của bạn (hiệu lực 1 phút).'));
+        return redirect()->route('password.reset.form', ['email' => $email])->with('status', __('Mã OTP đã được gửi về email của bạn (hiệu lực 2 phút).'));
     }
 
     public function showResetPassword(Request $request)
@@ -83,7 +85,7 @@ class AuthController extends Controller
         $cachedOtp = Cache::get('otp_forgot_password_' . $request->email);
 
         if (!$cachedOtp) {
-            return back()->withErrors(['otp' => __('Mã OTP đã hết hạn (chỉ có hiệu lực trong 1 phút).')])->withInput();
+            return back()->withErrors(['otp' => __('Mã OTP đã hết hạn (chỉ có hiệu lực trong 2 phút).')])->withInput();
         }
 
         if ($cachedOtp != $request->otp) {

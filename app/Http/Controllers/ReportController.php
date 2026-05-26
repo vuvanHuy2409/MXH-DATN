@@ -11,7 +11,7 @@ class ReportController extends Controller
     {
         $request->validate([
             'reported_id' => 'required|integer',
-            'type' => 'required|string|in:group,post,user',
+            'type' => 'required|string|in:post,user,comment',
             'reason' => 'required|string',
             'details' => 'nullable|string',
         ]);

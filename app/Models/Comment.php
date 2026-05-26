@@ -15,7 +15,11 @@ class Comment extends Model
         'parent_id',
         'content',
         'image_url',
+        'file_url',
+        'file_name',
         'reply_count',
+        'status',
+        'ai_flagged_reason',
     ];
 
     protected $with = ['user']; // Luôn tải user kèm theo comment

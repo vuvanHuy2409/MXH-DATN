@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Message extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     public $timestamps = true;
     const UPDATED_AT = null;
@@ -16,6 +16,8 @@ class Message extends Model
     protected $casts = [
         'created_at' => 'datetime',
         'metadata' => 'array',
+        'is_read' => 'boolean',
+        'is_pinned' => 'boolean',
     ];
 
     protected $fillable = [
@@ -26,7 +28,9 @@ class Message extends Model
         'content',
         'metadata',
         'is_read',
+        'is_pinned',
         'created_at',
+        'deleted_at',
     ];
 
     public function conversation()
