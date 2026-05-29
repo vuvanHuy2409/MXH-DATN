@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Rules\ToxicContent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -26,12 +27,14 @@ class ProfileController extends Controller
         $user = auth()->user();
 
         $request->validate([
-            'bio' => ['nullable', 'string', 'max:160'],
+            'username' => ['required', 'string', 'max:50', Rule::unique('users')->ignore($user->id)],
+            'bio' => ['nullable', 'string', 'max:160', new ToxicContent],
             'link_url' => ['nullable', 'string'],
             'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:10240'],
         ]);
 
         $data = [
+            'username' => $request->username,
             'bio' => $request->bio,
             'link_url' => $request->link_url,
         ];

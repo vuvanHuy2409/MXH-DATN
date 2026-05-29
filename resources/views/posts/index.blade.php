@@ -137,19 +137,19 @@
             <button class="create-post-btn" type="button" onclick="event.stopPropagation(); openModal()">Đăng</button>
         </div>
         <div class="create-post-actions">
-            <button class="cp-action-btn" onclick="openModal()" type="button">
+            <button class="cp-action-btn" onclick="openModal('media')" type="button">
                 <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none">
                     <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
                 </svg>
                 Ảnh/Video
             </button>
-            <button class="cp-action-btn" onclick="openModal()" type="button">
+            <button class="cp-action-btn" onclick="openModal('file')" type="button">
                 <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none">
                     <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/>
                 </svg>
                 Tài liệu
             </button>
-            <button class="cp-action-btn" onclick="openModal()" type="button">
+            <button class="cp-action-btn" onclick="openModal('link')" type="button">
                 <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none">
                     <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
                     <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
@@ -183,6 +183,42 @@
         @endforelse
     </div>
 </div>
+
+<script>
+    function openModal(type) {
+        document.getElementById('postModal').style.display = 'flex';
+        document.body.classList.add('modal-open');
+        
+        if (type === 'link') {
+            toggleLinkInput(true);
+        } else if (type === 'media') {
+            document.getElementById('mediaInput').click();
+        } else if (type === 'file') {
+            document.getElementById('fileInput').click();
+        }
+    }
+
+    function switchTab(tab) {
+        document.getElementById('content-foryou').style.display = tab === 'foryou' ? 'block' : 'none';
+        document.getElementById('content-following').style.display = tab === 'following' ? 'block' : 'none';
+        
+        const t1 = document.getElementById('tab-foryou');
+        const t2 = document.getElementById('tab-following');
+        
+        if (tab === 'foryou') {
+            t1.classList.add('active');
+            t2.classList.remove('active');
+        } else {
+            t2.classList.add('active');
+            t1.classList.remove('active');
+        }
+    }
+
+    function toggleDropdown(id) {
+        const dropdown = document.getElementById("dropdown-" + id);
+        if (dropdown) dropdown.classList.toggle("show");
+    }
+</script>
 @endsection
 
 @section('extra_content')
@@ -400,42 +436,6 @@
         });
     }
 
-    function toggleCommentLike(id, el) {
-        const countSpan = el.querySelector('.like-count');
-        const isLiked = el.classList.contains('liked');
-        let count = parseInt(countSpan.innerText) || 0;
-        const svg = el.querySelector('svg');
-        if (isLiked) {
-            el.classList.remove('liked'); el.style.color = 'inherit';
-            svg.setAttribute('fill', 'none'); countSpan.innerText = Math.max(0, count - 1);
-        } else {
-            el.classList.add('liked'); el.style.color = '#ff3b30';
-            svg.setAttribute('fill', 'currentColor'); countSpan.innerText = count + 1;
-        }
-        fetch(`/posts/${id}/like`, { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' } });
-    }
-
-    function switchTab(tab) {
-        document.getElementById('content-foryou').style.display = tab === 'foryou' ? 'block' : 'none';
-        document.getElementById('content-following').style.display = tab === 'following' ? 'block' : 'none';
-        
-        const t1 = document.getElementById('tab-foryou');
-        const t2 = document.getElementById('tab-following');
-        
-        if (tab === 'foryou') {
-            t1.classList.add('active');
-            t2.classList.remove('active');
-        } else {
-            t2.classList.add('active');
-            t1.classList.remove('active');
-        }
-    }
-
-    function toggleDropdown(id) {
-        const dropdown = document.getElementById("dropdown-" + id);
-        if (dropdown) dropdown.classList.toggle("show");
-    }
-    
     function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
     function sharePost(id) { navigator.clipboard.writeText(window.location.origin + '/posts/' + id); alert('Đã sao chép liên kết!'); }
 </script>

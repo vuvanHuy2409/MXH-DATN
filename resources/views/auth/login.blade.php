@@ -640,8 +640,7 @@
                 <div class="field">
                     <input type="text" id="email_prefix" name="email_prefix"
                            value="{{ old('email_prefix') }}"
-                           placeholder="Mã SV hoặc email" required autocomplete="username">
-                    <label for="email_prefix">Mã SV hoặc email đầy đủ</label>
+                           placeholder="Email, Username hoặc Mã SV" required autocomplete="username">                    <label for="email_prefix">Mã SV hoặc email đầy đủ</label>
                 </div>
 
                 <div class="field">

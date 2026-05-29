@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'toxic_detector' => [
+        'url' => env('TOXIC_DETECTOR_URL', 'http://127.0.0.1:8000'),
+    ],
+
 ];

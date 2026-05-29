@@ -1013,10 +1013,23 @@
 </head>
 
 <body class="{{ request()->is('messages*') ? 'messages-page' : '' }}">
-    <a href="/" class="main-logo" title="{{ config('app.name') }}">
-        <img src="{{ asset('images/logo.png') }}" alt="Logo">
-    </a>
-
+    @if(isset($isToxicApiAvailable) && !$isToxicApiAvailable)
+    <div id="toxic-api-banner" style="position: fixed; top: 15px; left: 15px; background: rgba(255, 59, 48, 0.95); color: white; padding: 10px 18px; border-radius: 14px; font-size: 12px; font-weight: 800; z-index: 9999; backdrop-filter: blur(15px); border: 1.5px solid rgba(255,255,255,0.3); box-shadow: 0 8px 32px rgba(255, 59, 48, 0.4); display: flex; align-items: center; gap: 10px; pointer-events: auto; letter-spacing: 0.5px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="display: inline-block; width: 10px; height: 10px; background: #fff; border-radius: 50%; animation: offline-pulse 0.8s infinite alternate;"></span>
+            API KIỂM DUYỆT: NGOẠI TUYẾN
+        </div>
+        <div onclick="document.getElementById('toxic-api-banner').style.display='none'" style="cursor: pointer; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.2); border-radius: 50%; font-size: 14px; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.4)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+            &times;
+        </div>
+    </div>
+    <style>
+        @keyframes offline-pulse {
+            from { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(255,255,255,0.4); }
+            to { opacity: 0.6; transform: scale(1.2); box-shadow: 0 0 10px 4px rgba(255,255,255,0.2); }
+        }
+    </style>
+    @endif
     <nav class="sidebar-nav" style="z-index: 3000;">
         <!-- Home -->
         <a href="/" class="nav-item {{ request()->is('/') ? 'active' : '' }}" title="{{ __('Home') }}">
@@ -1656,14 +1669,22 @@
             if (thumb) thumb.style.left = theme === 'dark' ? '22px' : '2px';
         }
 
-        function toggleLinkInput() {
+        function toggleLinkInput(forceState = null) {
             const container = document.getElementById('linkInputContainer');
             const input = document.getElementById('linkInput');
-            if (container.style.display === 'none') {
+            const button = document.getElementById('linkToggleButton');
+            
+            const shouldShow = forceState !== null ? forceState : (container.style.display === 'none');
+
+            if (shouldShow) {
                 container.style.display = 'block';
+                button.style.background = 'rgba(52,199,89,0.15)';
+                button.style.borderColor = 'rgba(52,199,89,0.3)';
                 input.focus();
             } else {
                 container.style.display = 'none';
+                button.style.background = 'rgba(52,199,89,0.07)';
+                button.style.borderColor = 'transparent';
                 input.value = '';
             }
         }
@@ -1674,8 +1695,6 @@
             const grid = document.getElementById('mediaPreviewGrid');
             const container = document.getElementById('mediaPreviewContainer');
 
-            // Không xóa grid cũ để cho phép chọn từ cả 2 nút
-            // grid.innerHTML = ''; 
             if (files.length > 0) {
                 container.style.display = 'block';
             }
@@ -1684,7 +1703,7 @@
                 const file = files[i];
                 const reader = new FileReader();
                 const itemDiv = document.createElement('div');
-                itemDiv.style.cssText = 'position: relative; flex: 0 0 130px; border-radius: 12px; overflow: hidden; border: 1px solid var(--glass-border); aspect-ratio: 1; background: rgba(0,0,0,0.05); scroll-snap-align: start; display: flex; align-items: center; justify-content: center;';
+                itemDiv.style.cssText = 'position: relative; flex: 0 0 140px; border-radius: 18px; overflow: hidden; border: 1px solid var(--glass-border); aspect-ratio: 1; background: rgba(0,0,0,0.03); scroll-snap-align: start; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transition: transform 0.2s;';
 
                 if (file.type.startsWith('image/')) {
                     reader.onload = function(e) {
@@ -1694,10 +1713,14 @@
                     reader.readAsDataURL(file);
                 } else {
                     // Generic file
+                    const fileExt = file.name.split('.').pop().toUpperCase();
                     itemDiv.innerHTML = `
-                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px; text-align: center; width: 100%;">
-                            <svg viewBox="0 0 24 24" width="32" height="32" stroke="var(--accent-color)" stroke-width="2" fill="none" style="margin-bottom: 5px;"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
-                            <div style="font-size: 10px; font-weight: 700; color: var(--text-color); word-break: break-all; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${file.name}</div>
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px; text-align: center; width: 100%; height: 100%; background: white;">
+                            <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(0,98,255,0.1); display: flex; align-items: center; justify-content: center; color: #0062FF; margin-bottom: 8px;">
+                                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+                            </div>
+                            <div style="font-size: 11px; font-weight: 700; color: var(--text-color); word-break: break-all; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.2;">${file.name}</div>
+                            <div style="font-size: 9px; font-weight: 800; color: #0062FF; margin-top: 4px;">${fileExt}</div>
                         </div>
                     `;
                     addRemoveButton(itemDiv);

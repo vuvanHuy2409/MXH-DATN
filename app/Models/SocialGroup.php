@@ -58,8 +58,8 @@ class SocialGroup extends Model
 
         // Kiểm tra trong bảng group_members
         return $this->members()
-            ->where('user_id', $userId)
-            ->where('role', 'admin')
+            ->wherePivot('user_id', $userId)
+            ->wherePivot('role', 'admin')
             ->exists();
     }
 }

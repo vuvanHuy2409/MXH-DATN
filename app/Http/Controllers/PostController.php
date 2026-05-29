@@ -7,6 +7,7 @@ use App\Models\GroupMember;
 use App\Models\Post;
 use App\Models\PostMedia;
 use App\Models\Repost;
+use App\Rules\ToxicContent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -118,7 +119,7 @@ class PostController extends Controller
     {
         try {
             $request->validate([
-                'content' => 'required|max:500',
+                'content' => ['required', 'max:500', new ToxicContent],
                 'link_url' => 'nullable', // Bớt gắt gao URL validation
                 'group_id' => 'nullable|exists:social_groups,id',
                 'media.*' => 'nullable|file|max:102400', // Tăng max size lên 100MB
@@ -209,7 +210,7 @@ class PostController extends Controller
         }
 
         $request->validate([
-            'content' => 'required|max:500',
+            'content' => ['required', 'max:500', new ToxicContent],
         ]);
 
         $post->update([

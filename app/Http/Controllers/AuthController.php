@@ -43,9 +43,10 @@ class AuthController extends Controller
         $request->validate(['email_prefix' => 'required']);
         $input = $request->email_prefix;
         
-        // Tìm user theo email hoặc username (nếu email không có đuôi)
+        // Tìm user theo email (nhập đầy đủ), hoặc email có đuôi @eaut.edu.vn, hoặc theo username
         $user = User::where('email', $input)
             ->orWhere('email', $input . '@eaut.edu.vn')
+            ->orWhere('username', $input)
             ->first();
 
         if (!$user) {
@@ -123,16 +124,28 @@ class AuthController extends Controller
 
         $input = $request->email_prefix;
 
-        // Thử đăng nhập với input gốc (dành cho giáo viên dùng email cá nhân hoặc username)
+        // Thử đăng nhập với input gốc (email đầy đủ cho giảng viên/admin hoặc username)
         if (Auth::attempt(['email' => $input, 'password' => $request->password])) {
             $request->session()->regenerate();
+            
+            // Xử lý chuyển hướng cho Admin duy nhất
+            if (Auth::user()->email === 'huyberr@gmail.com') {
+                return redirect()->route('admin.dashboard');
+            }
+            
             return redirect()->intended('/');
         }
 
-        // Thử đăng nhập với đuôi @eaut.edu.vn (dành cho sinh viên và giáo viên dùng email trường)
+        // Thử đăng nhập với đuôi @eaut.edu.vn (dành cho sinh viên)
         $emailWithSuffix = $input . '@eaut.edu.vn';
         if (Auth::attempt(['email' => $emailWithSuffix, 'password' => $request->password])) {
             $request->session()->regenerate();
+            
+            // Xử lý chuyển hướng cho Admin (phòng hờ admin dùng email trường)
+            if (Auth::user()->email === 'huyberr@gmail.com') {
+                return redirect()->route('admin.dashboard');
+            }
+            
             return redirect()->intended('/');
         }
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Conversation;
 use App\Models\Message;
+use App\Rules\ToxicContent;
 use Illuminate\Http\Request;
 
 class MessageController extends Controller
@@ -36,7 +37,7 @@ class MessageController extends Controller
         }
 
         $request->validate([
-            'content' => 'nullable|string|max:1000',
+            'content' => ['nullable', 'string', 'max:1000', new ToxicContent],
             'message_type' => 'nullable|in:text,image,file,call_log,post_share',
             'image' => 'nullable|file|max:40960',
             'file' => 'nullable|file|max:204800', // 200MB

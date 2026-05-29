@@ -446,7 +446,7 @@
             <form action="{{ route('password.email') }}" method="POST" id="forgotForm">
                 @csrf
                 <div class="field">
-                    <input type="text" id="email_prefix" name="email_prefix" value="{{ old('email_prefix') }}" placeholder="Mã SV hoặc email" required autofocus>
+                    <input type="text" id="email_prefix" name="email_prefix" value="{{ old('email_prefix') }}" placeholder="Email, Username hoặc Mã SV" required autofocus>
                     <label for="email_prefix">Mã SV hoặc email đầy đủ</label>
                 </div>
 

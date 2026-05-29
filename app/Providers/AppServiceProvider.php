@@ -54,6 +54,13 @@ class AppServiceProvider extends ServiceProvider
                 $view->with('unreadNotificationsCount', 0);
                 $view->with('unreadMessagesCount', 0);
             }
+
+            // Kiểm tra trạng thái API kiểm duyệt (Cache trong 10 giây để phản hồi nhanh)
+            $toxicService = app(\App\Services\ToxicDetectionService::class);
+            $isApiAvailable = \Illuminate\Support\Facades\Cache::remember('toxic_api_available', 10, function() use ($toxicService) {
+                return $toxicService->isAvailable();
+            });
+            $view->with('isToxicApiAvailable', $isApiAvailable);
         });
     }
 }

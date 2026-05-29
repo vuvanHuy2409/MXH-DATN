@@ -395,10 +395,34 @@
         margin-bottom: 6px;
         border-left: 2px solid #0062FF;
         opacity: 0.85;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        max-width: 100%;
+    }
+    .replied-message-info img {
+        width: 32px;
+        height: 32px;
+        object-fit: cover;
+        border-radius: 6px;
+        flex-shrink: 0;
+    }
+    .replied-message-info .reply-file-icon {
+        width: 32px;
+        height: 32px;
+        background: rgba(0,0,0,0.05);
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
     }
     [data-theme="dark"] .replied-message-info {
         background: rgba(255,255,255,0.06);
         border-left-color: #4D94FF;
+    }
+    [data-theme="dark"] .replied-message-info .reply-file-icon {
+        background: rgba(255,255,255,0.1);
     }
 
     /* Action dropdown */
@@ -481,8 +505,27 @@
         align-items: center;
         border-radius: 12px 12px 0 0;
         border-bottom: 1px solid var(--glass-border);
+        gap: 12px;
+    }
+    .reply-preview img {
+        width: 36px;
+        height: 36px;
+        object-fit: cover;
+        border-radius: 6px;
+        flex-shrink: 0;
+    }
+    .reply-preview .reply-file-icon {
+        width: 36px;
+        height: 36px;
+        background: rgba(0,0,0,0.05);
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
     }
     [data-theme="dark"] .reply-preview { background: rgba(77,148,255,0.06); border-left-color: #4D94FF; border-bottom-color: rgba(255,255,255,0.06); }
+    [data-theme="dark"] .reply-preview .reply-file-icon { background: rgba(255,255,255,0.1); }
 
     /* Media preview */
     #mediaMsgPreview {
@@ -845,8 +888,29 @@
                 <div class="message-content-wrapper">
                     @if($message->parent_id)
                     <div class="replied-message-info">
-                        <strong>{{ $message->parent->sender->username }}</strong>:
-                        {{ $message->parent->message_type === 'text' ? (mb_strlen($message->parent->content) > 35 ? mb_substr($message->parent->content, 0, 35).'...' : $message->parent->content) : '[Phương tiện]' }}
+                        @if($message->parent->message_type === 'image')
+                            <img src="{{ asset($message->parent->content) }}" alt="Reply thumbnail">
+                        @elseif($message->parent->message_type === 'file')
+                            <div class="reply-file-icon">
+                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+                            </div>
+                        @endif
+                        <div style="flex: 1; min-width: 0;">
+                            <strong>{{ $message->parent->sender->username }}</strong>:
+                            <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0.8;">
+                                @if($message->parent->message_type === 'text')
+                                    {{ $message->parent->content }}
+                                @elseif($message->parent->message_type === 'image')
+                                    [Hình ảnh]
+                                @elseif($message->parent->message_type === 'video')
+                                    [Video]
+                                @elseif($message->parent->message_type === 'file')
+                                    {{ $message->parent->metadata['file_name'] ?? '[Tệp tin]' }}
+                                @else
+                                    [Phương tiện]
+                                @endif
+                            </div>
+                        </div>
                     </div>
                     @endif
 
@@ -892,7 +956,7 @@
                         </svg>
                     </div>
                     <div id="msg-menu-{{ $message->id }}" class="msg-action-menu">
-                        <div class="msg-action-item" onclick="replyToMessage({{ $message->id }}, '{{ $message->sender->username }}', {{ $message->message_type === 'text' ? json_encode($message->content) : "'[Phương tiện]'" }})">
+                        <div class="msg-action-item" onclick="replyToMessage({{ $message->id }}, '{{ $message->sender->username }}', {{ $message->message_type === 'text' ? json_encode($message->content) : ($message->message_type === 'image' ? "'[Hình ảnh]'" : ($message->message_type === 'file' ? json_encode($message->metadata['file_name'] ?? '[Tệp tin]') : "'[Phương tiện]'")) }}, '{{ $message->message_type }}', '{{ $message->message_type === 'image' ? asset($message->content) : '' }}')">
                             <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2.5" fill="none">
                                 <polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/>
                             </svg>
@@ -927,7 +991,8 @@
             @if($isFriend || $conversation->type === 'group')
             <!-- Reply Preview -->
             <div id="replyPreview" class="reply-preview">
-                <div style="overflow: hidden; min-width: 0;">
+                <div id="replyThumbnail" style="display: none;"></div>
+                <div style="flex: 1; min-width: 0;">
                     <div style="font-size: 12px; font-weight: 800; color: #0062FF;">Đang trả lời <span id="replyUser"></span></div>
                     <div id="replyText" style="font-size: 12.5px; opacity: 0.7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
                 </div>
@@ -1552,10 +1617,22 @@
         document.querySelectorAll('.msg-action-menu').forEach(m => m.style.display = 'none');
     });
 
-    function replyToMessage(id, username, text) {
+    function replyToMessage(id, username, text, type = 'text', thumb = '') {
         document.getElementById('replyParentId').value = id;
         document.getElementById('replyUser').innerText = username;
         document.getElementById('replyText').innerText = text;
+        
+        const thumbEl = document.getElementById('replyThumbnail');
+        if (type === 'image' && thumb) {
+            thumbEl.innerHTML = `<img src="${thumb}" alt="Reply thumbnail">`;
+            thumbEl.style.display = 'block';
+        } else if (type === 'file') {
+            thumbEl.innerHTML = `<div class="reply-file-icon"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg></div>`;
+            thumbEl.style.display = 'block';
+        } else {
+            thumbEl.style.display = 'none';
+        }
+        
         document.getElementById('replyPreview').style.display = 'flex';
         document.getElementById('inputWrapper').style.borderRadius = '0 0 24px 24px';
         document.getElementById('mainChatInput').focus();
@@ -1564,6 +1641,7 @@
     function cancelReply() {
         document.getElementById('replyParentId').value = '';
         document.getElementById('replyPreview').style.display = 'none';
+        document.getElementById('replyThumbnail').style.display = 'none';
         document.getElementById('inputWrapper').style.borderRadius = '24px';
     }
 

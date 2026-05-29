@@ -6,6 +6,7 @@ use App\Models\Comment;
 use App\Models\GroupMember;
 use App\Models\Notification;
 use App\Models\Post;
+use App\Rules\ToxicContent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -32,7 +33,7 @@ class ReplyController extends Controller
 
         // Kiểm tra cơ bản
         $request->validate([
-            'content' => 'nullable|max:500',
+            'content' => ['nullable', 'max:500', new ToxicContent],
             'parent_id' => 'nullable',
             'image' => 'nullable|image|max:10240',
         ]);

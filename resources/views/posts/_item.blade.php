@@ -145,8 +145,8 @@
             <!-- Comment Image -->
             @if($isCommentType && $post->image_url)
             <div style="margin-bottom: 15px; width: 100%; display: flex; justify-content: flex-start;">
-                <div style="border-radius: 18px; overflow: hidden; border: 1px solid var(--glass-border); max-height: 300px; max-width: 400px; background: rgba(0,0,0,0.02); display: flex; justify-content: center; align-items: center;">
-                    <img src="{{ asset($post->image_url) }}" onclick="openLightbox(this.src)" style="width: 100%; max-height: 300px; display: block; cursor: zoom-in; object-fit: cover;">
+                <div style="border-radius: 18px; overflow: hidden; border: 1px solid var(--glass-border); max-height: 400px; width: 100%; background: rgba(0,0,0,0.02); display: flex; justify-content: center; align-items: center;">
+                    <img src="{{ asset($post->image_url) }}" onclick="openLightbox(this.src)" style="width: 100%; max-height: 400px; display: block; cursor: zoom-in; object-fit: contain; image-rendering: -webkit-optimize-contrast;">
                 </div>
             </div>
             @endif
@@ -155,12 +155,12 @@
             @if(!$isCommentType && $post->media && $post->media->isNotEmpty())
             <div style="margin-bottom: 15px; width: 100%; display: flex; justify-content: flex-start;">
                 @if($post->media->count() === 1)
-                    <div style="border-radius: 18px; overflow: hidden; border: 1px solid var(--glass-border); max-height: 450px; max-width: 550px; background: rgba(0,0,0,0.02); display: flex; justify-content: center; align-items: center;">
+                    <div style="border-radius: 18px; overflow: hidden; border: 1px solid var(--glass-border); max-height: 600px; width: 100%; background: rgba(0,0,0,0.02); display: flex; justify-content: center; align-items: center;">
                         @php $media = $post->media->first(); @endphp
                         @if($media->media_type === 'video')
-                            <video src="{{ asset($media->media_url) }}" controls style="width: 100%; max-height: 450px; display: block; object-fit: contain;"></video>
+                            <video src="{{ asset($media->media_url) }}" controls style="width: 100%; max-height: 600px; display: block; object-fit: contain;"></video>
                         @elseif($media->media_type === 'image' || $media->media_type === 'gif')
-                            <img src="{{ asset($media->media_url) }}" onclick="openLightbox(this.src)" style="width: 100%; max-height: 450px; display: block; cursor: zoom-in; object-fit: cover;">
+                            <img src="{{ asset($media->media_url) }}" onclick="openLightbox(this.src)" style="width: 100%; max-height: 600px; display: block; cursor: zoom-in; object-fit: contain; image-rendering: -webkit-optimize-contrast;">
                         @else
                             @php $fileInfo = getFileIconInfo($media->file_name); @endphp
                             <a href="{{ asset($media->media_url) }}" download="{{ $media->file_name }}" style="text-decoration: none; display: flex; align-items: center; gap: 12px; padding: 20px; background: white; border-radius: 14px; width: 100%; border: 1px solid var(--glass-border); box-shadow: 0 4px 12px rgba(0,0,0,0.05); transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
