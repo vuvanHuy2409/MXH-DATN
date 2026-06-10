@@ -4,79 +4,65 @@
 @section('breadcrumb', 'Cài đặt hệ thống')
 
 @section('content')
-<div class="max-w-4xl mx-auto">
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="p-6 border-b border-gray-50 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                    <i data-lucide="settings-2" class="w-5 h-5"></i>
-                </div>
-                <div>
-                    <h1 class="text-xl font-bold text-gray-900">Cấu hình API Kiểm duyệt</h1>
-                    <p class="text-sm text-gray-500">Quản lý kết nối tới dịch vụ Toxic Detection</p>
-                </div>
+<div style="max-width: 600px; margin: 0 auto;">
+    <div class="adm-card" style="overflow: hidden; padding: 28px;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 16px;">
+            <div style="width: 40px; height: 40px; border-radius: 10px; background: var(--accent-bg); color: var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+            </div>
+            <div>
+                <h1 style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0;">Cấu hình API Kiểm duyệt</h1>
+                <p style="font-size: 12px; color: var(--text-muted); margin: 4px 0 0 0;">Quản lý kết nối tới dịch vụ AI Toxic Detection</p>
             </div>
         </div>
 
-        <form action="{{ route('admin.settings.update') }}" method="POST" class="p-8">
-            @csrf
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                <!-- URL API -->
-                <div class="space-y-2">
-                    <label class="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                        <i data-lucide="globe" class="w-4 h-4 text-gray-400"></i>
-                        Địa chỉ URL API
-                    </label>
-                    <input type="text" name="toxic_detector_url" id="toxic_detector_url" 
-                        value="{{ $toxicUrl }}" 
-                        class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none text-sm"
-                        placeholder="{{ $defaultUrl }}">
-                    <p class="text-[11px] text-gray-400">Địa chỉ máy chủ chạy dịch vụ AI (mặc định: {{ $defaultUrl }})</p>
+        <!-- URL API Input -->
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px;">
+            <label style="font-size: 13px; font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="2" y1="12" x2="22" y2="12"></line>
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                </svg>
+                Địa chỉ URL API
+            </label>
+            <input type="text" name="toxic_detector_url" id="toxic_detector_url" 
+                value="{{ $toxicUrl }}" 
+                class="adm-input"
+                style="width: 100%; padding: 10px 14px; font-size: 13.5px;"
+                placeholder="Ví dụ: http://127.0.0.1:8000">
+            <p style="font-size: 11px; color: var(--text-faint); margin: 0;">Đường dẫn máy chủ chạy dịch vụ AI (Mặc định: http://127.0.0.1:8000)</p>
+        </div>
+
+        <!-- Test Connection Box (Auto-saves on success) -->
+        <div style="background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: 16px;">
+            <div style="display: flex; align-items: start; gap: 12px;">
+                <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(59,91,219,0.1); color: var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                    </svg>
                 </div>
+                <div style="flex: 1;">
+                    <h3 style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin: 0 0 4px 0;">Kết nối & Lưu cấu hình</h3>
+                    <p style="font-size: 11px; color: var(--text-muted); margin: 0 0 12px 0;">Nhấn nút bên dưới để kiểm tra kết nối. Nếu kết nối thành công, hệ thống sẽ tự động lưu cấu hình này làm cấu hình chính thức.</p>
+                    
+                    <div id="test-result" style="display: none; padding: 10px; border-radius: 8px; font-size: 11.5px; font-weight: 600; margin-bottom: 12px;"></div>
 
-                <!-- PORT API -->
-                <div class="space-y-2">
-                    <label class="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                        <i data-lucide="hash" class="w-4 h-4 text-gray-400"></i>
-                        Cổng kết nối (Port)
-                    </label>
-                    <input type="number" name="toxic_detector_port" id="toxic_detector_port" 
-                        value="{{ $toxicPort }}" 
-                        class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none text-sm"
-                        placeholder="{{ $defaultPort }}">
-                    <p class="text-[11px] text-gray-400">Cổng dịch vụ Python (mặc định: {{ $defaultPort }})</p>
-                </div>
-            </div>
-
-            <div class="bg-blue-50/50 rounded-2xl p-6 border border-blue-100 mb-8">
-                <div class="flex items-start gap-4">
-                    <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 mt-1">
-                        <i data-lucide="activity" class="w-4 h-4"></i>
-                    </div>
-                    <div class="flex-1">
-                        <h3 class="text-sm font-bold text-blue-900 mb-1">Kiểm tra kết nối</h3>
-                        <p class="text-xs text-blue-700 mb-4">Hãy thử kiểm tra xem hệ thống có thể kết nối tới API với cấu hình trên hay không trước khi lưu.</p>
-                        
-                        <div id="test-result" class="hidden mb-4 p-3 rounded-lg text-xs font-medium"></div>
-
-                        <button type="button" id="btn-test" onclick="testApiConnection()"
-                            class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-blue-200 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-50 transition-all shadow-sm">
-                            <i data-lucide="play-circle" class="w-4 h-4"></i>
-                            Bắt đầu kiểm tra
-                        </button>
-                    </div>
+                    <button type="button" id="btn-test" onclick="testApiConnection()" class="btn-muted" style="font-size: 11.5px; padding: 8px 20px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; color: white; background: var(--accent); border: none; border-radius: 8px;">
+                        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polygon points="10 8 16 12 10 16 10 8"></polygon>
+                        </svg>
+                        Kiểm tra & Lưu cấu hình
+                    </button>
                 </div>
             </div>
-
-            <div class="flex items-center justify-end gap-3 pt-6 border-t border-gray-50">
-                <button type="submit" class="px-6 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-200">
-                    Lưu cấu hình
-                </button>
-            </div>
-        </form>
+        </div>
     </div>
 </div>
-
 @endsection
 
 @section('scripts')
@@ -85,18 +71,24 @@ function testApiConnection() {
     const btn = document.getElementById('btn-test');
     const resultDiv = document.getElementById('test-result');
     const url = document.getElementById('toxic_detector_url').value;
-    const port = document.getElementById('toxic_detector_port').value;
 
-    if (!url || !port) {
-        alert('Vui lòng nhập đầy đủ URL và Port');
+    if (!url) {
+        alert('Vui lòng nhập URL API');
         return;
     }
 
     btn.disabled = true;
-    btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Đang kiểm tra...';
-    lucide.createIcons();
+    btn.style.opacity = '0.7';
+    btn.innerHTML = `
+        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" style="display: inline-block; vertical-align: middle; animation: spin 1s linear infinite;">
+            <style>
+                @keyframes spin { 100% { transform: rotate(360deg); } }
+            </style>
+            <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.1)"></circle>
+            <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-linecap="round"></path>
+        </svg> Đang kiểm tra...`;
 
-    resultDiv.classList.add('hidden');
+    resultDiv.style.display = 'none';
 
     fetch("{{ route('admin.settings.test') }}", {
         method: 'POST',
@@ -104,31 +96,38 @@ function testApiConnection() {
             'Content-Type': 'application/json',
             'X-CSRF-TOKEN': '{{ csrf_token() }}'
         },
-        body: JSON.stringify({ url, port })
+        body: JSON.stringify({ url: url })
     })
     .then(res => res.json())
     .then(data => {
-        resultDiv.classList.remove('hidden');
-        resultDiv.classList.remove('bg-green-100', 'text-green-700', 'bg-red-100', 'text-red-700');
+        resultDiv.style.display = 'block';
+        resultDiv.style.background = '';
+        resultDiv.style.color = '';
         
         if (data.status === 'success') {
-            resultDiv.classList.add('bg-green-100', 'text-green-700');
-            resultDiv.innerHTML = '<i data-lucide="check-circle" class="w-4 h-4 inline mr-1"></i> ' + data.message;
+            resultDiv.style.background = 'rgba(34,197,94,0.1)';
+            resultDiv.style.color = '#10B981';
+            resultDiv.innerHTML = '✓ ' + data.message;
         } else {
-            resultDiv.classList.add('bg-red-100', 'text-red-700');
-            resultDiv.innerHTML = '<i data-lucide="alert-circle" class="w-4 h-4 inline mr-1"></i> ' + data.message;
+            resultDiv.style.background = 'rgba(239,68,68,0.1)';
+            resultDiv.style.color = '#EF4444';
+            resultDiv.innerHTML = '✕ ' + data.message;
         }
-        lucide.createIcons();
     })
     .catch(err => {
-        resultDiv.classList.remove('hidden');
-        resultDiv.classList.add('bg-red-100', 'text-red-700');
-        resultDiv.innerHTML = 'Lỗi kết nối: ' + err.message;
+        resultDiv.style.display = 'block';
+        resultDiv.style.background = 'rgba(239,68,68,0.1)';
+        resultDiv.style.color = '#EF4444';
+        resultDiv.innerHTML = '✕ Lỗi kết nối: ' + err.message;
     })
     .finally(() => {
         btn.disabled = false;
-        btn.innerHTML = '<i data-lucide="play-circle" class="w-4 h-4"></i> Bắt đầu kiểm tra';
-        lucide.createIcons();
+        btn.style.opacity = '1';
+        btn.innerHTML = `
+            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="inline">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polygon points="10 8 16 12 10 16 10 8"></polygon>
+            </svg> Kiểm tra & Lưu cấu hình`;
     });
 }
 </script>

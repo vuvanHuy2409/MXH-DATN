@@ -30,7 +30,10 @@
             <div class="flex-1 min-w-[300px]">
                 <label class="text-[11px] font-bold text-[#9CA3AF] uppercase mb-1 block">Tìm kiếm</label>
                 <div class="relative">
-                    <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]"></i>
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
                     <input type="text" name="q" value="{{ request('q') }}" placeholder="Tên, Email, Username..." class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-[13px] outline-none focus:bg-white focus:ring-2 focus:ring-[#3B5BDB]/20 transition-all">
                 </div>
             </div>
@@ -100,15 +103,33 @@
                         <div class="flex items-center justify-end gap-2">
                             <form action="{{ route('admin.users.toggle-flag', $user->id) }}" method="POST">
                                 @csrf
-                                <button type="submit" class="p-2 {{ $user->status === 'flagged' ? 'text-gray-400 hover:text-green-600' : 'text-gray-400 hover:text-red-600' }} transition-colors" title="{{ $user->status === 'flagged' ? 'Gỡ đánh dấu' : 'Đánh dấu tài khoản' }}">
-                                    <i data-lucide="{{ $user->status === 'flagged' ? 'shield-check' : 'flag' }}" class="w-4 h-4"></i>
+                                <button type="submit" class="p-2 {{ $user->status === 'flagged' ? 'text-gray-400 hover:text-green-600' : 'text-gray-400 hover:text-red-600' }} transition-colors cursor-pointer" title="{{ $user->status === 'flagged' ? 'Gỡ đánh dấu' : 'Đánh dấu tài khoản' }}">
+                                    @if($user->status === 'flagged')
+                                        <!-- Shield Check SVG -->
+                                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="inline">
+                                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                            <path d="m9 11 2 2 4-4"></path>
+                                        </svg>
+                                    @else
+                                        <!-- Flag SVG -->
+                                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="inline">
+                                            <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+                                            <line x1="4" y1="22" x2="4" y2="15"></line>
+                                        </svg>
+                                    @endif
                                 </button>
                             </form>
                             @if($user->id !== auth()->id())
                             <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" onsubmit="return confirm('CẢNH BÁO: Hành động này sẽ XÓA HOÀN TOÀN tài khoản, bài viết, tin nhắn, bình luận và tất cả dữ liệu của người dùng này. Bạn có chắc chắn không?');">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="p-2 text-gray-400 hover:text-red-600 transition-colors" title="Xóa vĩnh viễn">
-                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                <button type="submit" class="p-2 text-gray-400 hover:text-red-600 transition-colors cursor-pointer" title="Xóa vĩnh viễn">
+                                    <!-- Trash SVG -->
+                                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="inline">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                                    </svg>
                                 </button>
                             </form>
                             @endif

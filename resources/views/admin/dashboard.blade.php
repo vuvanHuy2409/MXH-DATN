@@ -4,13 +4,16 @@
 @section('breadcrumb', 'Dashboard')
 
 @section('content')
-    <!-- STAT CARDS - ROW 1 -->
-    <div class="grid grid-cols-5 gap-4 mb-4">
+    <!-- STAT CARDS - 6 COLUMNS -->
+    <div class="grid grid-cols-6 gap-4 mb-6">
         <!-- Total Users -->
         <div class="bg-white rounded-xl p-5 stat-card">
             <div class="flex items-center justify-between mb-2">
                 <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
-                    <i data-lucide="user" class="w-5 h-5 text-[#3B5BDB]"></i>
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="text-[#3B5BDB]">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
                 </div>
             </div>
             <h3 class="text-[28px] font-bold text-[#111827]">{{ number_format($totalUsers) }}</h3>
@@ -22,7 +25,12 @@
         <div class="bg-white rounded-xl p-5 stat-card">
             <div class="flex items-center justify-between mb-2">
                 <div class="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center">
-                    <i data-lucide="user" class="w-5 h-5 text-[#7C3AED]"></i>
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="text-[#7C3AED]">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
                 </div>
             </div>
             <h3 class="text-[28px] font-bold text-[#111827]">{{ number_format($studentCount) }}</h3>
@@ -34,7 +42,13 @@
         <div class="bg-white rounded-xl p-5 stat-card">
             <div class="flex items-center justify-between mb-2">
                 <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
-                    <i data-lucide="file-text" class="w-5 h-5 text-[#2563EB]"></i>
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="text-[#2563EB]">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
                 </div>
             </div>
             <h3 class="text-[28px] font-bold text-[#111827]">{{ number_format($activePosts) }}</h3>
@@ -46,7 +60,11 @@
         <div class="bg-white rounded-xl p-5 stat-card">
             <div class="flex items-center justify-between mb-2">
                 <div class="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center">
-                    <i data-lucide="alert-triangle" class="w-5 h-5 text-[#F59E0B]"></i>
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="text-[#F59E0B]">
+                        <polygon points="10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></polygon>
+                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
                 </div>
             </div>
             <h3 class="text-[28px] font-bold text-[#111827]">{{ $pendingReports }}</h3>
@@ -64,21 +82,27 @@
         <div class="bg-white rounded-xl p-5 stat-card">
             <div class="flex items-center justify-between mb-2">
                 <div class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center">
-                    <i data-lucide="lock" class="w-5 h-5 text-[#EF4444]"></i>
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="text-[#EF4444]">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
                 </div>
             </div>
             <h3 class="text-[28px] font-bold text-[#111827]">{{ $lockedAccounts }}</h3>
             <p class="text-[12px] text-[#9CA3AF] mt-1">Tài khoản bị đánh dấu</p>
             <p class="text-[11px] text-[#9CA3AF] mt-1">trên tổng {{ $totalUsers }}</p>
         </div>
-    </div>
 
-    <!-- STAT CARDS - ROW 2 -->
-    <div class="grid grid-cols-5 gap-4 mb-6">
+        <!-- Groups -->
         <div class="bg-white rounded-xl p-5 stat-card">
             <div class="flex items-center justify-between mb-2">
                 <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
-                    <i data-lucide="users" class="w-5 h-5 text-[#3B5BDB]"></i>
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="text-[#3B5BDB]">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
                 </div>
             </div>
             <h3 class="text-[28px] font-bold text-[#111827]">{{ $totalGroups }}</h3>
@@ -123,7 +147,14 @@
         <div class="bg-white rounded-xl shadow-sm overflow-hidden">
             <div class="p-4 px-6 flex items-center justify-between border-b border-gray-50">
                 <div class="flex items-center gap-2">
-                    <i data-lucide="trophy" class="w-4 h-4 text-[#F59E0B]"></i>
+                    <!-- Trophy SVG -->
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="text-[#F59E0B]">
+                        <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                        <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                        <path d="M4 22h16"></path>
+                        <path d="M10 14.66V17c0 .55-.45 1-1 1H4v2h16v-2h-5c-.55 0-1-.45-1-1v-2.34"></path>
+                        <path d="M12 2a6 6 0 0 1 6 6v3.5c0 1.63-1.22 3.36-3 3.5H9c-1.78-.14-3-1.87-3-3.5V8a6 6 0 0 1 6-6z"></path>
+                    </svg>
                     <h4 class="text-[14px] font-bold text-[#111827]">Top người đăng bài nhiều nhất</h4>
                 </div>
             </div>
@@ -190,7 +221,11 @@
                 </table>
             @else
                 <div class="p-12 text-center text-[#9CA3AF]">
-                    <i data-lucide="check-circle" class="w-12 h-12 mx-auto mb-3 opacity-20"></i>
+                    <!-- Check Circle SVG -->
+                    <svg viewBox="0 0 24 24" width="48" height="48" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="mx-auto mb-3 opacity-20">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
                     <p class="text-[13px]">Không có báo cáo nào cần xử lý</p>
                 </div>
             @endif

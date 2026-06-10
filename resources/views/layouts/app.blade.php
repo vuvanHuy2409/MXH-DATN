@@ -1014,21 +1014,34 @@
 
 <body class="{{ request()->is('messages*') ? 'messages-page' : '' }}">
     @if(isset($isToxicApiAvailable) && !$isToxicApiAvailable)
-    <div id="toxic-api-banner" style="position: fixed; top: 15px; left: 15px; background: rgba(255, 59, 48, 0.95); color: white; padding: 10px 18px; border-radius: 14px; font-size: 12px; font-weight: 800; z-index: 9999; backdrop-filter: blur(15px); border: 1.5px solid rgba(255,255,255,0.3); box-shadow: 0 8px 32px rgba(255, 59, 48, 0.4); display: flex; align-items: center; gap: 10px; pointer-events: auto; letter-spacing: 0.5px;">
-        <div style="display: flex; align-items: center; gap: 8px;">
-            <span style="display: inline-block; width: 10px; height: 10px; background: #fff; border-radius: 50%; animation: offline-pulse 0.8s infinite alternate;"></span>
-            API KIỂM DUYỆT: NGOẠI TUYẾN
-        </div>
-        <div onclick="document.getElementById('toxic-api-banner').style.display='none'" style="cursor: pointer; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.2); border-radius: 50%; font-size: 14px; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.4)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
-            &times;
-        </div>
+    <div id="toxic-api-banner" style="position: fixed; top: 15px; left: 15px; background: #ffffff; color: #1f2937; padding: 12px 16px; border-radius: 12px; font-size: 13px; font-weight: 500; z-index: 99999; border: 1.5px solid #ef4444; box-shadow: 0 4px 16px rgba(239, 68, 68, 0.15); display: flex; align-items: center; gap: 10px; max-width: 320px; line-height: 1.4; font-family: system-ui, -apple-system, sans-serif; animation: offline-slide-down 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; transition: opacity 0.5s ease, transform 0.5s ease;">
+        <span style="width: 8px; height: 8px; background: #ef4444; border-radius: 50%; display: inline-block; animation: offline-pulse 0.8s infinite alternate; flex-shrink: 0;"></span>
+        <span style="flex-grow: 1;">Hệ thống kiểm duyệt tự động hiện đang tạm đóng. Vui lòng chờ quản trị viên kích hoạt lại.</span>
+        <button onclick="closeToxicBanner()" style="background: transparent; border: none; color: #9ca3af; cursor: pointer; font-size: 16px; padding: 0 2px; font-weight: bold; flex-shrink: 0; line-height: 1;" onmouseover="this.style.color='#4b5563'" onmouseout="this.style.color='#9ca3af'">&times;</button>
     </div>
     <style>
+        @keyframes offline-slide-down {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
         @keyframes offline-pulse {
-            from { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(255,255,255,0.4); }
-            to { opacity: 0.6; transform: scale(1.2); box-shadow: 0 0 10px 4px rgba(255,255,255,0.2); }
+            from { opacity: 1; transform: scale(1); }
+            to { opacity: 0.4; transform: scale(1.2); }
         }
     </style>
+    <script>
+        function closeToxicBanner() {
+            const banner = document.getElementById('toxic-api-banner');
+            if (banner) {
+                banner.style.opacity = '0';
+                banner.style.transform = 'translateY(-20px)';
+                setTimeout(() => {
+                    banner.style.display = 'none';
+                }, 500);
+            }
+        }
+        setTimeout(closeToxicBanner, 10000);
+    </script>
     @endif
     <nav class="sidebar-nav" style="z-index: 3000;">
         <!-- Home -->
@@ -1780,6 +1793,154 @@
             }
         });
     </script>
+    <!-- ==================== REPORT MODAL (Global) ==================== -->
+    <div id="reportModal" class="modal" onclick="if(event.target===this) closeReportModal()" style="z-index: 7000;">
+        <div class="modal-content glass-bubble" style="max-width: 440px; padding: 0; border-radius: 16px; overflow: hidden; width: 92%; height: auto; margin: auto;">
+            <!-- Header -->
+            <div style="padding: 18px 24px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: var(--text-color);">Báo cáo</h3>
+                <div onclick="closeReportModal()" style="cursor: pointer; color: var(--secondary-text); font-size: 20px; line-height: 1;">&times;</div>
+            </div>
+
+            <div style="padding: 24px; max-height: 75vh; overflow-y: auto;">
+                <input type="hidden" id="reportTargetId" value="">
+                <input type="hidden" id="reportTargetType" value="">
+                
+                <p style="font-size: 14.5px; font-weight: 600; color: var(--text-color); margin: 0 0 16px;">Vui lòng chọn lý do báo cáo:</p>
+                
+                <div id="reportReasons" style="display: flex; flex-direction: column; gap: 2px; margin-bottom: 20px;">
+                    <!-- Inserted by JS -->
+                </div>
+
+                <textarea id="reportDetails" rows="2" placeholder="Chi tiết thêm (tùy chọn)" class="form-control" style="width: 100%; box-sizing: border-box; resize: none; margin-bottom: 20px; font-size: 14px; border-radius: 10px;"></textarea>
+                
+                <div id="reportResultMsg" style="display: none; margin-bottom: 16px; padding: 12px 16px; border-radius: 10px; font-size: 13.5px; font-weight: 500;"></div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid var(--glass-border); padding-top: 20px;">
+                    <button onclick="closeReportModal()" style="padding: 9px 18px; background: transparent; color: var(--text-color); border: none; font-size: 14.5px; font-weight: 600; cursor: pointer;">Hủy</button>
+                    <button id="submitReportBtn" onclick="submitReport()" disabled style="padding: 9px 24px; background: var(--accent-color); color: white; border: none; border-radius: 10px; font-size: 14.5px; font-weight: 600; cursor: not-allowed; opacity: 0.5; transition: opacity 0.2s;">Gửi báo cáo</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // ==================== REPORT MODAL LOGIC ====================
+    const _REPORT_REASONS = {
+        'spam': 'Spam hoặc lừa đảo',
+        'harassment': 'Quấy rối hoặc bắt nạt',
+        'inappropriate': 'Nội dung không phù hợp hoặc khiêu dâm',
+        'violence': 'Nội dung bạo lực',
+        'misinformation': 'Thông tin sai lệch',
+        'privacy': 'Vi phạm quyền riêng tư',
+        'other': 'Lý do khác',
+    };
+    let _selectedReportReason = null;
+
+    function openReportModal(id, type) {
+        _selectedReportReason = null;
+        document.getElementById('reportTargetId').value = id;
+        document.getElementById('reportTargetType').value = type;
+        document.getElementById('reportDetails').value = '';
+        
+        document.getElementById('reportResultMsg').style.display = 'none';
+        
+        const btn = document.getElementById('submitReportBtn');
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+        btn.style.cursor = 'not-allowed';
+        btn.textContent = 'Gửi báo cáo';
+
+        const container = document.getElementById('reportReasons');
+        container.innerHTML = '';
+
+        Object.entries(_REPORT_REASONS).forEach(([key, label]) => {
+            const lbl = document.createElement('label');
+            lbl.style.cssText = 'display: flex; align-items: center; gap: 12px; padding: 12px 14px; cursor: pointer; border-radius: 10px; transition: background 0.2s; margin: 0;';
+            lbl.onmouseover = () => lbl.style.background = 'rgba(128,128,128,0.1)';
+            lbl.onmouseout = () => lbl.style.background = 'transparent';
+            
+            lbl.innerHTML = `
+                <input type="radio" name="report_reason" value="${key}" style="width: 18px; height: 18px; margin: 0; cursor: pointer; accent-color: var(--accent-color);">
+                <span style="font-size: 14.5px; color: var(--text-color);">${label}</span>
+            `;
+            
+            lbl.querySelector('input').addEventListener('change', (e) => {
+                _selectedReportReason = e.target.value;
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+            });
+            
+            container.appendChild(lbl);
+        });
+
+        document.getElementById('reportModal').style.display = 'flex';
+        document.body.classList.add('modal-open');
+    }
+
+    function closeReportModal() {
+        document.getElementById('reportModal').style.display = 'none';
+        document.body.classList.remove('modal-open');
+        _selectedReportReason = null;
+    }
+
+    function submitReport() {
+        if (!_selectedReportReason) return;
+        
+        const id = document.getElementById('reportTargetId').value;
+        const type = document.getElementById('reportTargetType').value;
+        const details = document.getElementById('reportDetails').value;
+        const msgEl = document.getElementById('reportResultMsg');
+        const btn = document.getElementById('submitReportBtn');
+
+        btn.disabled = true;
+        btn.textContent = 'Đang gửi...';
+        btn.style.opacity = '0.7';
+
+        fetch('/reports', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({ reported_id: id, type: type, reason: _selectedReportReason, details: details }),
+        })
+        .then(res => res.json())
+        .then(data => {
+            msgEl.style.display = 'block';
+            if (data.success) {
+                msgEl.style.cssText = 'display:block; margin-bottom:16px; padding:12px 16px; border-radius:10px; font-size:13.5px; font-weight:600; background:rgba(34,197,94,0.1); color:#16a34a; border: 1px solid rgba(34,197,94,0.2);';
+                msgEl.innerHTML = data.message;
+                setTimeout(() => closeReportModal(), 1800);
+            } else {
+                msgEl.style.cssText = 'display:block; margin-bottom:16px; padding:12px 16px; border-radius:10px; font-size:13.5px; font-weight:600; background:rgba(239,68,68,0.1); color:#dc2626; border: 1px solid rgba(239,68,68,0.2);';
+                msgEl.innerHTML = data.message;
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.textContent = 'Gửi báo cáo';
+            }
+        })
+        .catch(() => {
+            msgEl.style.display = 'block';
+            msgEl.style.cssText = 'display:block; margin-bottom:16px; padding:12px 16px; border-radius:10px; font-size:13.5px; font-weight:600; background:rgba(239,68,68,0.1); color:#dc2626; border: 1px solid rgba(239,68,68,0.2);';
+            msgEl.innerHTML = 'Có lỗi xảy ra. Vui lòng thử lại.';
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.textContent = 'Gửi báo cáo';
+        });
+    }
+
+    // Đếm ký tự textarea
+    document.addEventListener('DOMContentLoaded', () => {
+        const ta = document.getElementById('reportDetails');
+        if (ta) ta.addEventListener('input', () => {
+            document.getElementById('reportDetailsCount').textContent = ta.value.length;
+        });
+    });
+    </script>
+
     <!-- Likes Modal -->
     <div id="likesModal" class="modal" onclick="if(event.target === this) closeLikesModal()">
         <div class="modal-content glass-bubble" style="max-width: 400px; padding: 0; overflow: hidden; border-radius: 28px;">

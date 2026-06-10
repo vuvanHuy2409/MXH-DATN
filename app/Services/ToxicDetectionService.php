@@ -20,7 +20,11 @@ class ToxicDetectionService
         $dbUrl = \App\Models\Setting::get('toxic_detector_url', $defaultHost);
         $dbPort = \App\Models\Setting::get('toxic_detector_port', $defaultPort);
 
-        $this->apiUrl = rtrim($dbUrl, '/') . ':' . $dbPort;
+        if (parse_url($dbUrl, PHP_URL_PORT) || empty($dbPort)) {
+            $this->apiUrl = rtrim($dbUrl, '/');
+        } else {
+            $this->apiUrl = rtrim($dbUrl, '/') . ':' . $dbPort;
+        }
     }
 
     /**

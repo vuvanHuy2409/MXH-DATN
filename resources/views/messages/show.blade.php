@@ -971,7 +971,7 @@
                             Xóa
                         </div>
                         @else
-                        <div class="msg-action-item" style="color: #ff9500;" onclick="alert('Đã báo cáo tin nhắn này.')">
+                        <div class="msg-action-item" style="color: #ff9500;" onclick="openReportModal({{ $message->id }}, 'message')">
                             <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2.5" fill="none">
                                 <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
                                 <line x1="4" y1="22" x2="4" y2="15"/>

@@ -18,43 +18,37 @@ class SystemSettingController extends Controller
         $defaultUrl = (($parsed['scheme'] ?? 'http') . '://' . ($parsed['host'] ?? '127.0.0.1'));
         $defaultPort = $parsed['port'] ?? '8000';
 
-        $toxicPort = Setting::get('toxic_detector_port', $defaultPort);
-        $toxicUrl = Setting::get('toxic_detector_url', $defaultUrl);
+        $dbUrl = Setting::get('toxic_detector_url', $defaultUrl);
+        $dbPort = Setting::get('toxic_detector_port', $defaultPort);
 
-        return view('admin.settings', compact('toxicPort', 'toxicUrl', 'defaultUrl', 'defaultPort'));
-    }
-
-    public function update(Request $request)
-    {
-        $request->validate([
-            'toxic_detector_port' => 'required|numeric|between:1,65535',
-            'toxic_detector_url' => 'required|url',
-        ]);
-
-        $save1 = Setting::set('toxic_detector_port', $request->toxic_detector_port);
-        $save2 = Setting::set('toxic_detector_url', $request->toxic_detector_url);
-
-        if (!$save1 || !$save2) {
-            return back()->with('error', 'Lỗi: Không thể lưu cài đặt. Có thể bạn chưa chạy lệnh migrate để tạo bảng settings.');
+        // Ghép cổng vào URL nếu chưa có
+        if ($dbPort && !parse_url($dbUrl, PHP_URL_PORT)) {
+            $toxicUrl = rtrim($dbUrl, '/') . ':' . $dbPort;
+        } else {
+            $toxicUrl = $dbUrl;
         }
 
-        return back()->with('success', 'Đã cập nhật cài đặt hệ thống.');
+        return view('admin.settings', compact('toxicUrl'));
     }
 
     public function testConnection(Request $request)
     {
         $url = $request->url;
-        $port = $request->port;
-        $fullUrl = rtrim($url, '/') . ':' . $port;
+        $fullUrl = rtrim($url, '/');
 
         try {
             // Sử dụng endpoint /health để kiểm tra nhanh
             $response = Http::timeout(3)->get($fullUrl . '/health');
 
             if ($response->successful()) {
+                // Tự động cấu hình và lưu cài đặt khi kết nối thành công!
+                $port = parse_url($url, PHP_URL_PORT);
+                Setting::set('toxic_detector_url', $url);
+                Setting::set('toxic_detector_port', $port ?? '');
+
                 return response()->json([
                     'status' => 'success',
-                    'message' => 'Kết nối thành công! API đang hoạt động.'
+                    'message' => 'Kết nối thành công! Hệ thống đã tự động lưu địa chỉ cấu hình API mới.'
                 ]);
             }
 
@@ -72,7 +66,7 @@ class SystemSettingController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Không thể kết nối tới API: ' . $e->getMessage() . '. Hãy đảm bảo URL và Port chính xác và máy chủ AI đang chạy.'
+                'message' => 'Không thể kết nối tới API: ' . $e->getMessage() . '. Hãy đảm bảo URL chính xác và máy chủ AI đang chạy.'
             ]);
         }
     }

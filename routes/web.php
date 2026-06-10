@@ -38,8 +38,8 @@ Route::middleware('auth')->group(function () {
     // Quản lý báo cáo (Admin)
     Route::prefix('admin/reports')->name('admin.reports.')->middleware('admin.only')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\ReportManagementController::class, 'index'])->name('index');
-        Route::delete('/{id}/delete-content', [\App\Http\Controllers\Admin\ReportManagementController::class, 'destroyContent'])->name('destroyContent');
-        Route::post('/{id}/ignore', [\App\Http\Controllers\Admin\ReportManagementController::class, 'ignoreReport'])->name('ignore');
+        Route::post('/delete-content', [\App\Http\Controllers\Admin\ReportManagementController::class, 'destroyContent'])->name('destroyContent');
+        Route::post('/ignore', [\App\Http\Controllers\Admin\ReportManagementController::class, 'ignoreReport'])->name('ignore');
     });
 
     // Quản lý người dùng (Admin)

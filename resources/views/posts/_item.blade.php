@@ -121,7 +121,7 @@
                         @endif
 
                         @if(!$isOwner && !$isGroupOwner)
-                            <button class="danger" onclick="alert('Cảm ơn bạn đã báo cáo. Chúng tôi sẽ xem xét {{ $isCommentType ? 'bình luận' : 'bài viết' }} này sớm nhất có thể.')">
+                            <button class="danger" onclick="openReportModal({{ $post->id }}, '{{ $isCommentType ? 'comment' : 'post' }}')">
                                 <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
                                 Báo cáo {{ $isCommentType ? 'bình luận' : 'bài viết' }}
                             </button>
