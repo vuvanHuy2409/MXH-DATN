@@ -356,7 +356,16 @@
             @endif
             @if(session('error'))
                 <div style="margin-bottom: 16px; padding: 12px 16px; background: rgba(239,68,68,0.08); border: 1.5px solid rgba(239,68,68,0.2); color: #dc2626; border-radius: 10px; font-size: 13px; font-weight: 600;">
-                    ✕ {{ session('error') }}
+                    ✕ {!! session('error') !!}
+                </div>
+            @endif
+            @if($errors->any())
+                <div style="margin-bottom: 16px; padding: 12px 16px; background: rgba(239,68,68,0.08); border: 1.5px solid rgba(239,68,68,0.2); color: #dc2626; border-radius: 10px; font-size: 13px; font-weight: 600;">
+                    <ul style="list-style-type: none; padding-left: 0; margin: 0; display: flex; flex-direction: column; gap: 4px;">
+                        @foreach($errors->all() as $error)
+                            <li>✕ {{ $error }}</li>
+                        @endforeach
+                    </ul>
                 </div>
             @endif
             @yield('content')

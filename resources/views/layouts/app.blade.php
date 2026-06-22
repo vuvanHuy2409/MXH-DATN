@@ -1297,6 +1297,15 @@
                 opacity: 1;
             }
         }
+
+        /* Hiệu ứng rung khi nội dung vi phạm kiểm duyệt */
+        @keyframes commentShake {
+            0%, 100% { transform: translateX(0); }
+            20%       { transform: translateX(-5px); }
+            40%       { transform: translateX(5px); }
+            60%       { transform: translateX(-3px); }
+            80%       { transform: translateX(3px); }
+        }
     </style>
 
     <script>
@@ -1960,12 +1969,17 @@
                 <span onclick="closeEditPostModal()" style="cursor: pointer; font-size: 24px; opacity: 0.5;">&times;</span>
             </div>
             <div style="padding: 25px;">
-               <textarea id="editPostContent" maxlength="500" oninput="updateCharCount(this, 'editCharCountDisplay')" style="width: 100%; min-height: 150px; border: none; background: transparent; font-size: 16px; color: var(--text-color); resize: none; outline: none;" placeholder="Bạn đang nghĩ gì?"></textarea>
+               <textarea id="editPostContent" maxlength="500" oninput="updateCharCount(this, 'editCharCountDisplay'); clearEditPostError()" style="width: 100%; min-height: 150px; border: 1.5px solid var(--glass-border); background: transparent; font-size: 16px; color: var(--text-color); resize: none; outline: none; border-radius: 12px; padding: 10px 14px; transition: border-color 0.2s; font-family: inherit;" placeholder="Bạn đang nghĩ gì?"></textarea>
                <div style="display: flex; justify-content: flex-end; margin-top: 5px;">
                    <span id="editCharCountDisplay" style="font-size: 12px; color: var(--secondary-text); font-weight: 600; opacity: 0.6;">0/500</span>
                </div>
+               <!-- Thông báo lỗi vi phạm nội dung (ẩn mặc định) -->
+               <div id="editPostErrorBox" style="display: none; margin-top: 10px; padding: 10px 14px; background: rgba(255,59,48,0.08); border: 1px solid rgba(255,59,48,0.25); border-left: 3px solid #ff3b30; border-radius: 12px; font-size: 13px; font-weight: 600; color: #ff3b30; align-items: flex-start; gap: 8px;">
+                   <span style="font-size: 15px; flex-shrink: 0;">⚠️</span>
+                   <span id="editPostErrorText"></span>
+               </div>
                <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 12px;">                    <button onclick="closeEditPostModal()" style="padding: 10px 20px; border-radius: 12px; border: 1px solid var(--glass-border); background: transparent; font-weight: 600; cursor: pointer;">Hủy</button>
-                    <button onclick="submitEditPost()" class="btn-post" style="padding: 10px 25px; border-radius: 12px; font-weight: 700;">Lưu thay đổi</button>
+                    <button id="editPostSaveBtn" onclick="submitEditPost()" class="btn-post" style="padding: 10px 25px; border-radius: 12px; font-weight: 700;">Lưu thay đổi</button>
                 </div>
             </div>
         </div>
@@ -1992,8 +2006,13 @@ function openEditPostModal(id, content) {
         }
 
         function submitEditPost() {
-            const content = document.getElementById('editPostContent').value.trim();
+            const textarea = document.getElementById('editPostContent');
+            const content = textarea.value.trim();
+            const saveBtn = document.getElementById('editPostSaveBtn');
             if (!content) return;
+
+            clearEditPostError();
+            if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Đang lưu...'; }
 
             fetch(`/posts/${currentEditingPostId}`, {
                     method: 'PATCH',
@@ -2002,23 +2021,56 @@ function openEditPostModal(id, content) {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json'
                     },
-                    body: JSON.stringify({
-                        content: content
-                    })
+                    body: JSON.stringify({ content: content })
                 })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.status === 'success') {
+                .then(async res => {
+                    const data = await res.json().catch(() => ({}));
+                    if (res.ok && data.status === 'success') {
                         // Cập nhật nội dung trên giao diện cho tất cả các bản sao của bài viết này
                         const postWrappers = document.querySelectorAll(`[id$="-${currentEditingPostId}"]`);
                         postWrappers.forEach(wrapper => {
-                            // Tìm thẻ div chứa text bài viết
                             const textEl = wrapper.querySelector('.post-text, [style*="font-size: 15px"]');
                             if (textEl) textEl.innerText = data.content;
                         });
                         closeEditPostModal();
+                    } else {
+                        // Lỗi kiểm duyệt: hiển thị thông báo inline, KHÔNG đóng modal
+                        const errorMsg = data.errors?.content?.[0]
+                            || data.message
+                            || 'Nội dung không thể lưu. Vui lòng chỉnh sửa và thử lại.';
+                        showEditPostError(errorMsg);
                     }
+                })
+                .catch(err => {
+                    showEditPostError('Không thể kết nối máy chủ. Vui lòng thử lại.');
+                })
+                .finally(() => {
+                    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Lưu thay đổi'; }
                 });
+        }
+
+        function showEditPostError(message) {
+            const box = document.getElementById('editPostErrorBox');
+            const text = document.getElementById('editPostErrorText');
+            const textarea = document.getElementById('editPostContent');
+            if (text) text.textContent = message;
+            if (box) box.style.display = 'flex';
+            if (textarea) {
+                textarea.style.borderColor = '#ff3b30';
+                textarea.focus();
+                const len = textarea.value.length;
+                textarea.setSelectionRange(len, len);
+                textarea.style.animation = 'none';
+                void textarea.offsetWidth;
+                textarea.style.animation = 'commentShake 0.4s ease';
+            }
+        }
+
+        function clearEditPostError() {
+            const box = document.getElementById('editPostErrorBox');
+            const textarea = document.getElementById('editPostContent');
+            if (box) box.style.display = 'none';
+            if (textarea) textarea.style.borderColor = 'var(--glass-border)';
         }
 
         function sharePost(id) {

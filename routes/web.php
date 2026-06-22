@@ -114,6 +114,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/api/chat/{conversation}/messages', [ConversationController::class, 'apiMessages'])->name('api.chat.messages');
         Route::get('/api/users/{user}/followers', [ProfileController::class, 'followers'])->name('api.followers');
         Route::get('/api/users/{user}/following', [ProfileController::class, 'following'])->name('api.following');
+        Route::get('/api/users/{user}/mutual', [ProfileController::class, 'mutual'])->name('api.mutual');
 
         // Messaging
         Route::get('/messages', [ConversationController::class, 'index'])->name('messages.index');
@@ -174,6 +175,18 @@ Route::middleware('auth')->group(function () {
 
             $isFollowing = auth()->user()->following->contains($user->id);
             $followsMe = auth()->user()->followers->contains($user->id);
+
+            // Bạn chung: người mà cả mình và profile user đều follow, HOẶC người follow profile user mà mình cũng follow
+            $myFollowingIds = auth()->user()->following()->pluck('users.id')->toArray();
+            $profileFollowerIds = $user->followers()->pluck('users.id')->toArray();
+            $mutualIds = array_intersect($myFollowingIds, $profileFollowerIds);
+            $mutualIds = array_diff($mutualIds, [auth()->id()]); // remove self
+            $mutualFollowers = collect();
+            if (!empty($mutualIds)) {
+                $mutualFollowers = \App\Models\User::whereIn('id', array_slice($mutualIds, 0, 5))->get(['id', 'username', 'avatar_url']);
+            }
+            $mutualCount = count($mutualIds);
+
             $canSeeContent = !$user->is_private || $isFollowing;
 
             $posts = collect();
@@ -192,7 +205,7 @@ Route::middleware('auth')->group(function () {
                     ->get();
             }
 
-            return view('profile.show', compact('user', 'posts', 'replies', 'reposts', 'photos', 'isFollowing', 'followsMe', 'canSeeContent'));
+            return view('profile.show', compact('user', 'posts', 'replies', 'reposts', 'photos', 'isFollowing', 'followsMe', 'canSeeContent', 'mutualFollowers', 'mutualCount'));
         })->name('profile.show');
 
         // Settings

@@ -667,11 +667,7 @@
                 </button>
             </form>
 
-            <div class="divider"><span>chưa có tài khoản?</span></div>
 
-            <div class="footer-links">
-                <a href="{{ route('register') }}">Tạo tài khoản ngay →</a>
-            </div>
         </div>
     </div>
 

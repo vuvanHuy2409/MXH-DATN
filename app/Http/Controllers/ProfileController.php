@@ -61,12 +61,34 @@ class ProfileController extends Controller
     public function followers(User $user)
     {
         $followers = $user->followers()->withCount(['followers'])->get();
+        $myFollowingIds = auth()->user()->following()->pluck('users.id')->toArray();
+        $followers->each(function ($u) use ($myFollowingIds) {
+            $u->is_followed_by_me = in_array($u->id, $myFollowingIds);
+        });
         return response()->json($followers);
     }
 
     public function following(User $user)
     {
         $following = $user->following()->withCount(['followers'])->get();
+        $myFollowingIds = auth()->user()->following()->pluck('users.id')->toArray();
+        $following->each(function ($u) use ($myFollowingIds) {
+            $u->is_followed_by_me = in_array($u->id, $myFollowingIds);
+        });
         return response()->json($following);
+    }
+
+    public function mutual(User $user)
+    {
+        $myFollowingIds = auth()->user()->following()->pluck('users.id')->toArray();
+        $profileFollowerIds = $user->followers()->pluck('users.id')->toArray();
+        $mutualIds = array_intersect($myFollowingIds, $profileFollowerIds);
+        $mutualIds = array_diff($mutualIds, [auth()->id()]); // remove self
+        
+        $mutualUsers = User::whereIn('id', $mutualIds)->withCount(['followers'])->get();
+        $mutualUsers->each(function ($u) {
+            $u->is_followed_by_me = true; // they are in $myFollowingIds
+        });
+        return response()->json($mutualUsers);
     }
 }

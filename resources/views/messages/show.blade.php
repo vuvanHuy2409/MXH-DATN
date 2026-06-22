@@ -332,6 +332,19 @@
     .message-wrapper.me .message-content-wrapper { align-items: flex-end; }
     .message-wrapper.other .message-content-wrapper { align-items: flex-start; }
 
+    /* Sender username label (group chat) */
+    .msg-sender-name {
+        font-size: 11.5px;
+        font-weight: 700;
+        color: var(--accent-color, #0062FF);
+        margin-bottom: 3px;
+        padding-left: 4px;
+        letter-spacing: -0.1px;
+    }
+    [data-theme="dark"] .msg-sender-name {
+        color: #4D94FF;
+    }
+
     /* Message time */
     .msg-time {
         font-size: 10.5px;
@@ -376,7 +389,7 @@
     .message-wrapper.me .bubble {
         border-bottom-right-radius: 5px;
         color: #fff;
-        box-shadow: 0 4px 14px rgba(0,98,255,0.25);
+        box-shadow: 0 4px 14px rgba(0,0,0,0.15);
     }
     .message-wrapper.me .bubble a { color: rgba(255,255,255,0.9); }
     .message-wrapper.other .bubble {
@@ -605,14 +618,11 @@
 
     /* Dark mode bubbles */
     [data-theme="dark"] .message-wrapper.me .bubble {
-        background: linear-gradient(145deg, #1e3a6e, #1a3060) !important;
         color: #e8f0fe !important;
-        box-shadow: 0 4px 20px rgba(30,58,110,0.4) !important;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important;
     }
     [data-theme="dark"] .message-wrapper.other .bubble {
-        background: rgba(26,28,42,0.95) !important;
         color: #eeeef0 !important;
-        border: 1px solid rgba(255,255,255,0.07);
         box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
     }
 
@@ -797,51 +807,87 @@
             function getFileIconInfo($fileName) {
             $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
             $icons = [
-            'pdf' => ['color' => '#ff3b30', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            'pdf' => ['color' => '#ff3b30', 'label' => 'PDF', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
             <polyline points="14 2 14 8 20 8"></polyline>
             <path d="M9 15l2 2 4-4"></path>'],
-            'doc' => ['color' => '#0062FF', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            'doc' => ['color' => '#2B579A', 'label' => 'Word', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
             <polyline points="14 2 14 8 20 8"></polyline>
             <line x1="16" y1="13" x2="8" y2="13"></line>
             <line x1="16" y1="17" x2="8" y2="17"></line>
             <line x1="10" y1="9" x2="8" y2="9"></line>'],
-            'docx' => ['color' => '#0062FF', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            'docx' => ['color' => '#2B579A', 'label' => 'Word', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
             <polyline points="14 2 14 8 20 8"></polyline>
             <line x1="16" y1="13" x2="8" y2="13"></line>
             <line x1="16" y1="17" x2="8" y2="17"></line>
             <line x1="10" y1="9" x2="8" y2="9"></line>'],
-            'xls' => ['color' => '#28a745', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            'xls' => ['color' => '#217346', 'label' => 'Excel', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
             <polyline points="14 2 14 8 20 8"></polyline>
             <line x1="8" y1="13" x2="16" y2="13"></line>
             <line x1="8" y1="17" x2="16" y2="17"></line>
             <line x1="8" y1="9" x2="10" y2="9"></line>'],
-            'xlsx' => ['color' => '#28a745', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            'xlsx' => ['color' => '#217346', 'label' => 'Excel', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
             <polyline points="14 2 14 8 20 8"></polyline>
             <line x1="8" y1="13" x2="16" y2="13"></line>
             <line x1="8" y1="17" x2="16" y2="17"></line>
             <line x1="8" y1="9" x2="10" y2="9"></line>'],
-            'ppt' => ['color' => '#fd7e14', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            'csv' => ['color' => '#217346', 'label' => 'Excel', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="8" y1="13" x2="16" y2="13"></line>
+            <line x1="8" y1="17" x2="16" y2="17"></line>
+            <line x1="8" y1="9" x2="10" y2="9"></line>'],
+            'ppt' => ['color' => '#D24726', 'label' => 'PowerPoint', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
             <polyline points="14 2 14 8 20 8"></polyline>
             <path d="M9 13l3 3 3-3"></path>'],
-            'pptx' => ['color' => '#fd7e14', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            'pptx' => ['color' => '#D24726', 'label' => 'PowerPoint', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
             <polyline points="14 2 14 8 20 8"></polyline>
             <path d="M9 13l3 3 3-3"></path>'],
-            'zip' => ['color' => '#6c757d', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            'zip' => ['color' => '#6c757d', 'label' => 'Nén', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
             <polyline points="14 2 14 8 20 8"></polyline>
             <path d="M12 12v6"></path>
             <path d="M10 16l2 2 2-2"></path>'],
-            'rar' => ['color' => '#6c757d', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            'rar' => ['color' => '#6c757d', 'label' => 'Nén', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
             <polyline points="14 2 14 8 20 8"></polyline>
             <path d="M12 12v6"></path>
             <path d="M10 16l2 2 2-2"></path>'],
-            'txt' => ['color' => '#000', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            '7z' => ['color' => '#6c757d', 'label' => 'Nén', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <path d="M12 12v6"></path>
+            <path d="M10 16l2 2 2-2"></path>'],
+            'txt' => ['color' => '#5856d6', 'label' => 'Văn bản', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
             <polyline points="14 2 14 8 20 8"></polyline>
             <line x1="16" y1="13" x2="8" y2="13"></line>
             <line x1="16" y1="17" x2="8" y2="17"></line>
             <line x1="10" y1="9" x2="8" y2="9"></line>'],
+            'mp3' => ['color' => '#af52de', 'label' => 'Âm thanh', 'icon' => '<path d="M9 18V5l12-2v13"></path>
+            <circle cx="6" cy="18" r="3"></circle>
+            <circle cx="18" cy="16" r="3"></circle>'],
+            'wav' => ['color' => '#af52de', 'label' => 'Âm thanh', 'icon' => '<path d="M9 18V5l12-2v13"></path>
+            <circle cx="6" cy="18" r="3"></circle>
+            <circle cx="18" cy="16" r="3"></circle>'],
+            'mp4' => ['color' => '#ff2d55', 'label' => 'Video', 'icon' => '<polygon points="23 7 16 12 23 17 23 7"></polygon>
+            <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>'],
+            'avi' => ['color' => '#ff2d55', 'label' => 'Video', 'icon' => '<polygon points="23 7 16 12 23 17 23 7"></polygon>
+            <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>'],
+            'mkv' => ['color' => '#ff2d55', 'label' => 'Video', 'icon' => '<polygon points="23 7 16 12 23 17 23 7"></polygon>
+            <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>'],
+            'jpg' => ['color' => '#ff9500', 'label' => 'Ảnh', 'icon' => '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <polyline points="21 15 16 10 5 21"></polyline>'],
+            'jpeg' => ['color' => '#ff9500', 'label' => 'Ảnh', 'icon' => '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <polyline points="21 15 16 10 5 21"></polyline>'],
+            'png' => ['color' => '#ff9500', 'label' => 'Ảnh', 'icon' => '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <polyline points="21 15 16 10 5 21"></polyline>'],
+            'gif' => ['color' => '#ff9500', 'label' => 'Ảnh', 'icon' => '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <polyline points="21 15 16 10 5 21"></polyline>'],
+            'svg' => ['color' => '#ff9500', 'label' => 'Ảnh', 'icon' => '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <polyline points="21 15 16 10 5 21"></polyline>'],
             ];
 
-            return $icons[$ext] ?? ['color' => '#6e6e73', 'icon' => '<path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+            return $icons[$ext] ?? ['color' => '#6e6e73', 'label' => 'Tệp tin', 'icon' => '<path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
             <polyline points="13 2 13 9 20 9"></polyline>'];
             }
             }
@@ -886,6 +932,9 @@
                 @endif
 
                 <div class="message-content-wrapper">
+                    @if(!$isMe && $conversation->type === 'group')
+                    <div class="msg-sender-name">{{ $message->sender->username }}</div>
+                    @endif
                     @if($message->parent_id)
                     <div class="replied-message-info">
                         @if($message->parent->message_type === 'image')
@@ -914,7 +963,8 @@
                     </div>
                     @endif
 
-                    <div class="{{ $isMedia ? '' : 'bubble' }}" style="{{ $isMe && !$isMedia ? 'background: '.$themeColor.';' : (!$isMedia ? '' : '') }}{{ $isMedia ? 'border-radius: 18px; overflow: hidden;' : '' }}">
+                    @php $isFile = ($message->message_type === 'file'); @endphp
+                    <div class="{{ $isMedia ? '' : 'bubble' }}" style="{{ $isFile && !$isMedia ? 'background: '.( getFileIconInfo($message->metadata['file_name'] ?? 'file')['color'] ).'12; border: 1.5px solid '.( getFileIconInfo($message->metadata['file_name'] ?? 'file')['color'] ).'25;' : ($isMe && !$isMedia ? 'background: '.$themeColor.';' : (!$isMe && !$isMedia ? 'background: '.$themeColor.'15; border: 1px solid '.$themeColor.'20;' : '')) }}{{ $isMedia ? 'border-radius: 18px; overflow: hidden;' : '' }}">
                         @if($message->message_type === 'image')
                         <img src="{{ asset($message->content) }}" onclick="openLightbox(this.src)" style="max-width: 280px; border-radius: 18px; cursor: zoom-in; display: block; box-shadow: 0 6px 18px rgba(0,0,0,0.12);">
                         @elseif($message->message_type === 'video')
@@ -925,14 +975,27 @@
                         @php
                             $fileName = $message->metadata['file_name'] ?? 'file';
                             $fileInfo = getFileIconInfo($fileName);
+                            $fileColor = $fileInfo['color'];
+                            $fileLabel = $fileInfo['label'];
+                            $fileExt = strtoupper(pathinfo($fileName, PATHINFO_EXTENSION));
+                            $fileSize = isset($message->metadata['file_size']) ? round($message->metadata['file_size'] / 1024, 1) : null;
+                            $fileSizeStr = $fileSize ? ($fileSize >= 1024 ? round($fileSize / 1024, 1) . ' MB' : $fileSize . ' KB') : '';
                         @endphp
                         <a href="{{ asset($message->content) }}" download="{{ $fileName }}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 12px; padding: 4px;">
-                            <div style="width: 40px; height: 40px; border-radius: 10px; background: {{ $isMe ? 'rgba(255,255,255,0.22)' : $fileInfo['color'].'18' }}; display: flex; align-items: center; justify-content: center; color: {{ $isMe ? 'white' : $fileInfo['color'] }}; flex-shrink: 0;">
+                            <div style="width: 44px; height: 44px; border-radius: 12px; background: {{ $fileColor }}20; display: flex; align-items: center; justify-content: center; color: {{ $fileColor }}; flex-shrink: 0; border: 1.5px solid {{ $fileColor }}30;">
                                 <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none">{!! $fileInfo['icon'] !!}</svg>
                             </div>
                             <div style="overflow: hidden; flex-grow: 1; min-width: 0;">
-                                <div style="font-weight: 700; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;">{{ $fileName }}</div>
-                                <div style="font-size: 11px; opacity: 0.7; margin-top: 2px;">{{ isset($message->metadata['file_size']) ? round($message->metadata['file_size'] / 1024, 1) . ' KB' : '' }} · {{ strtoupper(pathinfo($fileName, PATHINFO_EXTENSION)) }}</div>
+                                <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
+                                    <span style="font-weight: 700; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; color: var(--text-color);">{{ $fileName }}</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <span style="font-size: 9.5px; font-weight: 800; color: {{ $fileColor }}; background: {{ $fileColor }}15; padding: 1px 6px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.3px;">{{ $fileLabel }}</span>
+                                    <span style="font-size: 11px; color: var(--secondary-text, #6e6e73);">{{ $fileSizeStr }}{{ $fileSizeStr ? ' · ' : '' }}{{ $fileExt }}</span>
+                                </div>
+                            </div>
+                            <div style="flex-shrink: 0; width: 30px; height: 30px; border-radius: 8px; background: {{ $fileColor }}12; display: flex; align-items: center; justify-content: center; color: {{ $fileColor }};">
+                                <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                             </div>
                         </a>
                         @else
@@ -1037,7 +1100,7 @@
                     <!-- Input wrapper -->
                     <div style="flex-grow: 1; display: flex; gap: 8px; align-items: flex-end; background: var(--glass-bg); border: 1.5px solid var(--glass-border); border-radius: 22px; padding: 6px 10px 6px 16px; transition: all 0.25s;" id="inputWrapper">
                         <textarea id="mainChatInput" name="content" placeholder="Nhập tin nhắn..." rows="1"
-                            style="flex-grow: 1; background: transparent; border: none; outline: none; padding: 8px 4px; font-size: 14.5px; resize: none; max-height: 140px; font-weight: 500; color: var(--text-color); font-family: inherit; line-height: 1.5;" oninput="validateChatInput()"></textarea>
+                            style="flex-grow: 1; background: transparent; border: none; outline: none; padding: 8px 4px; font-size: 14.5px; resize: none; max-height: 140px; font-weight: 500; color: var(--text-color); font-family: inherit; line-height: 1.5;" oninput="validateChatInput(); clearChatError()"></textarea>
                         <button type="submit" id="sendBtn" disabled style="background: transparent; border: 1.5px solid var(--glass-border); color: var(--secondary-text); padding: 8px 16px; border-radius: 14px; font-weight: 800; font-size: 13.5px; cursor: not-allowed; opacity: 0.4; transition: all 0.2s; flex-shrink: 0; font-family: inherit;">
                             <span id="sendText">Gửi</span>
                             <svg id="loadingIcon" style="display: none; animation: spin 1s linear infinite; vertical-align: middle;" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none">
@@ -1045,6 +1108,12 @@
                             </svg>
                         </button>
                     </div>
+                </div>
+
+                <!-- Thông báo lỗi vi phạm nội dung (ẩn mặc định) -->
+                <div id="chatErrorBox" style="display: none; margin-top: 8px; padding: 10px 14px; background: rgba(255,59,48,0.08); border: 1px solid rgba(255,59,48,0.25); border-left: 3px solid #ff3b30; border-radius: 12px; font-size: 13px; font-weight: 600; color: #ff3b30; align-items: flex-start; gap: 8px;">
+                    <span style="font-size: 15px; flex-shrink: 0;">⚠️</span>
+                    <span id="chatErrorText"></span>
                 </div>
             </form>
             @else
@@ -1689,8 +1758,6 @@
 
         if (type !== 'image') document.getElementById('msgImageInput').value = '';
         if (type !== 'file') document.getElementById('msgFileInput').value = '';
-        window._pendingZipBlob = null;
-        window._pendingZipName = null;
 
         preview.style.display = 'block';
         inputWrapper.style.borderRadius = '0 0 24px 24px';
@@ -1706,46 +1773,32 @@
             return;
         }
 
-        // File type → nén thành ZIP trước khi gửi
-        const originalSizeMB = (file.size / 1024 / 1024).toFixed(1);
-        const zipName = file.name + '.zip';
+        // Hiển thị preview file gốc (gửi trực tiếp, không nén)
+        const fileSizeRaw = file.size;
+        const fileSizeStr = fileSizeRaw >= 1024 * 1024
+            ? (fileSizeRaw / 1024 / 1024).toFixed(1) + ' MB'
+            : (fileSizeRaw / 1024).toFixed(1) + ' KB';
+        const ext = file.name.split('.').pop().toLowerCase();
+        const colorMap = {pdf:'#ff3b30',doc:'#2B579A',docx:'#2B579A',xls:'#217346',xlsx:'#217346',csv:'#217346',ppt:'#D24726',pptx:'#D24726',zip:'#6c757d',rar:'#6c757d','7z':'#6c757d',txt:'#5856d6',mp3:'#af52de',wav:'#af52de',mp4:'#ff2d55',avi:'#ff2d55',mkv:'#ff2d55',jpg:'#ff9500',jpeg:'#ff9500',png:'#ff9500',gif:'#ff9500',svg:'#ff9500'};
+        const labelMap = {pdf:'PDF',doc:'Word',docx:'Word',xls:'Excel',xlsx:'Excel',csv:'Excel',ppt:'PowerPoint',pptx:'PowerPoint',zip:'Nén',rar:'Nén','7z':'Nén',txt:'Văn bản',mp3:'Âm thanh',wav:'Âm thanh',mp4:'Video',avi:'Video',mkv:'Video',jpg:'Ảnh',jpeg:'Ảnh',png:'Ảnh',gif:'Ảnh',svg:'Ảnh'};
+        const fColor = colorMap[ext] || '#6e6e73';
+        const fLabel = labelMap[ext] || 'Tệp tin';
 
         content.innerHTML = `
-            <div style="width: 50px; height: 50px; border-radius: 8px; background: rgba(94,158,255,0.1); display: flex; align-items: center; justify-content: center; border: 1px solid rgba(94,158,255,0.2); flex-shrink:0;">
-                <svg viewBox="0 0 24 24" width="22" height="22" stroke="#4D94FF" stroke-width="2.2" fill="none">
+            <div style="width: 50px; height: 50px; border-radius: 10px; background: ${fColor}15; display: flex; align-items: center; justify-content: center; border: 1.5px solid ${fColor}25; flex-shrink:0;">
+                <svg viewBox="0 0 24 24" width="22" height="22" stroke="${fColor}" stroke-width="2.2" fill="none">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                     <polyline points="14 2 14 8 20 8"></polyline>
-                    <line x1="12" y1="12" x2="12" y2="18"></line>
-                    <polyline points="9 15 12 18 15 15"></polyline>
                 </svg>
             </div>
             <div style="min-width:0;">
-                <div style="font-size: 13px; font-weight: 700; color: var(--text-color); margin-bottom: 3px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${zipName}</div>
-                <div id="zipStatusInfo" style="font-size: 11.5px; color: var(--secondary-text);">⏳ Đang nén ${originalSizeMB}MB...</div>
+                <div style="font-size: 13px; font-weight: 700; color: var(--text-color); margin-bottom: 3px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${file.name}</div>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <span style="font-size: 9.5px; font-weight: 800; color: ${fColor}; background: ${fColor}15; padding: 1px 6px; border-radius: 4px; text-transform: uppercase;">${fLabel}</span>
+                    <span style="font-size: 11.5px; color: var(--secondary-text);">${fileSizeStr} · ${ext.toUpperCase()}</span>
+                </div>
             </div>`;
         validateChatInput();
-
-        // Nén file bằng JSZip
-        const zip = new JSZip();
-        zip.file(file.name, file);
-        zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } })
-            .then(blob => {
-                window._pendingZipBlob = blob;
-                window._pendingZipName = zipName;
-                const compressedMB = (blob.size / 1024 / 1024).toFixed(1);
-                const ratio = Math.round((1 - blob.size / file.size) * 100);
-                const statusEl = document.getElementById('zipStatusInfo');
-                if (statusEl) {
-                    statusEl.textContent = ratio > 0
-                        ? `✅ ${compressedMB}MB (giảm ${ratio}% từ ${originalSizeMB}MB)`
-                        : `✅ ${compressedMB}MB`;
-                }
-            })
-            .catch(() => {
-                // Nếu lỗi, gửi file gốc
-                const statusEl = document.getElementById('zipStatusInfo');
-                if (statusEl) statusEl.textContent = `${originalSizeMB}MB (gửi trực tiếp)`;
-            });
     }
 
     function clearMediaMsgPreview() {
@@ -1753,10 +1806,44 @@
         document.getElementById('inputWrapper').style.borderRadius = '24px';
         document.getElementById('msgImageInput').value = '';
         document.getElementById('msgFileInput').value = '';
-        window._pendingZipBlob = null;
-        window._pendingZipName = null;
         validateChatInput();
     }
+
+    // ==================== CHAT ERROR DISPLAY ====================
+    function showChatError(message) {
+        const box = document.getElementById('chatErrorBox');
+        const text = document.getElementById('chatErrorText');
+        const wrapper = document.getElementById('inputWrapper');
+        if (text) text.textContent = message;
+        if (box) box.style.display = 'flex';
+        // Đổi border ô nhập thành màu đỏ (override focus style)
+        if (wrapper) {
+            wrapper.style.borderColor = '#ff3b30';
+            wrapper.style.boxShadow = '0 0 0 3px rgba(255,59,48,0.12)';
+        }
+        // Đặt lại con trỏ vào cuối textarea
+        const textarea = document.getElementById('mainChatInput');
+        if (textarea) {
+            textarea.focus();
+            const len = textarea.value.length;
+            textarea.setSelectionRange(len, len);
+            // Hiệu ứng rung nhẹ
+            textarea.style.animation = 'none';
+            void textarea.offsetWidth;
+            textarea.style.animation = 'commentShake 0.4s ease';
+        }
+    }
+
+    function clearChatError() {
+        const box = document.getElementById('chatErrorBox');
+        const wrapper = document.getElementById('inputWrapper');
+        if (box) box.style.display = 'none';
+        if (wrapper) {
+            wrapper.style.borderColor = '';
+            wrapper.style.boxShadow = '';
+        }
+    }
+    // ============================================================
 
     function handleChatSubmit(event) {
         if (event && event.preventDefault) event.preventDefault();
@@ -1779,12 +1866,6 @@
         }
 
         const formData = new FormData(form);
-
-        // Nếu có file đã được nén thành ZIP, thay thế file gốc
-        if (window._pendingZipBlob && window._pendingZipName) {
-            formData.delete('file');
-            formData.append('file', window._pendingZipBlob, window._pendingZipName);
-        }
 
         const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
@@ -1831,12 +1912,17 @@
                     if (typeof cancelReply === 'function') cancelReply();
                     location.reload();
                 } else {
-                    throw new Error(data.error || data.message || 'Lỗi không xác định');
+                    // Lỗi kiểm duyệt: hiển thị thông báo inline, KHÔNG xóa nội dung
+                    const errorMsg = data.errors?.content?.[0]
+                        || data.error
+                        || data.message
+                        || 'Nội dung không thể gửi. Vui lòng chỉnh sửa và thử lại.';
+                    showChatError(errorMsg);
                 }
             })
             .catch(error => {
                 console.error('Upload Error Details:', error);
-                alert('Không thể gửi tin nhắn: ' + (error.message || 'Lỗi kết nối'));
+                showChatError('Không thể gửi tin nhắn: ' + (error.message || 'Lỗi kết nối'));
             })
             .finally(() => {
                 if (sendBtn) {
@@ -1865,6 +1951,18 @@
     document.getElementById('mainChatInput')?.addEventListener('input', function() {
         this.style.height = 'auto';
         this.style.height = (this.scrollHeight) + 'px';
+    });
+
+    // Nhấn Enter để gửi, Shift+Enter để xuống dòng
+    document.getElementById('mainChatInput')?.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            const sendBtn = document.getElementById('sendBtn');
+            if (sendBtn && !sendBtn.disabled) {
+                const form = document.getElementById('chat-form');
+                handleChatSubmit({ preventDefault: () => {}, target: form, currentTarget: form });
+            }
+        }
     });
 
     // ===================== APPOINTMENT FEATURE =====================
@@ -2025,5 +2123,4 @@
     // Bắt đầu polling sau 30 giây, lặp mỗi 30 giây
     setInterval(pollNewMessages, 30000);
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 @endsection

@@ -16,19 +16,31 @@
         function getFileIconInfo($fileName) {
             $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
             $icons = [
-                'pdf' => ['color' => '#ff3b30', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M9 15l2 2 4-4"></path>'],
-                'doc' => ['color' => '#0062FF', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line>'],
-                'docx' => ['color' => '#0062FF', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line>'],
-                'xls' => ['color' => '#28a745', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><line x1="8" y1="9" x2="10" y2="9"></line>'],
-                'xlsx' => ['color' => '#28a745', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><line x1="8" y1="9" x2="10" y2="9"></line>'],
-                'ppt' => ['color' => '#fd7e14', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M9 13l3 3 3-3"></path>'],
-                'pptx' => ['color' => '#fd7e14', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M9 13l3 3 3-3"></path>'],
-                'zip' => ['color' => '#6c757d', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M12 12v6"></path><path d="M10 16l2 2 2-2"></path>'],
-                'rar' => ['color' => '#6c757d', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M12 12v6"></path><path d="M10 16l2 2 2-2"></path>'],
-                'txt' => ['color' => '#000', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line>'],
+                'pdf' => ['color' => '#ff3b30', 'label' => 'PDF', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M9 15l2 2 4-4"></path>'],
+                'doc' => ['color' => '#2B579A', 'label' => 'Word', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line>'],
+                'docx' => ['color' => '#2B579A', 'label' => 'Word', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line>'],
+                'xls' => ['color' => '#217346', 'label' => 'Excel', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><line x1="8" y1="9" x2="10" y2="9"></line>'],
+                'xlsx' => ['color' => '#217346', 'label' => 'Excel', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><line x1="8" y1="9" x2="10" y2="9"></line>'],
+                'csv' => ['color' => '#217346', 'label' => 'Excel', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><line x1="8" y1="9" x2="10" y2="9"></line>'],
+                'ppt' => ['color' => '#D24726', 'label' => 'PowerPoint', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M9 13l3 3 3-3"></path>'],
+                'pptx' => ['color' => '#D24726', 'label' => 'PowerPoint', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M9 13l3 3 3-3"></path>'],
+                'zip' => ['color' => '#6c757d', 'label' => 'Nén', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M12 12v6"></path><path d="M10 16l2 2 2-2"></path>'],
+                'rar' => ['color' => '#6c757d', 'label' => 'Nén', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M12 12v6"></path><path d="M10 16l2 2 2-2"></path>'],
+                '7z' => ['color' => '#6c757d', 'label' => 'Nén', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M12 12v6"></path><path d="M10 16l2 2 2-2"></path>'],
+                'txt' => ['color' => '#5856d6', 'label' => 'Văn bản', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line>'],
+                'mp3' => ['color' => '#af52de', 'label' => 'Âm thanh', 'icon' => '<path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle>'],
+                'wav' => ['color' => '#af52de', 'label' => 'Âm thanh', 'icon' => '<path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle>'],
+                'mp4' => ['color' => '#ff2d55', 'label' => 'Video', 'icon' => '<polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>'],
+                'avi' => ['color' => '#ff2d55', 'label' => 'Video', 'icon' => '<polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>'],
+                'mkv' => ['color' => '#ff2d55', 'label' => 'Video', 'icon' => '<polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>'],
+                'jpg' => ['color' => '#ff9500', 'label' => 'Ảnh', 'icon' => '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline>'],
+                'jpeg' => ['color' => '#ff9500', 'label' => 'Ảnh', 'icon' => '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline>'],
+                'png' => ['color' => '#ff9500', 'label' => 'Ảnh', 'icon' => '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline>'],
+                'gif' => ['color' => '#ff9500', 'label' => 'Ảnh', 'icon' => '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline>'],
+                'svg' => ['color' => '#ff9500', 'label' => 'Ảnh', 'icon' => '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline>'],
             ];
 
-            return $icons[$ext] ?? ['color' => '#6e6e73', 'icon' => '<path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline>'];
+            return $icons[$ext] ?? ['color' => '#6e6e73', 'label' => 'Tệp tin', 'icon' => '<path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline>'];
         }
     }
 @endphp
@@ -162,16 +174,32 @@
                         @elseif($media->media_type === 'image' || $media->media_type === 'gif')
                             <img src="{{ asset($media->media_url) }}" onclick="openLightbox(this.src)" style="width: 100%; max-height: 600px; display: block; cursor: zoom-in; object-fit: contain; image-rendering: -webkit-optimize-contrast;">
                         @else
-                            @php $fileInfo = getFileIconInfo($media->file_name); @endphp
-                            <a href="{{ asset($media->media_url) }}" download="{{ $media->file_name }}" style="text-decoration: none; display: flex; align-items: center; gap: 12px; padding: 20px; background: white; border-radius: 14px; width: 100%; border: 1px solid var(--glass-border); box-shadow: 0 4px 12px rgba(0,0,0,0.05); transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-                                <div style="width: 44px; height: 44px; border-radius: 12px; background: {{ $fileInfo['color'] }}15; display: flex; align-items: center; justify-content: center; color: {{ $fileInfo['color'] }}; flex-shrink: 0;">
-                                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2.5" fill="none">{!! $fileInfo['icon'] !!}</svg>
+                            @php
+                                $fileName = $media->file_name ?? 'file';
+                                $fileInfo = getFileIconInfo($fileName);
+                                $fileColor = $fileInfo['color'];
+                                $fileLabel = $fileInfo['label'];
+                                $fileExt = strtoupper(pathinfo($fileName, PATHINFO_EXTENSION));
+                                $filePath = public_path($media->media_url);
+                                $fileSize = file_exists($filePath) ? filesize($filePath) : null;
+                                $fileSizeStr = $fileSize ? ($fileSize >= 1048576 ? round($fileSize / 1048576, 1) . ' MB' : round($fileSize / 1024, 1) . ' KB') : '';
+                            @endphp
+                            <a href="{{ asset($media->media_url) }}" download="{{ $fileName }}" style="text-decoration: none; display: flex; align-items: center; gap: 12px; padding: 14px 18px; background: {{ $fileColor }}12 !important; border-radius: 18px; width: 100%; border: 1.5px solid {{ $fileColor }}25 !important; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                                <div style="width: 44px; height: 44px; border-radius: 12px; background: {{ $fileColor }}20; display: flex; align-items: center; justify-content: center; color: {{ $fileColor }}; flex-shrink: 0; border: 1.5px solid {{ $fileColor }}30;">
+                                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none">{!! $fileInfo['icon'] !!}</svg>
                                 </div>
-                                <div style="flex-grow: 1; overflow: hidden;">
-                                    <div style="font-size: 14px; font-weight: 700; color: var(--text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $media->file_name ?? 'Tài liệu đính kèm' }}</div>
-                                    <div style="font-size: 11px; font-weight: 600; color: {{ $fileInfo['color'] }}; text-transform: uppercase; margin-top: 2px;">Nhấn để tải về ({{ strtoupper(pathinfo($media->file_name, PATHINFO_EXTENSION)) }})</div>
+                                <div style="overflow: hidden; flex-grow: 1; min-width: 0; text-align: left;">
+                                    <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
+                                        <span style="font-weight: 700; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; color: var(--text-color);">{{ $fileName }}</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 6px;">
+                                        <span style="font-size: 9.5px; font-weight: 800; color: {{ $fileColor }}; background: {{ $fileColor }}15; padding: 1px 6px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.3px;">{{ $fileLabel }}</span>
+                                        <span style="font-size: 11px; color: var(--secondary-text);">{{ $fileSizeStr }}{{ $fileSizeStr ? ' · ' : '' }}{{ $fileExt }}</span>
+                                    </div>
                                 </div>
-                                <svg viewBox="0 0 24 24" width="20" height="20" stroke="var(--secondary-text)" stroke-width="2.5" fill="none" style="opacity: 0.5;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                <div style="flex-shrink: 0; width: 30px; height: 30px; border-radius: 8px; background: {{ $fileColor }}12; display: flex; align-items: center; justify-content: center; color: {{ $fileColor }};">
+                                    <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                </div>
                             </a>
                         @endif
                     </div>
@@ -184,13 +212,25 @@
                                 @elseif($media->media_type === 'image' || $media->media_type === 'gif')
                                     <img src="{{ asset($media->media_url) }}" onclick="openLightbox(this.src)" style="width: 100%; height: 100%; object-fit: cover; cursor: zoom-in;">
                                 @else
-                                    @php $fileInfo = getFileIconInfo($media->file_name); @endphp
-                                    <a href="{{ asset($media->media_url) }}" download="{{ $media->file_name }}" style="text-decoration: none; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px; text-align: center; background: white;">
-                                        <div style="width: 48px; height: 48px; border-radius: 12px; background: {{ $fileInfo['color'] }}15; display: flex; align-items: center; justify-content: center; color: {{ $fileInfo['color'] }}; margin-bottom: 8px;">
-                                            <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2.5" fill="none">{!! $fileInfo['icon'] !!}</svg>
+                                    @php
+                                        $fileName = $media->file_name ?? 'file';
+                                        $fileInfo = getFileIconInfo($fileName);
+                                        $fileColor = $fileInfo['color'];
+                                        $fileLabel = $fileInfo['label'];
+                                        $fileExt = strtoupper(pathinfo($fileName, PATHINFO_EXTENSION));
+                                        $filePath = public_path($media->media_url);
+                                        $fileSize = file_exists($filePath) ? filesize($filePath) : null;
+                                        $fileSizeStr = $fileSize ? ($fileSize >= 1048576 ? round($fileSize / 1048576, 1) . ' MB' : round($fileSize / 1024, 1) . ' KB') : '';
+                                    @endphp
+                                    <a href="{{ asset($media->media_url) }}" download="{{ $fileName }}" style="text-decoration: none; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px; text-align: center; background: {{ $fileColor }}12 !important; border: 1px solid {{ $fileColor }}25 !important; border-radius: 16px;">
+                                        <div style="width: 40px; height: 40px; border-radius: 10px; background: {{ $fileColor }}20; display: flex; align-items: center; justify-content: center; color: {{ $fileColor }}; margin-bottom: 8px; border: 1px solid {{ $fileColor }}30; flex-shrink: 0;">
+                                            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none">{!! $fileInfo['icon'] !!}</svg>
                                         </div>
-                                        <div style="font-size: 11px; font-weight: 700; color: var(--text-color); word-break: break-all; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">{{ $media->file_name ?? 'Tài liệu' }}</div>
-                                        <div style="font-size: 9px; font-weight: 800; color: {{ $fileInfo['color'] }}; margin-top: 4px;">{{ strtoupper(pathinfo($media->file_name, PATHINFO_EXTENSION)) }}</div>
+                                        <div style="font-size: 11px; font-weight: 700; color: var(--text-color); word-break: break-all; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 28px; line-height: 1.3; margin-bottom: 4px;">{{ $fileName }}</div>
+                                        <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
+                                            <span style="font-size: 8.5px; font-weight: 800; color: {{ $fileColor }}; background: {{ $fileColor }}15; padding: 1px 4px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.3px;">{{ $fileLabel }}</span>
+                                            <span style="font-size: 9px; color: var(--secondary-text);">{{ $fileSizeStr ? $fileSizeStr . ' · ' : '' }}{{ $fileExt }}</span>
+                                        </div>
                                     </a>
                                 @endif
                             </div>

@@ -17,7 +17,7 @@ class PostController extends Controller
     /**
      * Display a listing of the posts (Timeline).
      */
-    public function index()
+    public function index(Request $request)
     {
         $userId = auth()->id();
         $user = auth()->user();
@@ -29,6 +29,95 @@ class PostController extends Controller
         $myGroupIds = Cache::remember("user_{$userId}_groups", 300, fn() =>
             GroupMember::where('user_id', $userId)->pluck('group_id')->toArray()
         );
+
+        $limit = 15;
+
+        if ($request->ajax()) {
+            $tab = $request->query('tab', 'foryou');
+            $page = intval($request->query('page', 1));
+            $offset = ($page - 1) * $limit;
+
+            if ($tab === 'foryou') {
+                $posts = Post::where(function($query) use ($myGroupIds, $followingIds, $userId) {
+                        $query->where(function($q) use ($followingIds, $userId) {
+                            $q->whereNull('group_id')
+                              ->whereHas('user', function($u) use ($followingIds, $userId) {
+                                  $u->where('is_private', false)
+                                    ->orWhereIn('id', $followingIds)
+                                    ->orWhere('id', $userId);
+                              });
+                        })
+                        ->orWhereHas('group', function($q) {
+                            $q->where('privacy', 'public');
+                        })
+                        ->orWhereIn('group_id', $myGroupIds);
+                    })
+                    ->with(['user', 'media', 'likes', 'group', 'reposts' => function($query) use ($followingIds) {
+                        $query->whereIn('user_id', $followingIds)->with('user');
+                    }])
+                    ->withCount(['reposts'])
+                    ->orderByRaw('user_id = ? DESC', [$userId]) 
+                    ->orderBy('created_at', 'DESC') 
+                    ->offset($offset)
+                    ->limit($limit) 
+                    ->get();
+
+                $meFollowerIds = Cache::remember("user_{$userId}_follower_ids", 300, fn() =>
+                    $user->followers()->pluck('follower_id')->toArray()
+                );
+                $meFollowerMap = array_flip($meFollowerIds);
+                foreach ($posts as $post) {
+                    $post->user->follows_me = isset($meFollowerMap[$post->user_id]);
+                }
+
+                $html = '';
+                foreach ($posts as $post) {
+                    $html .= view('posts._item', ['post' => $post, 'prefix' => 'fy'])->render();
+                }
+
+                return response()->json([
+                    'html' => $html,
+                    'hasMore' => $posts->count() === $limit
+                ]);
+            } else {
+                $repostedPostIds = Repost::whereIn('user_id', $followingIds)
+                    ->pluck('post_id')
+                    ->toArray();
+
+                $followingPosts = Post::where(function($query) use ($followingIds, $repostedPostIds, $myGroupIds) {
+                        $query->whereIn('user_id', $followingIds)
+                              ->orWhereIn('id', $repostedPostIds)
+                              ->orWhereIn('group_id', $myGroupIds);
+                    })
+                    ->with(['user', 'media', 'likes', 'group', 'reposts' => function($query) use ($followingIds) {
+                        $query->whereIn('user_id', $followingIds)->with('user');
+                    }])
+                    ->withCount(['reposts'])
+                    ->orderBy('created_at', 'desc')
+                    ->offset($offset)
+                    ->limit($limit)
+                    ->get();
+
+                $meFollowerIds = Cache::remember("user_{$userId}_follower_ids", 300, fn() =>
+                    $user->followers()->pluck('follower_id')->toArray()
+                );
+                $meFollowerMap = array_flip($meFollowerIds);
+                foreach ($followingPosts as $post) {
+                    $post->followed_reposters = $post->reposts->pluck('user.username')->toArray();
+                    $post->user->follows_me = isset($meFollowerMap[$post->user_id]);
+                }
+
+                $html = '';
+                foreach ($followingPosts as $post) {
+                    $html .= view('posts._item', ['post' => $post, 'prefix' => 'fl'])->render();
+                }
+
+                return response()->json([
+                    'html' => $html,
+                    'hasMore' => $followingPosts->count() === $limit
+                ]);
+            }
+        }
 
         // 1. DÀNH CHO BẠN: Lấy bài viết cá nhân (công khai), nhóm công khai, và nhóm riêng tư mình đã tham gia
         $posts = Post::where(function($query) use ($myGroupIds, $followingIds, $userId) {
@@ -54,7 +143,7 @@ class PostController extends Controller
             ->withCount(['reposts'])
             ->orderByRaw('user_id = ? DESC', [$userId]) 
             ->orderBy('created_at', 'DESC') 
-            ->limit(50) 
+            ->limit($limit) 
             ->get();
 
         // 2. ĐANG THEO DÕI: 
@@ -72,7 +161,7 @@ class PostController extends Controller
             }])
             ->withCount(['reposts'])
             ->orderBy('created_at', 'desc')
-            ->limit(50)
+            ->limit($limit)
             ->get();
 
         // Cache danh sách follower (người theo dõi mình) 5 phút

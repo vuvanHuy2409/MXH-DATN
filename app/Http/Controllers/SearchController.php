@@ -17,6 +17,7 @@ class SearchController extends Controller
         $posts = collect();
         $me = Auth::user();
         $meFollowerIds = $me->followers()->pluck('follower_id')->toArray();
+        $myFollowingIds = $me->following()->pluck('users.id')->toArray();
 
         if ($query) {
             // Tìm người dùng
@@ -40,7 +41,19 @@ class SearchController extends Controller
 
                 foreach($users as $u) {
                     $u->follows_me = in_array($u->id, $meFollowerIds);
+                    // Bạn chung theo dõi
+                    $uFollowerIds = $u->followers()->pluck('users.id')->toArray();
+                    $mutualIds = array_values(array_diff(array_intersect($myFollowingIds, $uFollowerIds), [$me->id]));
+                    $u->mutual_followers = !empty($mutualIds) 
+                        ? User::whereIn('id', array_slice($mutualIds, 0, 3))->get(['id', 'username', 'avatar_url'])
+                        : collect();
+                    $u->mutual_count = count($mutualIds);
                 }
+
+                // Ưu tiên hiển thị người có bạn chung lên trước
+                $users = $users->sortByDesc(function ($u) {
+                    return $u->mutual_count;
+                })->values();
             }
 
             // Tìm bài viết
@@ -65,6 +78,13 @@ class SearchController extends Controller
         
         foreach($suggestions as $s) {
             $s->follows_me = in_array($s->id, $meFollowerIds);
+            // Bạn chung theo dõi
+            $sFollowerIds = $s->followers()->pluck('users.id')->toArray();
+            $sMutualIds = array_values(array_diff(array_intersect($myFollowingIds, $sFollowerIds), [$me->id]));
+            $s->mutual_followers = !empty($sMutualIds)
+                ? User::whereIn('id', array_slice($sMutualIds, 0, 3))->get(['id', 'username', 'avatar_url'])
+                : collect();
+            $s->mutual_count = count($sMutualIds);
         }
 
         return view('search.index', compact('users', 'posts', 'suggestions', 'query', 'type'));

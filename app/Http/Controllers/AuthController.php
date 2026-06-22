@@ -229,11 +229,20 @@ class AuthController extends Controller
             return redirect()->route('register')->withErrors(['email' => __('Dữ liệu đăng ký không hợp lệ. Vui lòng đăng ký lại.')]);
         }
 
-        // Tạo username tự động từ họ tên
-        $baseUsername = strtolower(preg_replace('/[^A-Za-z0-9]/', '', $this->removeVietnameseSigns($data['full_name'])));
+        // Tạo username tự động từ họ tên (CamelCase không dấu, ví dụ: Vũ Văn Huy -> VuVanHuy)
+        $cleanName = $this->removeVietnameseSigns($data['full_name']);
+        $cleanName = preg_replace('/[^a-zA-Z\s]/', '', $cleanName);
+        $parts = preg_split('/\s+/', trim($cleanName));
+        $camelParts = array_map(function($part) {
+            return ucfirst(strtolower($part));
+        }, $parts);
+        $baseUsername = implode('', $camelParts);
+
         $username = $baseUsername;
         $counter = 1;
-        while (User::where('username', $username)->exists()) { $username = $baseUsername . $counter++; }
+        while (User::where('username', $username)->exists()) { 
+            $username = $baseUsername . $counter++; 
+        }
 
         DB::transaction(function () use ($data, $username) {
             $user = User::create([

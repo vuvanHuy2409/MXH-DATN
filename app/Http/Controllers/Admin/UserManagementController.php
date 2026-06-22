@@ -118,6 +118,24 @@ class UserManagementController extends Controller
             'full_name' => 'required|string|max:100',
             'user_type' => 'required|in:student,teacher',
             'faculty_id' => 'required|exists:faculties,id',
+            'student_id' => 'nullable|string|max:50|unique:student_details,student_id',
+            'dob' => 'nullable|date',
+        ], [
+            'username.required' => 'Tên đăng nhập không được để trống.',
+            'username.unique' => 'Tên đăng nhập đã tồn tại trên hệ thống.',
+            'email.required' => 'Email không được để trống.',
+            'email.email' => 'Email không đúng định dạng.',
+            'email.unique' => 'Email đã tồn tại trên hệ thống.',
+            'full_name.required' => 'Họ và tên không được để trống.',
+            'full_name.string' => 'Họ và tên phải là chuỗi ký tự.',
+            'full_name.max' => 'Họ và tên không được vượt quá 100 ký tự.',
+            'user_type.required' => 'Loại tài khoản không được để trống.',
+            'user_type.in' => 'Loại tài khoản không hợp lệ.',
+            'faculty_id.required' => 'Khoa không được để trống.',
+            'faculty_id.exists' => 'Khoa đã chọn không tồn tại trên hệ thống.',
+            'student_id.unique' => 'Mã sinh viên đã tồn tại trên hệ thống.',
+            'student_id.max' => 'Mã sinh viên không được vượt quá 50 ký tự.',
+            'dob.date' => 'Ngày sinh không đúng định dạng ngày.',
         ]);
 
         try {
@@ -164,6 +182,12 @@ class UserManagementController extends Controller
         $request->validate([
             'csv_file' => 'required|file|mimes:csv,txt',
             'user_type' => 'required|in:student,teacher',
+        ], [
+            'csv_file.required' => 'Vui lòng chọn file CSV để import.',
+            'csv_file.file' => 'Tệp tải lên phải là một file hợp lệ.',
+            'csv_file.mimes' => 'File import phải có định dạng CSV hoặc TXT.',
+            'user_type.required' => 'Loại tài khoản không được để trống.',
+            'user_type.in' => 'Loại tài khoản không hợp lệ.',
         ]);
 
         $file = $request->file('csv_file');

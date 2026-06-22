@@ -124,8 +124,8 @@
 
             <div style="display: flex; gap: 12px; align-items: center;">
                 <div class="avatar" style="width: 35px; height: 35px; background-image: url('{{ auth()->user()->avatar_url }}'); background-size: cover; flex-shrink: 0;"></div>
-                <div style="flex-grow: 1; background: rgba(0,0,0,0.05); border: 1px solid var(--glass-border); border-radius: 20px; padding: 5px 15px; display: flex; align-items: center; gap: 10px;">
-                    <input type="text" id="replyContent" name="content" placeholder="Viết câu trả lời..." style="background: transparent; border: none; flex-grow: 1; color: var(--text-color); outline: none; padding: 8px 0; font-size: 14px;" autocomplete="off" oninput="validateCommentInput()">
+                <div id="commentInputWrapper" style="flex-grow: 1; background: rgba(0,0,0,0.05); border: 1px solid var(--glass-border); border-radius: 20px; padding: 5px 15px; display: flex; align-items: center; gap: 10px; transition: border-color 0.2s;">
+                    <input type="text" id="replyContent" name="content" placeholder="Viết câu trả lời..." style="background: transparent; border: none; flex-grow: 1; color: var(--text-color); outline: none; padding: 8px 0; font-size: 14px;" autocomplete="off" oninput="validateCommentInput(); clearCommentError()">
                     <label style="cursor: pointer; opacity: 0.6; display: flex; align-items: center;">
                         <input type="file" id="commentImageInput" name="image" accept="image/*" style="display: none;" onchange="previewCommentImage(this); validateCommentInput()">
                         <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
@@ -134,6 +134,12 @@
                 <button type="submit" id="commentSendBtn" disabled style="background: var(--glass-bg); border: 1.5px solid var(--text-color); color: var(--text-color); padding: 8px 18px; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: not-allowed; opacity: 0.4; transition: all 0.2s; flex-shrink: 0;">
                     Gửi
                 </button>
+            </div>
+
+            <!-- Thông báo lỗi vi phạm nội dung (ẩn mặc định) -->
+            <div id="commentErrorBox" style="display: none; max-width: 650px; margin: 8px auto 0; padding: 10px 14px; background: rgba(255,59,48,0.08); border: 1px solid rgba(255,59,48,0.25); border-left: 3px solid #ff3b30; border-radius: 12px; font-size: 13px; font-weight: 600; color: #ff3b30; align-items: flex-start; gap: 8px;">
+                <span style="font-size: 15px; flex-shrink: 0;">⚠️</span>
+                <span id="commentErrorText"></span>
             </div>
         </form>
     </div>
@@ -199,6 +205,32 @@
         document.getElementById('commentImagePreview').src = '';
     }
 
+    function showCommentError(message) {
+        const box = document.getElementById('commentErrorBox');
+        const text = document.getElementById('commentErrorText');
+        const wrapper = document.getElementById('commentInputWrapper');
+        text.textContent = message;
+        box.style.display = 'flex';
+        // Đổi border ô nhập thành màu đỏ
+        if (wrapper) wrapper.style.borderColor = '#ff3b30';
+        // Đặt lại con trỏ vào cuối ô nhập
+        const input = document.getElementById('replyContent');
+        input.focus();
+        const len = input.value.length;
+        input.setSelectionRange(len, len);
+        // Hiệu ứng rung nhẹ
+        input.style.animation = 'none';
+        void input.offsetWidth;
+        input.style.animation = 'commentShake 0.4s ease';
+    }
+
+    function clearCommentError() {
+        const box = document.getElementById('commentErrorBox');
+        const wrapper = document.getElementById('commentInputWrapper');
+        if (box) box.style.display = 'none';
+        if (wrapper) wrapper.style.borderColor = 'var(--glass-border)';
+    }
+
     function submitReply(event) {
         event.preventDefault();
         const contentInput = document.getElementById('replyContent');
@@ -208,19 +240,20 @@
         const imageFile = document.getElementById('commentImageInput').files[0];
 
         if (!content && !imageFile) {
-            alert('Vui lòng nhập nội dung hoặc chọn ảnh');
+            showCommentError('Vui lòng nhập nội dung hoặc chọn ảnh.');
             return;
         }
 
+        clearCommentError();
+
+        const btn = document.getElementById('commentSendBtn');
+        btn.disabled = true;
+        btn.textContent = '...';
+
         const formData = new FormData();
-        formData.append('content', content); // Luôn gửi content (có thể là chuỗi rỗng)
-        
-        if (parentId) {
-            formData.append('parent_id', parentId);
-        }
-        if (imageFile) {
-            formData.append('image', imageFile);
-        }
+        formData.append('content', content);
+        if (parentId) formData.append('parent_id', parentId);
+        if (imageFile) formData.append('image', imageFile);
 
         fetch(`/posts/${rootPostId}/reply`, {
             method: 'POST',
@@ -229,19 +262,27 @@
                 'Accept': 'application/json'
             },
             body: formData
-        }).then(res => {
+        }).then(async res => {
+            const data = await res.json().catch(() => ({}));
             if (res.ok) {
-                document.getElementById('replyContent').value = '';
+                // Thành công: xóa nội dung và reload
+                contentInput.value = '';
                 removeCommentImage();
                 location.reload();
             } else {
-                return res.json().then(data => {
-                    throw data;
-                });
+                // Lỗi: KHÔNG xóa text, hiển thị thông báo lỗi inline
+                const errorMsg = data.errors?.content?.[0]
+                    || data.message
+                    || 'Nội dung không thể gửi. Vui lòng chỉnh sửa và thử lại.';
+                showCommentError(errorMsg);
+                btn.disabled = false;
+                btn.textContent = 'Gửi';
             }
         }).catch(err => {
             console.error('Error:', err);
-            alert('Có lỗi xảy ra: ' + (err.message || 'Không thể gửi bình luận'));
+            showCommentError('Không thể kết nối máy chủ. Vui lòng thử lại.');
+            btn.disabled = false;
+            btn.textContent = 'Gửi';
         });
     }
 

@@ -14,6 +14,16 @@
                 @endif
             </a>
             <div style="color: var(--secondary-text); font-size: 12px; margin-top: 2px; font-weight: 500; opacity: 0.8;">{{ $user->followers_count ?? 0 }} người theo dõi</div>
+            @if(isset($user->mutual_followers) && $user->mutual_followers->isNotEmpty())
+            <div style="display: flex; align-items: center; gap: 5px; margin-top: 3px;">
+                <div style="display: flex;">
+                    @foreach($user->mutual_followers->take(2) as $mf)
+                    <div style="width: 16px; height: 16px; border-radius: 50%; background-image: url('{{ $mf->avatar_url ?: asset('/avatars/user.png') }}'); background-size: cover; border: 1.5px solid var(--glass-bg); margin-right: -5px; position: relative; z-index: {{ 2 - $loop->index }};"></div>
+                    @endforeach
+                </div>
+                <span style="font-size: 11px; color: var(--secondary-text); font-weight: 500; margin-left: 3px;">{{ $user->mutual_followers->first()->username }}{{ $user->mutual_count > 1 ? ' và ' . ($user->mutual_count - 1) . ' người khác' : '' }} cũng theo dõi</span>
+            </div>
+            @endif
         </div>
     </div>
     

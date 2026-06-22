@@ -22,7 +22,7 @@ class AdminSeeder extends Seeder
                 ['email' => 'huyberr@gmail.com'],
                 [
                     'username' => 'huyberr',
-                    'password_hash' => Hash::make('tôi quên mật khẩu sau'),
+                    'password_hash' => Hash::make('111111'),
                     'role' => 'admin',
                     'user_type' => 'teacher', // Thiết lập là Giảng viên
                     'status' => 'active',

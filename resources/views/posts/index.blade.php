@@ -122,9 +122,31 @@
         box-shadow: 0 3px 10px rgba(0,0,0,0.06);
     }
     [data-theme="dark"] .tab-item.active {
-        background: rgba(77,148,255,0.14);
+        background: rgba(77, 148, 255, 0.14);
         color: #4D94FF;
-        box-shadow: 0 3px 12px rgba(77,148,255,0.18);
+        box-shadow: 0 3px 12px rgba(77, 148, 255, 0.18);
+    }
+
+    /* Glassmorphic spinner */
+    .feed-loading-spinner {
+        display: none;
+        justify-content: center;
+        align-items: center;
+        min-height: 80px;
+        opacity: 0.85;
+    }
+    .glass-spinner {
+        width: 36px;
+        height: 36px;
+        border: 4px solid var(--glass-border);
+        border-top-color: var(--accent-color);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        box-shadow: 0 4px 15px rgba(0, 98, 255, 0.1);
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
     }
 </style>
 
@@ -167,20 +189,30 @@
 
     <!-- Tab Content: Dành cho bạn -->
     <div id="content-foryou">
-        @forelse($posts as $post)
-            @include('posts._item', ['post' => $post, 'prefix' => 'fy'])
-        @empty
-        <p style="text-align: center; padding: 50px; opacity: 0.5;">Chưa có bài viết nào.</p>
-        @endforelse
+        <div class="feed-posts">
+            @forelse($posts as $post)
+                @include('posts._item', ['post' => $post, 'prefix' => 'fy'])
+            @empty
+            <p class="no-posts-text" style="text-align: center; padding: 50px; opacity: 0.5;">Chưa có bài viết nào.</p>
+            @endforelse
+        </div>
+        <div id="loading-foryou" class="feed-loading-spinner">
+            <div class="glass-spinner"></div>
+        </div>
     </div>
 
     <!-- Tab Content: Đang theo dõi -->
     <div id="content-following" style="display: none;">
-        @forelse($followingPosts as $post)
-            @include('posts._item', ['post' => $post, 'prefix' => 'fl'])
-        @empty
-        <p style="text-align: center; padding: 50px; opacity: 0.5;">Theo dõi thêm bạn bè để xem bài viết.</p>
-        @endforelse
+        <div class="feed-posts">
+            @forelse($followingPosts as $post)
+                @include('posts._item', ['post' => $post, 'prefix' => 'fl'])
+            @empty
+            <p class="no-posts-text" style="text-align: center; padding: 50px; opacity: 0.5;">Theo dõi thêm bạn bè để xem bài viết.</p>
+            @endforelse
+        </div>
+        <div id="loading-following" class="feed-loading-spinner">
+            <div class="glass-spinner"></div>
+        </div>
     </div>
 </div>
 
@@ -198,7 +230,16 @@
         }
     }
 
+    // Infinite Scroll Pagination State
+    let activeTab = 'foryou';
+    let foryouPage = 1;
+    let followingPage = 1;
+    let foryouHasMore = @json($posts->count() === 15);
+    let followingHasMore = @json($followingPosts->count() === 15);
+    let isLoading = false;
+
     function switchTab(tab) {
+        activeTab = tab;
         document.getElementById('content-foryou').style.display = tab === 'foryou' ? 'block' : 'none';
         document.getElementById('content-following').style.display = tab === 'following' ? 'block' : 'none';
         
@@ -212,7 +253,104 @@
             t2.classList.add('active');
             t1.classList.remove('active');
         }
+
+        // Trigger check load immediately if window is not scrollable yet after switching
+        checkScroll();
     }
+
+    function checkScroll() {
+        if (isLoading) return;
+
+        let hasMore = (activeTab === 'foryou') ? foryouHasMore : followingHasMore;
+        if (!hasMore) return;
+
+        // Check if user is scrolled near the bottom (300px from the bottom)
+        const scrollPosition = window.innerHeight + window.scrollY;
+        const pageHeight = document.documentElement.scrollHeight;
+        
+        if (pageHeight - scrollPosition < 300) {
+            loadMorePosts();
+        }
+    }
+
+    // Attach scroll event listener
+    window.addEventListener('scroll', throttle(checkScroll, 200));
+    window.addEventListener('resize', throttle(checkScroll, 200));
+
+    // Throttle utility
+    function throttle(func, limit) {
+        let inThrottle;
+        return function() {
+            const args = arguments;
+            const context = this;
+            if (!inThrottle) {
+                func.apply(context, args);
+                inThrottle = true;
+                setTimeout(() => inThrottle = false, limit);
+            }
+        }
+    }
+
+    function loadMorePosts() {
+        if (isLoading) return;
+        isLoading = true;
+
+        const nextPage = (activeTab === 'foryou') ? foryouPage + 1 : followingPage + 1;
+        const loadingElement = document.getElementById(`loading-${activeTab}`);
+        
+        if (loadingElement) {
+            loadingElement.style.display = 'flex';
+        }
+
+        fetch(`/?tab=${activeTab}&page=${nextPage}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (activeTab === 'foryou') {
+                foryouPage = nextPage;
+                foryouHasMore = data.hasMore;
+                
+                const container = document.querySelector('#content-foryou .feed-posts');
+                if (data.html && data.html.trim() !== '') {
+                    // Remove no-posts text if it was there
+                    const noPostsText = container.querySelector('.no-posts-text');
+                    if (noPostsText) noPostsText.remove();
+                    
+                    container.insertAdjacentHTML('beforeend', data.html);
+                }
+            } else {
+                followingPage = nextPage;
+                followingHasMore = data.hasMore;
+
+                const container = document.querySelector('#content-following .feed-posts');
+                if (data.html && data.html.trim() !== '') {
+                    const noPostsText = container.querySelector('.no-posts-text');
+                    if (noPostsText) noPostsText.remove();
+
+                    container.insertAdjacentHTML('beforeend', data.html);
+                }
+            }
+        })
+        .catch(err => {
+            console.error('Error fetching more posts:', err);
+        })
+        .finally(() => {
+            isLoading = false;
+            if (loadingElement) {
+                loadingElement.style.display = 'none';
+            }
+            // Check scroll again in case the new content still doesn't fill the viewport
+            checkScroll();
+        });
+    }
+
+    // Trigger an initial check in case page is very tall / screen is very large
+    document.addEventListener('DOMContentLoaded', () => {
+        checkScroll();
+    });
 
     function toggleDropdown(id) {
         const dropdown = document.getElementById("dropdown-" + id);
@@ -261,14 +399,19 @@
 
         <!-- Input Area -->
         <div style="padding: 20px 25px 40px; border-top: 1px solid var(--glass-border); background: var(--glass-bg); backdrop-filter: blur(20px);">
-            <div style="display: flex; gap: 12px; align-items: center; background: rgba(0,0,0,0.03); border: 1px solid var(--glass-border); border-radius: 24px; padding: 8px 18px;">
+            <div id="panelInputWrapper" style="display: flex; gap: 12px; align-items: center; background: rgba(0,0,0,0.03); border: 1px solid var(--glass-border); border-radius: 24px; padding: 8px 18px; transition: border-color 0.2s;">
                 <div class="avatar" style="background-image: url('{{ auth()->user()->avatar_url }}'); background-size: cover; width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;"></div>
-                <input type="text" id="panelCommentInput" placeholder="Viết bình luận..." style="flex-grow: 1; background: transparent; border: none; outline: none; padding: 10px 0; font-size: 14px; color: var(--text-color);">
+                <input type="text" id="panelCommentInput" placeholder="Viết bình luận..." style="flex-grow: 1; background: transparent; border: none; outline: none; padding: 10px 0; font-size: 14px; color: var(--text-color);" oninput="clearPanelError()">
                 <label style="cursor: pointer; opacity: 0.6; display: flex; align-items: center;">
                     <input type="file" id="panelCommentImageInput" accept="image/*" style="display: none;" onchange="previewPanelImage(this)">
                     <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
                 </label>
                 <button onclick="submitPanelComment()" style="background: none; border: none; color: var(--accent-color); font-weight: 800; cursor: pointer; padding: 5px 10px; font-size: 14px;">Đăng</button>
+            </div>
+            <!-- Thông báo lỗi vi phạm nội dung (ẩn mặc định) -->
+            <div id="panelErrorBox" style="display: none; margin-top: 8px; padding: 10px 14px; background: rgba(255,59,48,0.08); border: 1px solid rgba(255,59,48,0.25); border-left: 3px solid #ff3b30; border-radius: 12px; font-size: 13px; font-weight: 600; color: #ff3b30; align-items: flex-start; gap: 8px;">
+                <span style="font-size: 15px; flex-shrink: 0;">⚠️</span>
+                <span id="panelErrorText"></span>
             </div>
         </div>
     </div>
@@ -399,18 +542,45 @@
         document.getElementById('panelReplyIndicator').style.display = 'none';
     }
 
+    function showPanelError(message) {
+        const box = document.getElementById('panelErrorBox');
+        const text = document.getElementById('panelErrorText');
+        const wrapper = document.getElementById('panelInputWrapper');
+        if (text) text.textContent = message;
+        if (box) box.style.display = 'flex';
+        if (wrapper) wrapper.style.borderColor = '#ff3b30';
+        const input = document.getElementById('panelCommentInput');
+        if (input) {
+            input.focus();
+            const len = input.value.length;
+            input.setSelectionRange(len, len);
+            input.style.animation = 'none';
+            void input.offsetWidth;
+            input.style.animation = 'commentShake 0.4s ease';
+        }
+    }
+
+    function clearPanelError() {
+        const box = document.getElementById('panelErrorBox');
+        const wrapper = document.getElementById('panelInputWrapper');
+        if (box) box.style.display = 'none';
+        if (wrapper) wrapper.style.borderColor = 'var(--glass-border)';
+    }
+
     function submitPanelComment() {
         const input = document.getElementById('panelCommentInput');
         const content = input.value.trim();
         const imageFile = document.getElementById('panelCommentImageInput').files[0];
+        const btn = document.querySelector('#panelInputWrapper button');
 
         if (!content && !imageFile) return;
 
+        clearPanelError();
+        if (btn) { btn.disabled = true; btn.textContent = '...'; }
+
         const formData = new FormData();
         formData.append('content', content);
-        if (imageFile) {
-            formData.append('image', imageFile);
-        }
+        if (imageFile) formData.append('image', imageFile);
         if (activeParentCommentId && activeParentCommentId != activePanelPostId) {
             formData.append('parent_id', activeParentCommentId);
         }
@@ -419,20 +589,32 @@
             method: 'POST',
             headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' },
             body: formData
-        }).then(res => res.json()).then(reply => {
-            input.value = ''; 
-            removePanelImage();
-            cancelPanelReply();
-            const list = document.getElementById('panelActualComments');
-            if (list.innerText.includes('Chưa có bình luận')) list.innerHTML = '';
-            
-            // Append at the bottom for chronological order
-            list.appendChild(createPanelCommentElement(reply));
-            
-            // Scroll to bottom
-            list.scrollTop = list.scrollHeight;
-
-            document.querySelectorAll(`.comment-count-display[data-post-id="${activePanelPostId}"]`).forEach(el => { el.innerText = parseInt(el.innerText || 0) + 1; });
+        }).then(async res => {
+            const data = await res.json().catch(() => ({}));
+            if (res.ok) {
+                // Thành công: xóa input, thêm comment vào list
+                input.value = '';
+                removePanelImage();
+                cancelPanelReply();
+                const list = document.getElementById('panelActualComments');
+                if (list.innerText.includes('Chưa có bình luận')) list.innerHTML = '';
+                list.appendChild(createPanelCommentElement(data));
+                list.scrollTop = list.scrollHeight;
+                document.querySelectorAll(`.comment-count-display[data-post-id="${activePanelPostId}"]`).forEach(el => {
+                    el.innerText = parseInt(el.innerText || 0) + 1;
+                });
+            } else {
+                // Lỗi kiểm duyệt: hiển thị thông báo inline, KHÔNG xóa nội dung
+                const errorMsg = data.errors?.content?.[0]
+                    || data.message
+                    || 'Nội dung không thể gửi. Vui lòng chỉnh sửa và thử lại.';
+                showPanelError(errorMsg);
+            }
+        }).catch(err => {
+            console.error('Panel comment error:', err);
+            showPanelError('Không thể kết nối máy chủ. Vui lòng thử lại.');
+        }).finally(() => {
+            if (btn) { btn.disabled = false; btn.textContent = 'Đăng'; }
         });
     }
 
