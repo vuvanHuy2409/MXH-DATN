@@ -9,6 +9,7 @@ use App\Models\TeacherDetail;
 use App\Models\Faculty;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class AccountGeneratorSeeder extends Seeder
 {
@@ -20,7 +21,7 @@ class AccountGeneratorSeeder extends Seeder
         // 1. Tối ưu hóa: Băm mật khẩu mặc định 1 lần duy nhất để tái sử dụng
         $defaultPasswordHash = Hash::make('111111');
 
-        $this->command->info('Bắt đầu chuẩn bị dữ liệu sinh viên và giảng viên...');
+        $this->command->info('Bắt đầu chuẩn bị dữ liệu sinh viên và giảng viên theo yêu cầu...');
 
         // Danh sách Họ, Tên đệm và Tên tiếng Việt phổ biến để sinh ngẫu nhiên tên tự nhiên
         $lastNames = ['Nguyễn', 'Trần', 'Lê', 'Phạm', 'Hoàng', 'Phan', 'Vũ', 'Võ', 'Đặng', 'Bùi', 'Đỗ', 'Hồ', 'Ngô', 'Dương', 'Lý', 'Đinh', 'Lâm'];
@@ -54,36 +55,6 @@ class AccountGeneratorSeeder extends Seeder
             return $str;
         };
 
-        // Mảng theo dõi duplicate email prefix của Giảng viên
-        $usedLecturerPrefixes = [];
-
-        // Helper sinh email prefix cho giảng viên
-        $generateLecturerPrefix = function($fullName) use ($removeAccents, &$usedLecturerPrefixes) {
-            $cleanName = $removeAccents($fullName);
-            $parts = preg_split('/\s+/', trim($cleanName));
-            if (empty($parts)) {
-                $parts = ['giangvien'];
-            }
-            
-            $firstName = strtolower(array_pop($parts));
-            $initials = '';
-            foreach ($parts as $part) {
-                if (!empty($part)) {
-                    $initials .= strtolower(mb_substr($part, 0, 1));
-                }
-            }
-            
-            $basePrefix = $firstName . $initials;
-            
-            if (!isset($usedLecturerPrefixes[$basePrefix])) {
-                $usedLecturerPrefixes[$basePrefix] = 1;
-            } else {
-                $usedLecturerPrefixes[$basePrefix]++;
-            }
-            
-            return $basePrefix . $usedLecturerPrefixes[$basePrefix];
-        };
-
         // Helper chuyển tên tiếng Việt có dấu thành CamelCase không dấu (ví dụ: Vũ Văn Huy -> VuVanHuy)
         $convertToCamelCaseUsername = function($fullName) use ($removeAccents) {
             $cleanName = $removeAccents($fullName);
@@ -96,33 +67,33 @@ class AccountGeneratorSeeder extends Seeder
             return implode('', $camelParts);
         };
 
-        // Mảng theo dõi duplicate username của Sinh viên
-        $usedStudentUsernames = [];
+        // Mảng theo dõi duplicate username
+        $usedUsernames = [];
 
-        // Định nghĩa thông tin khoa, mã ngành và thời gian đào tạo (Graduation Duration)
+        // Định nghĩa thông tin khoa, mã ngành
         $majorConfig = [
-            1 => ['code' => 'CNTT', 'duration' => 4],
-            2 => ['code' => 'DL',   'duration' => 4],
-            3 => ['code' => 'NN',   'duration' => 4],
-            4 => ['code' => 'QTKD', 'duration' => 4],
-            5 => ['code' => 'TCKT', 'duration' => 4],
-            6 => ['code' => 'L',    'duration' => 4],
-            7 => ['code' => 'DDD',  'duration' => 5],
-            8 => ['code' => 'LOG',  'duration' => 4],
-            9 => ['code' => 'DDT',  'duration' => 4],
+            1 => ['code' => 'CNTT', 'name' => 'Công nghệ thông tin'],
+            2 => ['code' => 'DL',   'name' => 'Du lịch'],
+            3 => ['code' => 'NN',   'name' => 'Ngôn ngữ'],
+            4 => ['code' => 'QTKD', 'name' => 'Quản trị kinh doanh'],
+            5 => ['code' => 'TCKT', 'name' => 'Tài chính kế toán'],
+            6 => ['code' => 'L',    'name' => 'Luật'],
+            7 => ['code' => 'DDD',  'name' => 'Dược điều dưỡng'],
+            8 => ['code' => 'LOG',  'name' => 'Logistics'],
+            9 => ['code' => 'DDT',  'name' => 'Điện điện tử'],
         ];
 
-        // Tắt Query Log để giải phóng bộ nhớ RAM trong quá trình sinh 9000 bản ghi
+        // Tắt Query Log để giải phóng bộ nhớ RAM
         DB::connection()->disableQueryLog();
 
-        $this->command->info('Dọn dẹp các dữ liệu cũ liên quan đến tài khoản...');
+        $this->command->info('Dọn dẹp các dữ liệu cũ...');
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         User::truncate();
         StudentDetail::truncate();
         TeacherDetail::truncate();
         
-        // Dọn các bảng liên quan khác tránh lỗi khóa ngoại
         DB::table('posts')->truncate();
+        DB::table('post_media')->truncate();
         DB::table('comments')->truncate();
         DB::table('likes')->truncate();
         DB::table('follows')->truncate();
@@ -133,11 +104,14 @@ class AccountGeneratorSeeder extends Seeder
         DB::table('reposts')->truncate();
         DB::table('notifications')->truncate();
         DB::table('group_members')->truncate();
+        DB::table('social_groups')->truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
-        // Khởi động giao dịch cơ sở dữ liệu để đạt hiệu năng tối đa và đảm bảo toàn vẹn dữ liệu
-        DB::transaction(function () use ($defaultPasswordHash, $generateName, $generateLecturerPrefix, $majorConfig, $convertToCamelCaseUsername, &$usedStudentUsernames) {
-            $this->command->info('1. Tạo tài khoản Admin...');
+        // Khởi động giao dịch cơ sở dữ liệu
+        DB::transaction(function () use ($defaultPasswordHash, $generateName, $majorConfig, $convertToCamelCaseUsername, &$usedUsernames) {
+            
+            // 1. Tạo tài khoản Admin
+            $this->command->info('Tạo tài khoản Admin...');
             $adminUser = User::create([
                 'username' => 'huyberr',
                 'email' => 'huyberr@gmail.com',
@@ -145,7 +119,8 @@ class AccountGeneratorSeeder extends Seeder
                 'role' => 'admin',
                 'user_type' => 'teacher',
                 'status' => 'active',
-                'bio' => 'Hệ thống Quản trị viên cao cấp.',
+                'avatar_url' => '/avatars/default_avatar.jpg', // Dùng avatar chung cho admin
+                'bio' => 'Hệ thống Quản trị viên cao cấp & Giảng viên chuyên môn.',
             ]);
 
             TeacherDetail::create([
@@ -154,83 +129,161 @@ class AccountGeneratorSeeder extends Seeder
                 'faculty_id' => 1, // CNTT
             ]);
 
-            $this->command->info('2. Tạo 500 tài khoản Giảng viên...');
-            for ($i = 0; $i < 500; $i++) {
+            $usedUsernames['HuyberrAdmin'] = 1;
+            $usedUsernames['huyberr'] = 1;
+
+            // 2. Tạo tài khoản Test Student (Nguyễn Văn Huy)
+            $this->command->info('Tạo tài khoản Test Student...');
+            $testStudentUser = User::create([
+                'username' => '20222591',
+                'email' => '20222591@eaut.edu.vn',
+                'password_hash' => $defaultPasswordHash,
+                'role' => 'user',
+                'user_type' => 'student',
+                'status' => 'active',
+                'avatar_url' => '/avatars/default_avatar.jpg', // Dùng avatar chung cho test student
+                'bio' => 'Tài khoản sinh viên dùng để test giao diện E-Connect.',
+            ]);
+
+            StudentDetail::create([
+                'user_id' => $testStudentUser->id,
+                'student_id' => '20222591',
+                'full_name' => 'Nguyễn Văn Huy',
+                'dob' => '2004-01-01',
+                'class' => 'CNTT13.01',
+                'faculty_id' => 1,
+            ]);
+
+            $usedUsernames['NguyenVanHuy'] = 1;
+            $usedUsernames['20222591'] = 1;
+
+            // 3. Tạo 200 tài khoản Giảng viên với Email cá nhân và Avatar mặc định chung
+            $this->command->info('Tạo 200 tài khoản Giảng viên...');
+            $emailDomains = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com'];
+
+            for ($i = 0; $i < 200; $i++) {
                 $name = $generateName();
-                $prefix = $generateLecturerPrefix($name);
+                $username = $convertToCamelCaseUsername($name);
                 
+                // Tránh trùng username
+                if (!isset($usedUsernames[$username])) {
+                    $usedUsernames[$username] = 1;
+                } else {
+                    $usedUsernames[$username]++;
+                    $username .= $usedUsernames[$username];
+                }
+
+                // Giảng viên dùng email cá nhân
+                $personalEmail = strtolower($username) . '@' . $emailDomains[array_rand($emailDomains)];
+                
+                // Tránh trùng email
+                $emailCheck = User::where('email', $personalEmail)->exists();
+                if ($emailCheck) {
+                    $personalEmail = strtolower($username) . rand(10, 99) . '@' . $emailDomains[array_rand($emailDomains)];
+                }
+
+                $facultyId = ($i % 9) + 1;
+                $config = $majorConfig[$facultyId];
+
                 $lecturerUser = User::create([
-                    'username' => $prefix,
-                    'email' => "$prefix@eaut.edu.vn",
+                    'username' => $username,
+                    'email' => $personalEmail,
                     'password_hash' => $defaultPasswordHash,
                     'role' => 'user',
                     'user_type' => 'teacher',
                     'status' => 'active',
-                    'bio' => 'Giảng viên Trường Đại học Công nghệ Đông Á.',
+                    'avatar_url' => '/avatars/default_avatar.jpg', // Tất cả giảng viên dùng avatar chung
+                    'bio' => "Giảng viên Khoa " . $config['name'] . ", Trường Đại học Công nghệ Đông Á.",
                 ]);
 
                 TeacherDetail::create([
                     'user_id' => $lecturerUser->id,
                     'full_name' => $name,
-                    'faculty_id' => ($i % 9) + 1, // Chia đều 9 khoa
+                    'faculty_id' => $facultyId,
                 ]);
             }
 
-            $this->command->info('3. Tạo 8.499 tài khoản Sinh viên phân phối từ 2022 đến 2026...');
+            // 4. Tạo 10000 tài khoản Sinh viên phân phối từ 2022 đến 2025 (2500 sinh viên/năm)
+            $this->command->info('Tạo 10000 tài khoản Sinh viên (2500 sinh viên/năm)...');
             
-            // Phân phối sinh viên theo các năm tuyển sinh
-            $enrollmentDist = [
-                2022 => 1700,
-                2023 => 1700,
-                2024 => 1700,
-                2025 => 1700,
-                2026 => 1699,
-            ];
+            $years = [2022, 2023, 2024, 2025];
+            $studentsPerYear = 2500;
+            $classSize = 30; // 30 sinh viên một lớp
 
-            // Để tính toán lớp học: theo dõi số lượng sinh viên đã tạo cho từng (năm tuyển sinh, khoa)
-            // Cấu trúc: $classCounters[$year][$facultyId] = số sinh viên đã gán
+            // Theo dõi số sinh viên đã gán cho từng lớp để tính số lớp học (yy)
             $classCounters = [];
 
-            foreach ($enrollmentDist as $year => $totalStudentsForYear) {
-                $this->command->info("Đang tạo sinh viên khóa tuyển sinh năm $year ($totalStudentsForYear sinh viên)...");
-                
-                // Mapped Cohort
-                // 2022 -> Khóa 13
-                $cohort = $year - 2009; 
+            // Để cho phép 1 vài sinh viên học lại năm, ta sẽ lấy khoảng 2.5% (250 sinh viên) làm sinh viên học lại
+            $repeatingIndices = [];
+            while (count($repeatingIndices) < 250) {
+                $val = rand(1, 10000);
+                if (!in_array($val, $repeatingIndices)) {
+                    $repeatingIndices[] = $val;
+                }
+            }
 
-                for ($index = 1; $index <= $totalStudentsForYear; $index++) {
-                    // Mã yyyy bắt đầu từ 0001
+            $globalStudentIndex = 0;
+
+            foreach ($years as $year) {
+                $this->command->info("Đang tạo sinh viên khóa tuyển sinh năm $year...");
+
+                for ($index = 1; $index <= $studentsPerYear; $index++) {
+                    $globalStudentIndex++;
+
+                    // Xác định xem sinh viên này có học lại không
+                    $isRepeating = in_array($globalStudentIndex, $repeatingIndices);
+
+                    // Năm nhập học thực tế
+                    $entryYear = $year; 
+
+                    // MSSV dạng xxxxyyyy. yyyy là số thứ tự bắt đầu từ 0001
                     $yyyy = str_pad($index, 4, '0', STR_PAD_LEFT);
-                    $studentCode = $year . $yyyy;
+                    $studentCode = $entryYear . $yyyy;
 
-                    // Chọn khoa theo vòng lặp tuần hoàn để phân phối đều
+                    // Chọn khoa theo vòng lặp
                     $facultyId = (($index - 1) % 9) + 1;
                     $config = $majorConfig[$facultyId];
 
-                    // Tính lớp học: 40 sinh viên / lớp
-                    if (!isset($classCounters[$year][$facultyId])) {
-                        $classCounters[$year][$facultyId] = 0;
+                    // Xác định năm học của lớp (studyYear)
+                    $studyYear = $entryYear;
+                    if ($isRepeating) {
+                        $studyYear = min(2025, $entryYear + rand(1, 2));
                     }
-                    $studentInMajorCount = $classCounters[$year][$facultyId];
-                    $classCounter = (int) floor($studentInMajorCount / 40) + 1;
-                    $className = $config['code'] . ' ' . $cohort . '.' . $classCounter;
 
-                    // Tăng bộ đếm sinh viên trong khoa cho năm đó
-                    $classCounters[$year][$facultyId]++;
+                    // Tính khóa học (xx): 2022 là khóa 13
+                    $cohort = $studyYear - 2009; 
 
-                    // Sinh Ngày sinh hợp lý (Sinh viên nhập học ở tuổi 18)
-                    $birthYear = $year - 18;
+                    // Tính lớp học (yy): 30 sinh viên / lớp
+                    if (!isset($classCounters[$studyYear][$facultyId])) {
+                        $classCounters[$studyYear][$facultyId] = 0;
+                    }
+                    $studentInClassCount = $classCounters[$studyYear][$facultyId];
+                    $classCounter = (int) floor($studentInClassCount / $classSize) + 1;
+                    
+                    // Format lớp học: CNTT13.01
+                    $className = $config['code'] . $cohort . '.' . str_pad($classCounter, 2, '0', STR_PAD_LEFT);
+
+                    // Tăng bộ đếm lớp học
+                    $classCounters[$studyYear][$facultyId]++;
+
+                    // Ngày sinh: năm 2022 là 2004 và tiến dần lên (tuổi 18 khi nhập học)
+                    $birthYear = $entryYear - 18;
                     $dob = $birthYear . '-' . str_pad(rand(1, 12), 2, '0', STR_PAD_LEFT) . '-' . str_pad(rand(1, 28), 2, '0', STR_PAD_LEFT);
 
                     $name = $generateName();
-
-                    // Tạo username CamelCase duy nhất
                     $username = $convertToCamelCaseUsername($name);
-                    if (!isset($usedStudentUsernames[$username])) {
-                        $usedStudentUsernames[$username] = 1;
+
+                    // Tránh trùng username
+                    if (!isset($usedUsernames[$username])) {
+                        $usedUsernames[$username] = 1;
                     } else {
-                        $usedStudentUsernames[$username]++;
-                        $username .= $usedStudentUsernames[$username];
+                        $usedUsernames[$username]++;
+                        $username .= $usedUsernames[$username];
+                    }
+
+                    $bio = "Sinh viên lớp $className, Khoa " . $config['name'] . ".";
+                    if ($isRepeating) {
+                        $bio = "Sinh viên lớp $className (Học lại), Khoa " . $config['name'] . ". MSSV gốc khóa " . ($entryYear - 2009) . ".";
                     }
 
                     $studentUser = User::create([
@@ -240,7 +293,8 @@ class AccountGeneratorSeeder extends Seeder
                         'role' => 'user',
                         'user_type' => 'student',
                         'status' => 'active',
-                        'bio' => "Sinh viên lớp $className, Khoa " . $config['code'] . ".",
+                        'avatar_url' => '/avatars/default_avatar.jpg', // Tất cả sinh viên dùng avatar chung
+                        'bio' => $bio,
                     ]);
 
                     StudentDetail::create([
@@ -255,6 +309,6 @@ class AccountGeneratorSeeder extends Seeder
             }
         });
 
-        $this->command->info('Quá trình sinh dữ liệu 9.000 tài khoản đã hoàn thành xuất sắc!');
+        $this->command->info('Tạo dữ liệu 10000 sinh viên và 200 giảng viên với avatar chung thành công!');
     }
 }

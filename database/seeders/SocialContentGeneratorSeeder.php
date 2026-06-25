@@ -60,50 +60,59 @@ class SocialContentGeneratorSeeder extends Seeder
         $adminUser = DB::table('users')->where('role', 'admin')->first();
         $adminId = $adminUser ? $adminUser->id : $allUserIds[0];
 
-        $this->command->info('3. Tạo 100 nhóm cộng đồng và ~212 nhóm lớp học...');
+        $this->command->info('3. Tạo các nhóm cộng đồng và nhóm lớp học...');
         
         $communityNames = [
             // Thể thao & Võ thuật
             'CLB Bóng đá EAUT', 'CLB Bóng rổ EAUT', 'Cộng Đồng Bóng Chuyền Đông Á', 'CLB Cầu Lông EAUT',
             'CLB Bóng Bàn Đông Á', 'CLB Cờ Vua & Cờ Tướng EAUT', 'CLB Karate EAUT', 'CLB Taekwondo EAUT',
             'CLB Vovinam Đông Á', 'Cộng Đồng Gym & Fitness EAUT', 'CLB Chạy Bộ & Marathon', 'CLB Yoga & Sức Khỏe',
+            'CLB Bơi Lội EAUT', 'CLB Cầu Mây Đông Á', 'Hội Đạp Xe EAUT', 'CLB Tennis Đông Á',
             // Nghệ thuật & Văn hóa
             'CLB Âm nhạc EAUT', 'CLB Guitar & Nhạc Cụ', 'CLB Piano & Organ EAUT', 'CLB Nhảy Hiện Đại (Dance Club)',
             'CLB Múa Truyền Thống EAUT', 'CLB Nhiếp Ảnh & Media (E-Photo)', 'CLB Hội Họa & Mỹ Thuật',
             'Cộng Đồng Thiết Kế Đồ Họa EAUT', 'CLB Kịch & Điện Ảnh Đông Á', 'CLB Radio & Podcasting EAUT',
+            'CLB Kịch Nói EAUT', 'CLB Vẽ Tranh & Ký Họa', 'Cộng Đồng Acoustic EAUT', 'CLB Ảo Thuật E-Connect',
             // Học thuật & Công nghệ
             'Cộng Đồng Đam Mê Lập Trình', 'CLB Robotics & IoT EAUT', 'Diễn Đàn Học Thuật Công Nghệ',
             'CLB Tin Học Văn Phòng', 'CLB AI & Machine Learning EAUT', 'CLB Web & Mobile Development',
             'Cộng Đồng Thiết Kế Vi Mạch', 'CLB Nghiên Cứu Khoa Học Trẻ', 'CLB Khởi Nghiệp Trẻ EAUT',
             'CLB Tranh Biện Đông Á (Debate Club)', 'CLB Thuyết Trình & MC EAUT', 'CLB Kỹ Năng Mềm E-Connect',
+            'Diễn Đàn Khoa Học Máy Tính', 'CLB Nghiên Cứu Blockchain EAUT', 'Cộng Đồng Lập Trình Python', 'Hội Thảo Khoa Học Trẻ',
             // Ngoại ngữ & Giao lưu
             'CLB Tiếng Anh E-Connect', 'Cộng Đồng Tiếng Nhật EAUT', 'CLB Tiếng Hàn Đông Á',
             'CLB Tiếng Trung E-Connect', 'Cộng Đồng Ngoại Ngữ & Giao Lưu', 'CLB Du Học & Học Bổng',
+            'CLB Tiếng Đức EAUT', 'Hội Luyện Thi IELTS E-Connect', 'CLB Tiếng Nhật Cấp Tốc', 'Cộng Đồng Tiếng Anh Giao Tiếp',
             // Tình nguyện & Xã hội
             'Hội Sinh Viên Tình Nguyện', 'CLB Hiến Máu Nhân Đạo EAUT', 'CLB Bảo Vệ Môi Trường (Green EAUT)',
             'Cộng Đồng Từ Thiện & Nhân Ái', 'CLB Công Tác Xã Hội Đông Á',
+            'CLB Áo Xanh Tình Nguyện', 'Hội Chữ Thập Đỏ EAUT', 'Đội Tình Nguyện Tiếp Sức Mùa Thi',
             // Đồng hương
             'Hội Đồng Hương Nghệ An EAUT', 'Hội Đồng Hương Thanh Hóa EAUT', 'Hội Đồng Hương Hà Tĩnh EAUT',
             'Hội Đồng Hương Nam Định EAUT', 'Hội Đồng Hương Thái Bình EAUT', 'Hội Đồng Hương Hải Dương EAUT',
             'Hội Đồng Hương Bắc Ninh EAUT', 'Hội Đồng Hương Quảng Ninh EAUT', 'Hội Đồng Hương Phú Thọ EAUT',
+            'Hội Đồng Hương Ninh Bình EAUT', 'Hội Đồng Hương Hưng Yên EAUT', 'Hội Đồng Hương Hà Nội EAUT',
             // Giải trí & Đời sống
             'CLB Sách & Hành Trình', 'Câu Lạc Bộ Boardgame EAUT', 'Cộng Đồng Ma Sói Đông Á',
             'Hội Thể Thao Điện Tử (E-Sports)', 'CLB Liên Quân Mobile EAUT', 'CLB Tốc Chiến & LoL EAUT',
             'CLB Guitar & Acoustic', 'Hội Độc Thân EAUT', 'Góc Tìm Kiếm Trọ & Việc Làm',
             'Hội Thích Đi Phượt EAUT', 'Cộng Đồng Du Lịch & Khám Phá', 'Hội Trao Đổi Đồ Cũ EAUT',
             'Hội Thích Chụp Ảnh Check-in', 'Diễn Đàn Confession EAUT', 'Cộng Đồng Review Đồ Ăn Quanh Trường',
+            'CLB Valorant EAUT', 'CLB FIFA Online EAUT', 'Hội Đấu Trường Chân Lý EAUT', 'CLB Boardgame Ma Sói',
+            'Hội Nuôi Mèo EAUT', 'Hội Thích Ăn Vặt Cổng Trường', 'CLB Phượt Thủ Đông Á',
             // Chuyên ngành & Nghề nghiệp
             'Hội Yêu Thích Logistics', 'Câu Lạc Bộ Dược Khoa Đông Á', 'Diễn Đàn Luật Học Trẻ',
             'CLB Điện - Điện Tử Đông Á', 'CLB Quản Trị Kinh Doanh EAUT', 'Cộng Đồng Marketing Trẻ',
             'Diễn Đàn Kế Toán - Kiểm Toán', 'Cộng Đồng Cơ Khí - Chế Tạo Máy', 'CLB Kỹ Sư Xây Dựng Đông Á',
             'Cộng Đồng Công Nghệ Thực Phẩm', 'CLB Điều Dưỡng EAUT', 'CLB Du Lịch & Lữ Hành Đông Á',
             'Diễn Đàn Công Nghệ Ô Tô EAUT', 'CLB Thiết Kế Thời Trang', 'Cộng Đồng Thương Mại Điện Tử',
+            'Cộng Đồng Cơ Điện Tử EAUT', 'Hội Lập Trình Viên Laravel', 'Cộng Đồng Thiết Kế 3D', 'Cộng Đồng Kinh Doanh Số',
             // Sở thích & Đời sống sinh viên
             'CLB Cây Cảnh & Bonsai EAUT', 'CLB Nuôi Thú Cưng EAUT', 'Cộng Đồng Thần Số Học & Tarot',
             'Hội Thích Đọc Truyện Tranh (Manga/Anime)', 'Cộng Đồng Đam Mê Phim Ảnh', 'Hội Thích Săn Sale & Mua Sắm',
             'CLB Cơm Trưa Sinh Viên', 'CLB Trà Đá Chém Gió EAUT', 'Hội Cựu Sinh Viên EAUT',
             'Góc Chia Sẻ Tài Liệu Học Tập', 'Cộng Đồng Giao Lưu K13', 'Cộng Đồng Giao Lưu K14',
-            'Cộng Đồng Giao Lưu K15'
+            'Cộng Đồng Giao Lưu K15', 'CLB Phim Ảnh EAUT', 'Góc Chia Sẻ Laptop & Gear', 'Cộng Đồng Gymers Đông Á'
         ];
 
         $groupsToInsert = [];
@@ -665,6 +674,68 @@ class SocialContentGeneratorSeeder extends Seeder
 
         if (!empty($messagesToInsert)) {
             DB::table('messages')->insert($messagesToInsert);
+        }
+
+        $this->command->info('9b. Tạo dữ liệu báo cáo (Reports) bài viết, bình luận, tin nhắn và người dùng...');
+        $reportsToInsert = [];
+        
+        // Lấy danh sách ID để làm mẫu báo cáo
+        $postIds = DB::table('posts')->pluck('id')->toArray();
+        $commentIds = DB::table('comments')->pluck('id')->toArray();
+        $messageIds = DB::table('messages')->pluck('id')->toArray();
+        
+        $reasonsList = ['spam', 'harassment', 'inappropriate', 'violence', 'misinformation', 'privacy', 'other'];
+        $statusList = ['pending', 'reviewed', 'resolved', 'dismissed'];
+        $detailsTemplates = [
+            'Tài khoản này liên tục đăng tải thông tin sai lệch và spam.',
+            'Nội dung có chứa ngôn từ thù địch, xúc phạm danh dự người khác.',
+            'Có dấu hiệu lừa đảo và dụ dỗ sinh viên tham gia đa cấp.',
+            'Hình ảnh không phù hợp với chuẩn mực môi trường đại học.',
+            'Spam nội dung quảng cáo dịch vụ thi hộ, viết thuê tiểu luận.',
+            'Bình luận quấy rối và sử dụng từ ngữ thô tục vô văn hóa.',
+            'Vi phạm quyền riêng tư của tôi khi đăng ảnh chưa được phép.',
+            'Nội dung bạo lực kích động xích mích giữa các khóa.'
+        ];
+
+        // Tạo 1000 báo cáo ngẫu nhiên
+        for ($i = 0; $i < 1000; $i++) {
+            $reporterId = $allUserIds[array_rand($allUserIds)];
+            $type = ['post', 'comment', 'user'][rand(0, 2)];
+            $reportedId = null;
+
+            if ($type === 'post' && !empty($postIds)) {
+                $reportedId = $postIds[array_rand($postIds)];
+            } elseif ($type === 'comment' && !empty($commentIds)) {
+                $reportedId = $commentIds[array_rand($commentIds)];
+            } else {
+                // Type 'user'
+                $reportedId = $allUserIds[array_rand($allUserIds)];
+                while ($reportedId === $reporterId) {
+                    $reportedId = $allUserIds[array_rand($allUserIds)];
+                }
+            }
+
+            if ($reportedId) {
+                $reportsToInsert[] = [
+                    'user_id' => $reporterId,
+                    'reported_id' => $reportedId,
+                    'type' => $type,
+                    'reason' => $reasonsList[array_rand($reasonsList)],
+                    'details' => $detailsTemplates[array_rand($detailsTemplates)],
+                    'status' => $statusList[array_rand($statusList)],
+                    'created_at' => date('Y-m-d H:i:s', $currentTime - rand(1, 10000) * 60),
+                    'updated_at' => $nowString,
+                ];
+            }
+
+            if (count($reportsToInsert) >= 200) {
+                DB::table('reports')->insert($reportsToInsert);
+                $reportsToInsert = [];
+            }
+        }
+
+        if (!empty($reportsToInsert)) {
+            DB::table('reports')->insert($reportsToInsert);
         }
 
         $this->command->info('10. Đồng bộ hóa bộ đếm (like_count, reply_count) của bài viết và (follower, following) của người dùng...');

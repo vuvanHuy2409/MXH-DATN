@@ -26,7 +26,7 @@ class TestUserSeeder extends Seeder
                     'role'           => 'user',
                     'user_type'      => 'student',
                     'status'         => 'active',
-                    'avatar_url'     => '/avatars/user.png',
+                    'avatar_url'     => '/avatars/default_avatar.jpg',
                     'bio'            => 'Tài khoản sinh viên dùng để test giao diện E-Connect.',
                 ]
             );

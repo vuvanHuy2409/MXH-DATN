@@ -179,7 +179,27 @@ class PostController extends Controller
             $post->user->follows_me = isset($meFollowerMap[$post->user_id]);
         }
 
-        return view('posts.index', compact('posts', 'followingPosts'));
+        $conversations = $user->conversations()
+            ->where('conversations.type', 'direct')
+            ->with(['users', 'lastMessage'])
+            ->latest('updated_at')
+            ->take(50)
+            ->get();
+
+        $joinedCommunities = $user->socialGroups()
+            ->where('social_groups.type', 'community')
+            ->take(50)
+            ->get();
+
+        $suggestedCommunities = collect();
+        if ($joinedCommunities->count() < 6) {
+            $suggestedCommunities = \App\Models\SocialGroup::where('type', 'community')
+                ->whereNotIn('id', $joinedCommunities->pluck('id'))
+                ->take(6 - $joinedCommunities->count())
+                ->get();
+        }
+
+        return view('posts.index', compact('posts', 'followingPosts', 'conversations', 'joinedCommunities', 'suggestedCommunities'));
     }
 
     /**

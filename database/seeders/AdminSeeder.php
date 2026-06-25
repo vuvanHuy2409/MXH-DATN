@@ -26,7 +26,7 @@ class AdminSeeder extends Seeder
                     'role' => 'admin',
                     'user_type' => 'teacher', // Thiết lập là Giảng viên
                     'status' => 'active',
-                    'avatar_url' => '/avatars/1772179976_4.jpg', // Dùng một ảnh có sẵn trong public/avatars
+                    'avatar_url' => '/avatars/default_avatar.jpg', // Dùng avatar mặc định chung
                     'bio' => 'Quản trị viên hệ thống & Giảng viên chuyên môn.',
                 ]
             );
